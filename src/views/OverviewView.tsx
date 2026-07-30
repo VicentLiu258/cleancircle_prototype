@@ -200,7 +200,7 @@ export function OverviewView({ onNavigate }: Props) {
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-xs text-gray-400">S 编号为移动端线框工程（cleancircle-wireframe）屏幕；B 编号为后台需求文档 §4 页面。</p>
+      <p className="mt-2 text-xs text-gray-400">S 编号为移动端屏幕（顶栏切换「移动端 App」查看，后台标注面板中可点击直达）；B 编号为后台需求文档 §4 页面。</p>
     </div>
   );
 }

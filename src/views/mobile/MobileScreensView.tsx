@@ -1,50 +1,28 @@
 import { useState } from 'react';
-import { screens, screenMap, groupByFlow } from '../data';
-import { FLOW_NAMES, FLOW_ORDER } from '../data/types';
-import { AdminFrame } from '../components/AdminWireframe';
+import { screens, screenMap, groupByFlow } from '../../data/mobile';
+import { FLOW_NAMES, FLOW_ORDER } from '../../data/mobile/types';
+import { PhoneFrame } from '../../components/MobileWireframe';
 
 interface Props {
   screenId: string;
   onNavigate: (screenId: string) => void;
   onShowDecisions: () => void;
-  onOpenMobile: (screenId: string) => void;
 }
 
-// 把含 Bxx 的文本渲染成可点击引用；Sxx 可点击切换到移动端 App 对应屏
-function ScreenRefs({
-  text,
-  onNavigate,
-  onMobile,
-}: {
-  text: string;
-  onNavigate: (id: string) => void;
-  onMobile: (id: string) => void;
-}) {
-  const parts = text.split(/([BS]\d{2})/g);
+// 把含 Sxx 的文本渲染成可点击引用
+function ScreenRefs({ text, onNavigate }: { text: string; onNavigate: (id: string) => void }) {
+  const parts = text.split(/(S\d{2})/g);
   return (
     <>
-      {parts.map((p, i) => {
-        if (/^B\d{2}$/.test(p) && screenMap[p]) {
-          return (
-            <button key={i} onClick={() => onNavigate(p)} className="font-mono text-gray-800 underline decoration-gray-400 hover:bg-gray-200">
-              {p}
-            </button>
-          );
-        }
-        if (/^S\d{2}$/.test(p)) {
-          return (
-            <button
-              key={i}
-              onClick={() => onMobile(p)}
-              className="font-mono text-gray-500 underline decoration-dotted decoration-gray-400 hover:bg-gray-200 hover:text-gray-800"
-              title="切换到移动端 App 查看该屏"
-            >
-              {p}
-            </button>
-          );
-        }
-        return <span key={i}>{p}</span>;
-      })}
+      {parts.map((p, i) =>
+        /^S\d{2}$/.test(p) && screenMap[p] ? (
+          <button key={i} onClick={() => onNavigate(p)} className="font-mono text-gray-800 underline decoration-gray-400 hover:bg-gray-200">
+            {p}
+          </button>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
     </>
   );
 }
@@ -58,7 +36,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobile }: Props) {
+export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
   const screen = screenMap[screenId] ?? screens[0];
   const [stateId, setStateId] = useState(screen.states[0].id);
   const curState = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
@@ -73,7 +51,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
   return (
     <div className="flex h-full min-h-0">
       {/* 左栏：屏幕列表 */}
-      <aside className="w-60 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3">
+      <aside className="w-56 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3">
         {FLOW_ORDER.map((f) => (
           <div key={f} className="mb-3">
             <p className="px-3 py-1 text-[11px] font-bold text-gray-400">{FLOW_NAMES[f]}</p>
@@ -94,12 +72,9 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
             ))}
           </div>
         ))}
-        <p className="px-3 pt-2 text-[10px] leading-relaxed text-gray-400">
-          编号沿用《管理后台 MVP 需求文档》§4 页面清单；全部 P0 页面已覆盖（P1：B02/B17/B22/B24/B25 为后续批次）。
-        </p>
       </aside>
 
-      {/* 中栏：桌面线框 */}
+      {/* 中栏：手机线框 */}
       <main className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto bg-gray-100 py-5">
         <div className="flex flex-wrap items-center justify-center gap-2 px-4">
           <span className="font-mono text-lg font-bold text-gray-800">{screen.id}</span>
@@ -126,10 +101,10 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
             ))}
           </div>
         )}
-        <div className="mt-4 w-full max-w-[920px] px-4">
-          <AdminFrame screen={screen} stateId={curState.id} onNavigate={selectScreen} />
+        <div className="mt-4">
+          <PhoneFrame screen={screen} stateId={curState.id} onNavigate={selectScreen} />
         </div>
-        <p className="mt-3 text-[11px] text-gray-400">带 → 的按钮/表格行可点击跳转 · 左侧菜单高亮项可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切换到移动端 App</p>
+        <p className="mt-3 text-[11px] text-gray-400">带 → 的按钮可点击跳转 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全</p>
       </main>
 
       {/* 右栏：标注面板 */}
@@ -139,10 +114,10 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
         </div>
         <Field label="页面目标">{a.goal}</Field>
         <Field label="入口 / 出口">
-          <p><span className="text-gray-400">入口：</span><ScreenRefs text={a.entry} onNavigate={selectScreen} onMobile={onOpenMobile} /></p>
+          <p><span className="text-gray-400">入口：</span><ScreenRefs text={a.entry} onNavigate={selectScreen} /></p>
           <p className="mt-1">
             <span className="text-gray-400">出口：</span>
-            {a.exit.length === 0 ? '（单屏多状态向导，无页面出口）' : a.exit.map((e, i) => (
+            {a.exit.length === 0 ? '（无页面出口，内容为终点）' : a.exit.map((e, i) => (
               <span key={e}>
                 {i > 0 && '、'}
                 <button onClick={() => selectScreen(e)} className="font-mono text-gray-800 underline decoration-gray-400 hover:bg-gray-200">{e}</button>
@@ -153,11 +128,11 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
         <Field label="角色">{a.role}</Field>
         <Field label="主数据字段与来源">
           <ul className="list-disc space-y-0.5 pl-4">
-            {a.data.map((d, i) => <li key={i}><ScreenRefs text={d} onNavigate={selectScreen} onMobile={onOpenMobile} /></li>)}
+            {a.data.map((d, i) => <li key={i}><ScreenRefs text={d} onNavigate={selectScreen} /></li>)}
           </ul>
         </Field>
         <Field label="操作">
-          <p><span className="font-semibold">主操作：</span><ScreenRefs text={a.actions.primary} onNavigate={selectScreen} onMobile={onOpenMobile} /></p>
+          <p><span className="font-semibold">主操作：</span><ScreenRefs text={a.actions.primary} onNavigate={selectScreen} /></p>
           {a.actions.secondary.length > 0 && (
             <p className="mt-1"><span className="font-semibold">次操作：</span>{a.actions.secondary.join('；')}</p>
           )}
@@ -176,12 +151,12 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
         </Field>
         <Field label="触发规则与跳转">
           <ul className="list-disc space-y-0.5 pl-4">
-            {a.triggers.map((t, i) => <li key={i}><ScreenRefs text={t} onNavigate={selectScreen} onMobile={onOpenMobile} /></li>)}
+            {a.triggers.map((t, i) => <li key={i}><ScreenRefs text={t} onNavigate={selectScreen} /></li>)}
           </ul>
         </Field>
-        <Field label="依赖（移动端屏幕 / 后台模块）">
+        <Field label="后台依赖">
           <ul className="list-disc space-y-0.5 pl-4">
-            {a.deps.map((d, i) => <li key={i}><ScreenRefs text={d} onNavigate={selectScreen} onMobile={onOpenMobile} /></li>)}
+            {a.deps.map((d, i) => <li key={i}>{d}</li>)}
           </ul>
         </Field>
         <div className={`px-4 py-3 ${a.patches.length > 0 ? 'bg-amber-50' : ''}`}>
