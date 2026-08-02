@@ -145,10 +145,11 @@ export const screensB: ScreenDef[] = [
       { id: 'editing', label: '填写中', blocks: [
         { kind: 'statusbar', label: '' },
         { kind: 'card', label: '（背景：今日页压暗，底部弹层升起）', height: 60 },
-        { kind: 'card', label: '今日 Check-in', sub: '底部弹层', marker: 1 },
+        { kind: 'card', label: '今日 Check-in', sub: '底部弹层 · 今天的身体状态', marker: 1 },
         { kind: 'card', label: '能量：○ 低 ● 中 ○ 高' },
-        { kind: 'card', label: '心情：○ 不佳 ○ 一般 ● 平静 ○ 愉快' },
-        { kind: 'card', label: '睡眠质量：○ 差 ○ 一般 ● 好', sub: 'MVP 简化为质量单选（原始需求）' },
+        { kind: 'card', label: '情绪：○ 不佳 ○ 一般 ● 平稳 ○ 愉快' },
+        { kind: 'card', label: '睡眠：○ 差 ● 一般 ○ 好' },
+        { kind: 'card', label: '身体不适：○ 无 ● 轻微腹胀 ○ 明显不适', sub: '修改方案 P5：Check-in 增加「身体不适」维度' },
         { kind: 'button-primary', label: '提交', marker: 2 },
       ]},
       { id: 'downgrade-suggest', label: '提交后降级建议', blocks: [
@@ -166,7 +167,7 @@ export const screensB: ScreenDef[] = [
       entry: 'S09 Check-in 卡点击',
       exit: ['S09', 'S20'],
       role: '体验用户 / 订阅用户',
-      data: ['能量（低/中/高） — 用户输入', '心情（4 档） — 用户输入', '睡眠质量（单选） — 用户输入', '降级建议（原因+新课程） — 降级规则引擎（D04）'],
+      data: ['能量（低/中/高） — 用户输入', '情绪（4 档） — 用户输入', '睡眠（单选） — 用户输入', '身体不适（无/轻微/明显） — 用户输入（修改方案 P5）', '降级建议（原因+新课程） — 降级规则引擎（D04）'],
       actions: {
         primary: '提交 Check-in',
         secondary: ['确认更换（降级）', '保持原课程'],

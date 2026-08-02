@@ -8,11 +8,29 @@ const crossBg: React.CSSProperties = {
 
 const TABS: { label: string; to: string }[] = [
   { label: '今日', to: 'S09' },
-  { label: '浏览', to: 'S29' },
-  { label: '社区', to: 'S31' },
+  { label: '课程库', to: 'S29' },
   { label: '日历', to: 'S25' },
-  { label: '更多', to: 'S26' },
+  { label: '社区', to: 'S31' },
+  { label: '我的', to: 'S26' },
 ];
+
+// ——— 周期阶段配色（月经期/卵泡期/排卵期/黄体期）———
+const PHASES = [
+  { name: '月经期', days: 5, cls: 'bg-rose-300 text-rose-900', dot: 'bg-rose-300' },
+  { name: '卵泡期', days: 9, cls: 'bg-emerald-200 text-emerald-900', dot: 'bg-emerald-300' },
+  { name: '排卵期', days: 3, cls: 'bg-amber-200 text-amber-900', dot: 'bg-amber-300' },
+  { name: '黄体期', days: 13, cls: 'bg-violet-200 text-violet-900', dot: 'bg-violet-300' },
+];
+
+function phaseOfDay(dayIdx: number) {
+  // dayIdx 0 = 今天（示例：黄体期第 6 天），按 30 天滚动推算阶段
+  let d = (dayIdx + 21) % 28; // 对齐示例：今天落在黄体期
+  for (const p of PHASES) {
+    if (d < p.days) return p;
+    d -= p.days;
+  }
+  return PHASES[PHASES.length - 1];
+}
 
 function Badge({ n }: { n: number }) {
   return (
@@ -170,6 +188,37 @@ export function BlockView({ block: b, onNavigate }: BlockProps) {
             ))}
           </div>
           <p className="mt-1.5 text-[9px] text-gray-400">{b.label}</p>
+          {b.sub && <p className="text-[9px] text-gray-400">{b.sub}</p>}
+        </div>,
+      );
+    case 'cycle-grid':
+      return wrap(
+        <div className={`mx-3 rounded-md border border-gray-300 bg-white p-2 ${patchCls}`} style={{ minHeight: b.height ?? 180 }}>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: 30 }).map((_, i) => {
+              const p = phaseOfDay(i);
+              const isToday = i === 0;
+              return (
+                <div
+                  key={i}
+                  className={`flex aspect-square items-center justify-center rounded-sm text-[8px] ${p.cls} ${
+                    isToday ? 'ring-2 ring-gray-700 font-bold' : ''
+                  }`}
+                >
+                  {i === 0 ? '今' : i + 1}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {PHASES.map((p) => (
+              <span key={p.name} className="flex items-center gap-0.5 text-[8px] text-gray-500">
+                <span className={`inline-block h-2 w-2 rounded-sm ${p.dot}`} />
+                {p.name}
+              </span>
+            ))}
+          </div>
+          <p className="mt-1 text-[9px] text-gray-400">{b.label}</p>
           {b.sub && <p className="text-[9px] text-gray-400">{b.sub}</p>}
         </div>,
       );

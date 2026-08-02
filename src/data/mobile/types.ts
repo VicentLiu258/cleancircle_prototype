@@ -7,7 +7,7 @@ export interface WireBlock {
     | 'statusbar' | 'header' | 'image' | 'text' | 'input'
     | 'button-primary' | 'button-secondary' | 'button-danger'
     | 'card' | 'list-item' | 'chip-row' | 'tabbar' | 'divider'
-    | 'calendar-grid' | 'progress' | 'spacer';
+    | 'calendar-grid' | 'cycle-grid' | 'progress' | 'spacer';
   label: string;
   sub?: string;
   marker?: number;   // 标注序号，与标注面板对应

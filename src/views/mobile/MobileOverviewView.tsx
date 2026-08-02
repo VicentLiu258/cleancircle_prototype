@@ -6,14 +6,14 @@ interface Props {
 
 const IA = [
   { tab: '今日 Today', desc: '定制服务核心首页（全量新建，P0）', screens: ['S09', 'S10', 'S19', 'S20', 'S21'] },
-  { tab: '浏览 Explore', desc: '视频库、搜索筛选（P1，优先复用）', screens: ['S29', 'S30'] },
+  { tab: '课程库 Library', desc: '视频库、搜索筛选（P1，参考 GWJ 原 App）', screens: ['S29', 'S30'] },
+  { tab: '日历 Calendar', desc: '课表、打卡、自选加练（P0）', screens: ['S25'] },
   { tab: '社区 Homies', desc: '官方内容占位（P1，复用评估中）', screens: ['S31'] },
-  { tab: '日历 Calendar', desc: '28 天课表、打卡、自选加练（P0）', screens: ['S25'] },
-  { tab: '更多 Me', desc: '档案、订阅、能量值、设置（P0）', screens: ['S26', 'S27', 'S28', 'S17', 'S24'] },
+  { tab: '我的 Me', desc: '我的课程、打卡记录、能量值兑换、会员中心（P0）', screens: ['S26', 'S27', 'S28', 'S17', 'S24'] },
 ];
 
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
-  { title: '① 新用户首次使用', chain: ['S01', 'S02', 'S03', 'S04', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'] },
+  { title: '① 新用户首次使用', chain: ['S01', 'S02', 'S03', 'S04', 'S06', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'], note: '修改方案：不再生成长报告，S06 直接生成课表进入 S08' },
   { title: '② 老用户迁移', chain: ['S01', 'S14', 'S15', 'S16', 'S17', 'S04'], note: '迁移后进入评测主链路' },
   { title: '③ 每日使用', chain: ['S09', 'S19', 'S20', 'S10', 'S11', 'S12', 'S13'], note: 'S19 之后也可能直达 S10（无降级）' },
   { title: '④ 订阅转化', chain: ['S22', 'S23', 'S24'], note: '触发点：体验到期次日启动 / 点击锁定课程 / 今日页轻量入口' },

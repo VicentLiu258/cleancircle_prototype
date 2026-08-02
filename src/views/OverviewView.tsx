@@ -56,8 +56,8 @@ const ROLES: { role: string; scope: string; limit: string }[] = [
 // 移动端体验 ↔ 后台能力（总览文档 §3），仅列本批覆盖行
 const XREF: { mobile: string; cap: string; mScreens: string; aScreens: string[] }[] = [
   { mobile: '问卷逐题作答', cap: '问卷题目、选项、跳题和版本发布', mScreens: 'S04/S05', aScreens: ['B08', 'B09'] },
-  { mobile: '体质得分与周期报告', cap: '评分权重、报告话术、专业审核和快照', mScreens: 'S06/S07', aScreens: ['B10'] },
-  { mobile: '28 天 AI 课表', cap: '视频标签、排课规则、优先级、兜底和版本', mScreens: 'S08/S09', aScreens: ['B06', 'B07', 'B11', 'B12', 'B13'] },
+  { mobile: '周期课表生成与着色', cap: '评分权重、阶段话术、专业审核和快照', mScreens: 'S06/S08', aScreens: ['B10'] },
+  { mobile: '滚动 30 天 AI 课表', cap: '视频标签、排课规则、优先级、兜底和版本', mScreens: 'S08/S09', aScreens: ['B06', 'B07', 'B11', 'B12', 'B13'] },
   { mobile: '「太累」/「来例假了」', cap: '当日降级规则和周期重排规则', mScreens: 'S19/S20/S21', aScreens: ['B12'] },
   { mobile: '当日饮食生活 Tips', cap: '周期阶段与人群话术配置', mScreens: 'S09', aScreens: ['B14'] },
   { mobile: 'Jo 姐鼓励/召回', cap: '消息模板、触发事件、频控和发送日志', mScreens: 'S09/S26', aScreens: ['B15', 'B16'] },
