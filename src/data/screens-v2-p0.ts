@@ -112,6 +112,29 @@ export const screensV2P0: ScreenDef[] = [
           { kind: 'stat-row', items: ['新增用户 128', '日活 3,420', '训练完成 1,655', '订阅金额 ¥6,237'] },
         ],
       },
+      {
+        id: 'metrics-help',
+        label: '口径说明',
+        blocks: [
+          side('运营总览'),
+          { kind: 'topbar', label: '工作台 / 运营总览 / 口径说明', sub: '只读 · 附录 B 签核表' },
+          { kind: 'page-header', label: '核心指标口径说明', sub: '统一统计时区/日切/金额定义（后端§五、§1.1）' },
+          {
+            kind: 'table',
+            cols: ['指标', '口径（v2）', '备注'],
+            items: [
+              '新增用户 ｜ 注册成功时间 ∈ 区间 ｜ 是否含注销待签核',
+              '日活 ｜ 当日打开 App 去重 ｜ 前后台定义',
+              '训练完成 ｜ 完课记录（≥80% 或手动完成） ｜ 阈值可配见 B30',
+              '打卡 ｜ 当日主课规则满足 ｜ 日切=用户本地自然日；不补卡',
+              '订阅金额 ｜ 支付成功实付，默认不含已退款 ｜ 是否含税/渠道费待签核',
+              '退款金额 ｜ 退款成功入账 ｜ 含 Apple 渠道外退；App 无退款入口',
+            ],
+            marker: 1,
+          },
+          { kind: 'button-secondary', label: '返回看板' },
+        ],
+      },
     ],
     annotations: {
       goal: '快速了解平台经营情况，并进入待办处理。',
@@ -121,12 +144,13 @@ export const screensV2P0: ScreenDef[] = [
       data: [
         '用户/训练/交易/社区指标 — 统一统计服务（后端§1.1）',
         '待办计数 — 审核队列/反馈/退款/发货',
+        '口径说明 — 附录 B 数据口径表',
       ],
       actions: {
         primary: '切换时间范围查看 KPI',
         secondary: ['打开口径说明', '跳转漏斗/趋势', '跳转待办处理页'],
       },
-      statesDesc: ['看板+待办', '社区/商城功能关闭', '无模块权限'],
+      statesDesc: ['看板+待办', '社区/商城功能关闭', '口径说明'],
       triggers: ['功能开关变更 → KPI 显隐', '待办点击 → 对应列表'],
       deps: ['B44 功能开关', 'B48 漏斗', 'B49 趋势', '各业务列表'],
       patches: ['后端需求§1'],
@@ -573,6 +597,7 @@ export const screensV2P0: ScreenDef[] = [
               'R-10021 ｜ O-…001 ｜ U-08771 ｜ 99 ｜ 99 ｜ 微信 ｜ 待审核 ｜ 审核',
               'R-10018 ｜ O-…882 ｜ U-07890 ｜ 99 ｜ 99 ｜ Apple ｜ 成功 ｜ 详情',
               'R-10015 ｜ O-…660 ｜ U-10200 ｜ 259 ｜ 100 ｜ 支付宝 ｜ 处理中 ｜ 详情',
+              'R-10030 ｜ O-…901 ｜ U-11002 ｜ 99 ｜ 99 ｜ Apple ｜ 渠道外退·已入账 ｜ 详情',
             ],
             marker: 1,
           },
@@ -594,6 +619,21 @@ export const screensV2P0: ScreenDef[] = [
           },
           { kind: 'button-primary', label: '审核通过' },
           { kind: 'button-danger', label: '审核拒绝' },
+        ],
+      },
+      {
+        id: 'apple-auto',
+        label: 'Apple 外退入账',
+        blocks: [
+          side('退款管理'),
+          { kind: 'topbar', label: '会员与财务 / 退款 / Apple 通知', sub: '只读详情 · 自动处理' },
+          { kind: 'page-header', label: '渠道外退 · R-10030' },
+          { kind: 'alert', tone: 'ok', label: '已接收 Apple 退款通知并自动入账', sub: 'App 无用户退款入口；以渠道通知为准同步订单/权益/流水', marker: 1 },
+          { kind: 'form-row', label: '原订单 / 用户', sub: 'O-…901 ｜ U-11002' },
+          { kind: 'form-row', label: '金额 / 完成时间', sub: '¥99 ｜ 2026-08-05 14:22' },
+          { kind: 'form-row', label: '联动结果', sub: '订阅已退款 · 定制权益已回收 · B25 流水已写 · B27 审计已记', marker: 2 },
+          { kind: 'button-secondary', label: '查看对账', to: 'B25' },
+          { kind: 'button-secondary', label: '查看订单', to: 'B21' },
         ],
       },
     ],
@@ -808,13 +848,32 @@ export const screensV2P0: ScreenDef[] = [
             ],
             marker: 1,
           },
+          { kind: 'form-row', label: '完课判定阈值（全局）', sub: '播放进度 ≥ 80% 自动完课（可配）· 对齐移动端 B-03', marker: 2 },
           { kind: 'button-primary', label: '+ 新建规则' },
           {
             kind: 'alert',
             tone: 'info',
             label: '流水不可直接覆盖；记录来源/增减/过期/余额/撤销关系',
-            marker: 2,
+            marker: 3,
           },
+        ],
+      },
+      {
+        id: 'edit',
+        label: '编辑规则',
+        blocks: [
+          side('能量值规则'),
+          { kind: 'topbar', label: '训练与能量值 / 规则 / 编辑', sub: '角色：运营' },
+          { kind: 'page-header', label: '编辑规则 · 完成主课训练' },
+          { kind: 'form-row', label: '场景', sub: '完成主课训练（完课记录触发）' },
+          { kind: 'form-row', label: '单次奖励', sub: '+20' },
+          { kind: 'form-row', label: '每日上限 / 每周上限', sub: '40 ｜ 不限制' },
+          { kind: 'form-row', label: '活动有效期', sub: '永久 / 指定起止' },
+          { kind: 'form-row', label: '能量值有效期', sub: '永久 / N 天后过期（可触发触达）' },
+          { kind: 'form-row', label: '是否可重复获得', sub: '● 是（受日上限约束）' },
+          { kind: 'form-row', label: '状态', sub: '● 启用  ○ 停用' },
+          { kind: 'button-primary', label: '保存规则' },
+          { kind: 'button-secondary', label: '返回列表' },
         ],
       },
     ],
@@ -823,8 +882,8 @@ export const screensV2P0: ScreenDef[] = [
       entry: '训练与能量值-规则',
       exit: ['B23', 'B19'],
       role: '运营',
-      data: ['规则配置 — 积分/能量值服务'],
-      actions: { primary: '新建/编辑规则', secondary: ['停用规则'] },
+      data: ['规则配置 — 能量值服务', '完课阈值 — 与移动端完课判定一致'],
+      actions: { primary: '新建/编辑规则', secondary: ['停用规则', '配置完课阈值'] },
       statesDesc: ['规则列表', '编辑规则'],
       triggers: ['人工发放走 B23 审批'],
       deps: ['移动端 S13/S27', 'B23', 'H-13'],
@@ -887,20 +946,43 @@ export const screensV2P0: ScreenDef[] = [
           { kind: 'form-row', label: '状态', sub: '○草稿 ○待发布 ●已发布 ○已下架' },
           { kind: 'form-row', label: '展示', sub: '☑ 课程库  ☑ 老用户专栏位' },
           { kind: 'button-primary', label: '保存' },
+          { kind: 'button-secondary', label: '管理专栏位' },
+        ],
+      },
+      {
+        id: 'column',
+        label: '专栏配置',
+        blocks: [
+          side('课程组合'),
+          { kind: 'topbar', label: '内容中心 / 课程专栏', sub: '角色：课程运营 · 参考有赞专栏' },
+          { kind: 'page-header', label: '课程专栏', sub: '老用户专栏 / 课程页专区展示位（后端§4）' },
+          {
+            kind: 'table',
+            cols: ['专栏', '展示位置', '课程数', '排序', '状态', '操作'],
+            items: [
+              'START HERE 新手 ｜ 课程库顶部 ｜ 5 ｜ 1 ｜ 上架 ｜ 编辑',
+              '老用户买断精选 ｜ 我的-已购 ｜ 3 ｜ 2 ｜ 上架 ｜ 编辑',
+              '黄体期精选 ｜ 今日推荐池 ｜ 8 ｜ 3 ｜ 草稿 ｜ 编辑',
+            ],
+            marker: 1,
+          },
+          { kind: 'form-row', label: '专栏内课程', sub: '拖拽排序 · 从 B31 课程库添加' },
+          { kind: 'button-primary', label: '+ 新建专栏' },
+          { kind: 'button-secondary', label: '返回课程列表' },
         ],
       },
     ],
     annotations: {
-      goal: '将视频组装为可售卖/可推荐的课程实体。',
+      goal: '将视频组装为可售卖/可推荐的课程实体，并配置专栏展示。',
       entry: '内容中心-课程组合',
       exit: ['B03', 'B04', 'B10'],
       role: '课程运营',
-      data: ['课程与视频关系 — 内容服务', '权益 — 商品/会员'],
+      data: ['课程与视频关系 — 内容服务', '权益 — 商品/会员', '专栏 — 运营配置'],
       actions: {
         primary: '新建/编辑课程并发布',
-        secondary: ['添加删除排序视频', '设置章节与休息'],
+        secondary: ['添加删除排序视频', '设置章节与休息', '专栏配置'],
       },
-      statesDesc: ['课程列表', '课程编辑'],
+      statesDesc: ['课程列表', '课程编辑', '专栏配置'],
       triggers: ['下架前评估影响用户（对齐 H-07）'],
       deps: ['B03 视频库', '移动端 S10/S17/S29'],
       patches: ['后端需求§4 课程组合'],
@@ -916,43 +998,142 @@ export const screensV2P0: ScreenDef[] = [
     data: ['二维码资源 — 配置中心'],
     deps: ['移动端帮助中心'],
   }),
-  listScreen('B43', 'App 版本管理', '后端§10.1', 'K', 'P0', 'App 版本', '基础配置 / App 版本', '最新版本、最低支持、强更、文案、下载地址、生效时间', {
-    table: {
-      cols: ['平台', '最新', '最低', '强更', '生效', '操作'],
-      items: [
-        'iOS ｜ 2.3.0 ｜ 2.0.0 ｜ 否 ｜ 08-01 ｜ 编辑',
-        'Android ｜ 2.3.1 ｜ 2.0.0 ｜ 是 ｜ 08-03 ｜ 编辑',
-      ],
+  {
+    id: 'B43', name: 'App 版本管理', reqCode: '后端§10.1', priority: 'P0', flow: 'K',
+    states: [
+      {
+        id: 'list', label: '版本列表', blocks: [
+          side('App 版本'),
+          { kind: 'topbar', label: '基础配置 / App 版本', sub: '角色：运营/研发' },
+          { kind: 'page-header', label: 'App 版本管理' },
+          { kind: 'table', cols: ['平台', '最新', '最低', '强更', '生效', '操作'], items: [
+            'iOS ｜ 2.3.0 ｜ 2.0.0 ｜ 否 ｜ 08-01 ｜ 编辑',
+            'Android ｜ 2.3.1 ｜ 2.0.0 ｜ 是 ｜ 08-03 ｜ 编辑',
+          ], marker: 1 },
+          { kind: 'button-primary', label: '+ 发布版本配置' },
+        ],
+      },
+      {
+        id: 'edit', label: '编辑版本', blocks: [
+          side('App 版本'),
+          { kind: 'topbar', label: '基础配置 / App 版本 / 编辑', sub: 'iOS' },
+          { kind: 'page-header', label: '编辑版本策略 · iOS' },
+          { kind: 'form-row', label: '当前最新版本', sub: '2.3.0' },
+          { kind: 'form-row', label: '最低支持版本', sub: '2.0.0' },
+          { kind: 'form-row', label: '是否强制更新', sub: '○ 否  ● 是（低于最低版本拦截）' },
+          { kind: 'form-row', label: '更新标题 / 说明', sub: '发现新版本 ｜ 修复若干问题…' },
+          { kind: 'form-row', label: '下载地址', sub: 'App Store 链接 / 企业包 URL' },
+          { kind: 'form-row', label: '生效时间', sub: '2026-08-01 10:00' },
+          { kind: 'button-primary', label: '保存并生效' },
+        ],
+      },
+    ],
+    annotations: {
+      goal: '控制客户端升级策略。',
+      entry: '基础配置-App 版本',
+      exit: [],
+      role: '运营/研发',
+      data: ['版本配置 — 配置中心'],
+      actions: { primary: '新建/编辑版本策略', secondary: [] },
+      statesDesc: ['版本列表', '编辑版本'],
+      triggers: [],
+      deps: ['移动端启动校验'],
+      patches: ['后端需求§10.1'],
     },
-    primary: '+ 发布版本配置',
-    goal: '控制客户端升级策略。',
-  }),
-  listScreen('B44', '功能开关', '后端§10.2', 'K', 'P0', '功能开关', '基础配置 / 功能开关', '问卷/训练推荐/社区/消息/挑战赛/商城/能量值/会员；支持平台·版本·人群·时间灰度', {
-    table: {
-      cols: ['功能', '总开关', '灰度', '平台', '状态'],
-      items: [
-        '问卷 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
-        '社区 ｜ 开 ｜ 20% 分群 ｜ iOS ｜ 灰度中',
-        '商城 ｜ 关 ｜ — ｜ 全 ｜ 关闭',
-        '挑战赛 ｜ 开 ｜ 50% ｜ 全 ｜ 灰度中',
-        '会员 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
-      ],
+  },
+  {
+    id: 'B44', name: '功能开关', reqCode: '后端§10.2', priority: 'P0', flow: 'K',
+    states: [
+      {
+        id: 'default', label: '开关列表', blocks: [
+          side('功能开关'),
+          { kind: 'topbar', label: '基础配置 / 功能开关', sub: '角色：运营' },
+          { kind: 'page-header', label: '功能开关', sub: '平台 · 版本 · 人群 · 时间灰度' },
+          { kind: 'table', cols: ['功能', '总开关', '灰度', '平台', '状态'], items: [
+            '问卷 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
+            '社区 ｜ 开 ｜ 20% 分群 ｜ iOS ｜ 灰度中',
+            '商城 ｜ 关 ｜ — ｜ 全 ｜ 关闭',
+            '挑战赛 ｜ 开 ｜ 50% ｜ 全 ｜ 灰度中',
+            '会员 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
+            '能量值 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
+            '消息 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
+            '训练推荐 ｜ 开 ｜ 100% ｜ 全 ｜ 生效',
+          ], marker: 1 },
+          { kind: 'button-primary', label: '保存开关' },
+        ],
+      },
+      {
+        id: 'edit', label: '编辑灰度', blocks: [
+          side('功能开关'),
+          { kind: 'topbar', label: '基础配置 / 功能开关 / 社区', sub: '灰度配置' },
+          { kind: 'page-header', label: '编辑 · 社区功能' },
+          { kind: 'form-row', label: '总开关', sub: '● 开' },
+          { kind: 'form-row', label: '平台', sub: '☑ iOS  ☑ Android' },
+          { kind: 'form-row', label: '版本区间', sub: '≥ 2.2.0' },
+          { kind: 'form-row', label: '用户范围', sub: '○ 全量  ● 分群  ○ 百分比灰度 20%' },
+          { kind: 'form-row', label: '分群', sub: '种子用户（B17）' },
+          { kind: 'form-row', label: '生效时间', sub: '立即 / 定时' },
+          { kind: 'button-primary', label: '保存' },
+        ],
+      },
+    ],
+    annotations: {
+      goal: '按维度灰度控制功能暴露。',
+      entry: '基础配置-功能开关',
+      exit: ['B02', 'B17'],
+      role: '运营',
+      data: ['开关配置 — 配置中心'],
+      actions: { primary: '保存开关/灰度', secondary: ['选择分群 B17'] },
+      statesDesc: ['开关列表', '编辑灰度'],
+      triggers: ['关闭社区/商城 → B02 KPI 隐藏'],
+      deps: ['B02', '移动端 Tab/入口'],
+      patches: ['后端需求§10.2'],
     },
-    primary: '保存开关',
-    goal: '按维度灰度控制功能暴露。',
-    deps: ['B02 KPI 显隐', '移动端 Tab/入口'],
-  }),
-  listScreen('B45', '公告与弹窗', '后端§10.3', 'K', 'P0', '公告弹窗', '基础配置 / 公告与弹窗', '标题/正文/图/跳转/人群/时间/频率/状态', {
-    table: {
-      cols: ['标题', '位置', '人群', '时间', '状态', '操作'],
-      items: [
-        '体验到期提醒 ｜ 今日弹窗 ｜ 体验第7天 ｜ 08-01~08-31 ｜ 发布 ｜ 编辑',
-        '社区上线 ｜ 开屏 ｜ 全量 ｜ 定时 ｜ 草稿 ｜ 编辑',
-      ],
+  },
+  {
+    id: 'B45', name: '公告与弹窗', reqCode: '后端§10.3', priority: 'P0', flow: 'K',
+    states: [
+      {
+        id: 'list', label: '公告列表', blocks: [
+          side('公告弹窗'),
+          { kind: 'topbar', label: '基础配置 / 公告与弹窗', sub: '角色：运营' },
+          { kind: 'page-header', label: '公告与弹窗' },
+          { kind: 'table', cols: ['标题', '位置', '人群', '时间', '状态', '操作'], items: [
+            '体验到期提醒 ｜ 今日弹窗 ｜ 体验第7天 ｜ 08-01~08-31 ｜ 发布 ｜ 编辑',
+            '社区上线 ｜ 开屏 ｜ 全量 ｜ 定时 ｜ 草稿 ｜ 编辑',
+          ], marker: 1 },
+          { kind: 'button-primary', label: '+ 新建公告/弹窗' },
+        ],
+      },
+      {
+        id: 'edit', label: '编辑公告', blocks: [
+          side('公告弹窗'),
+          { kind: 'topbar', label: '基础配置 / 公告 / 编辑', sub: '今日弹窗' },
+          { kind: 'page-header', label: '编辑公告 · 体验到期提醒' },
+          { kind: 'form-row', label: '标题 / 正文', sub: '体验即将结束 ｜ 开通会员继续定制课表…' },
+          { kind: 'form-row', label: '图片', sub: '已上传' },
+          { kind: 'form-row', label: '跳转链接', sub: 'App 内 · 订阅页 S22' },
+          { kind: 'form-row', label: '展示人群', sub: '体验第 7 天用户（标签/分群）' },
+          { kind: 'form-row', label: '展示时间 / 频率', sub: '08-01~08-31 ｜ 每日最多 1 次' },
+          { kind: 'form-row', label: '发布状态', sub: '○ 草稿  ● 发布' },
+          { kind: 'panel', label: '移动端预览占位', sub: '今日页弹窗样式示意', height: 100 },
+          { kind: 'button-primary', label: '保存' },
+        ],
+      },
+    ],
+    annotations: {
+      goal: '运营配置 App 内公告与弹窗。',
+      entry: '基础配置-公告与弹窗',
+      exit: [],
+      role: '运营',
+      data: ['公告配置 — 运营配置'],
+      actions: { primary: '新建/编辑/发布', secondary: ['预览'] },
+      statesDesc: ['公告列表', '编辑公告'],
+      triggers: [],
+      deps: ['移动端今日/开屏'],
+      patches: ['后端需求§10.3'],
     },
-    primary: '+ 新建公告/弹窗',
-    goal: '运营配置 App 内公告与弹窗。',
-  }),
+  },
   listScreen('B46', '第三方服务配置', '后端§10.4', 'K', 'P0', '第三方服务', '基础配置 / 第三方服务', '支付/Push/短信/视频/审核/物流/数据；密钥不明文展示', {
     table: {
       cols: ['服务', '状态', '最近心跳', '说明'],
@@ -969,85 +1150,287 @@ export const screensV2P0: ScreenDef[] = [
     alerts: '敏感配置加密存储，页面仅掩码。',
   }),
 
-  // ——— P1 社区 / 商城 占位（后端需求纳入原型，可点进） ———
-  listScreen('B32', '帖子管理', '后端§6.1', 'I', 'P1', '帖子管理', '社区 / 帖子', '审核/下架/删除/推荐/置顶/精选/举报', {
-    table: {
-      cols: ['ID', '用户', '摘要', '审核', '赞/评', '展示', '操作'],
-      items: ['P-100 ｜ U-01 ｜ 经期训练打卡 ｜ 待审 ｜ 12/3 ｜ 是 ｜ 审核'],
+  // ——— P1 社区 / 商城（按文档规格加深，不再单列表占位） ———
+  {
+    id: 'B32', name: '帖子管理', reqCode: '后端§6.1', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'list', label: '帖子列表', blocks: [
+        side('帖子管理'),
+        { kind: 'topbar', label: '社区 / 帖子', sub: '角色：社区审核' },
+        { kind: 'page-header', label: '帖子管理' },
+        { kind: 'filter-bar', label: '审核：全部 ｜ 展示：全部 ｜ 时间：近7天' },
+        { kind: 'table', cols: ['ID', '用户', '内容', '图', '审核', '阅/赞/评/藏', '展示', '操作'], items: [
+          'P-100 ｜ U-01 ｜ 经期训练打卡… ｜ 1 ｜ 待审 ｜ 120/12/3/2 ｜ 是 ｜ 审核',
+          'P-099 ｜ U-08 ｜ 黄体期饮食… ｜ 0 ｜ 通过 ｜ 80/20/5/1 ｜ 是 ｜ 推荐/置顶',
+        ], marker: 1 },
+      ]},
+      { id: 'review', label: '审核帖子', blocks: [
+        side('帖子管理'),
+        { kind: 'topbar', label: '社区 / 帖子 / 审核', sub: 'P-100' },
+        { kind: 'page-header', label: '审核帖子 · P-100' },
+        { kind: 'panel', label: '正文+图片预览', sub: '经期训练打卡 Day3…', height: 120 },
+        { kind: 'form-row', label: '机审结果', sub: '文本通过 · 图片可疑' },
+        { kind: 'button-primary', label: '通过' },
+        { kind: 'button-secondary', label: '拒绝 / 要求修改 / 转人工' },
+        { kind: 'button-secondary', label: '推荐 · 置顶 · 精选 · 下架 · 删除' },
+        { kind: 'button-secondary', label: '查看举报', to: 'B36' },
+      ]},
+    ],
+    annotations: {
+      goal: 'UGC 帖子运营与审核。', entry: '社区-帖子', exit: ['B35', 'B36'], role: '社区审核',
+      data: ['帖子 — 社区服务'], actions: { primary: '审核/运营动作', secondary: ['举报'] },
+      statesDesc: ['帖子列表', '审核帖子'], triggers: [], deps: ['B35', '移动端 S31'], patches: ['后端§6.1'],
     },
-    primary: '进入审核队列',
-    goal: 'UGC 帖子运营与审核入口。',
-  }),
-  listScreen('B33', '评论管理', '后端§6.2', 'I', 'P1', '评论管理', '社区 / 评论', '官方回复/隐藏/删除/审核', {
-    table: {
-      cols: ['评论', '用户', '帖子', '状态', '操作'],
-      items: ['很有用！ ｜ U-02 ｜ P-100 ｜ 正常 ｜ 回复/隐藏'],
+  },
+  {
+    id: 'B33', name: '评论管理', reqCode: '后端§6.2', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'list', label: '评论列表', blocks: [
+        side('评论管理'),
+        { kind: 'topbar', label: '社区 / 评论', sub: '角色：社区审核' },
+        { kind: 'page-header', label: '评论管理' },
+        { kind: 'table', cols: ['评论', '用户', '帖子', '赞', '举报', '状态', '操作'], items: [
+          '很有用！ ｜ U-02 ｜ P-100 ｜ 3 ｜ 0 ｜ 正常 ｜ 回复/隐藏',
+          '广告链接… ｜ U-99 ｜ P-099 ｜ 0 ｜ 2 ｜ 待审 ｜ 审核',
+        ], marker: 1 },
+      ]},
+      { id: 'reply', label: '官方回复', blocks: [
+        side('评论管理'),
+        { kind: 'topbar', label: '社区 / 评论 / 官方回复', sub: '' },
+        { kind: 'page-header', label: '官方回复 · 评论 C-200' },
+        { kind: 'form-row', label: '原评论', sub: '很有用！' },
+        { kind: 'form-row', label: '回复内容', sub: '感谢分享，注意强度哦～' },
+        { kind: 'button-primary', label: '发送官方回复' },
+        { kind: 'button-danger', label: '隐藏 / 删除评论' },
+      ]},
+    ],
+    annotations: {
+      goal: '评论审核与官方回复。', entry: '社区-评论', exit: ['B32'], role: '社区审核',
+      data: ['评论 — 社区服务'], actions: { primary: '回复/审核', secondary: ['隐藏删除'] },
+      statesDesc: ['评论列表', '官方回复'], triggers: [], deps: ['B32'], patches: ['后端§6.2'],
     },
-    goal: '评论审核与官方回复。',
-  }),
-  listScreen('B34', '官方内容', '后端§6.3', 'I', 'P1', '官方内容', '社区 / 官方内容', '专栏/单篇；话题标签；位置置顶推荐', {
-    table: {
-      cols: ['标题', '类型', '位置', '状态', '操作'],
-      items: ['经期训练3误区 ｜ 单篇 ｜ 信息流 ｜ 已发布 ｜ 编辑'],
+  },
+  {
+    id: 'B34', name: '官方内容', reqCode: '后端§6.3', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'list', label: '内容列表', blocks: [
+        side('官方内容'),
+        { kind: 'topbar', label: '社区 / 官方内容', sub: '角色：内容运营' },
+        { kind: 'page-header', label: '官方内容（专栏/单篇）' },
+        { kind: 'table', cols: ['标题', '类型', '位置', '置顶', '推荐', '状态', '操作'], items: [
+          '经期训练3误区 ｜ 单篇 ｜ 信息流 ｜ 否 ｜ 是 ｜ 已发布 ｜ 编辑',
+          '周期知识专栏 ｜ 专栏 ｜ 社区顶部 ｜ 是 ｜ 是 ｜ 已发布 ｜ 编辑',
+        ], marker: 1 },
+        { kind: 'button-primary', label: '+ 发布官方内容' },
+      ]},
+      { id: 'edit', label: '编辑内容', blocks: [
+        side('官方内容'),
+        { kind: 'topbar', label: '社区 / 官方内容 / 编辑', sub: '' },
+        { kind: 'page-header', label: '编辑 · 经期训练3误区' },
+        { kind: 'form-row', label: '标题/正文/图/视频', sub: '已填' },
+        { kind: 'form-row', label: '话题/标签', sub: '经期 · 训练安全' },
+        { kind: 'form-row', label: '发布时间 / 专栏', sub: '立即 ｜ 加入周期知识专栏' },
+        { kind: 'form-row', label: '展示位置 / 置顶 / 推荐', sub: '信息流 ｜ 否 ｜ 是' },
+        { kind: 'button-primary', label: '发布' },
+      ]},
+    ],
+    annotations: {
+      goal: '官方账号内容与专栏。', entry: '社区-官方内容', exit: [], role: '内容运营',
+      data: ['官方内容 — 内容配置'], actions: { primary: '发布/编辑', secondary: [] },
+      statesDesc: ['内容列表', '编辑内容'], triggers: [], deps: ['移动端 S31'], patches: ['后端§6.3'],
     },
-    primary: '+ 发布官方内容',
-    goal: '官方账号内容与专栏。',
-    deps: ['移动端 S31'],
-  }),
-  listScreen('B35', 'UGC 审核', '后端§6.4', 'I', 'P1', 'UGC 审核', '社区 / 审核风控', '机审+人审；通过/拒绝/修改/转人工；处罚', {
-    stats: ['待人审 12', '机审拒绝 4', '今日通过 88'],
-    table: {
-      cols: ['内容', '类型', '机审', '人审', '操作'],
-      items: ['帖子P-100 ｜ 文本+图 ｜ 可疑 ｜ 待审 ｜ 处理'],
+  },
+  {
+    id: 'B35', name: 'UGC 审核', reqCode: '后端§6.4', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'queue', label: '审核队列', blocks: [
+        side('UGC 审核'),
+        { kind: 'topbar', label: '社区 / 审核风控', sub: '角色：社区审核' },
+        { kind: 'page-header', label: 'UGC 审核队列' },
+        { kind: 'stat-row', items: ['待人审 12', '机审拒绝 4', '今日通过 88', '转复核 2'] },
+        { kind: 'table', cols: ['内容', '类型', '机审', '命中规则', '人审', '操作'], items: [
+          '帖子P-100 ｜ 文本+图 ｜ 可疑 ｜ 敏感图 ｜ 待审 ｜ 处理',
+        ], marker: 1 },
+      ]},
+      { id: 'handle', label: '审核处置', blocks: [
+        side('UGC 审核'),
+        { kind: 'topbar', label: '社区 / 审核 / 处置', sub: 'P-100' },
+        { kind: 'page-header', label: '审核处置' },
+        { kind: 'form-row', label: '审核结果', sub: '○通过 ●拒绝 ○要求修改 ○转人工复核' },
+        { kind: 'form-row', label: '用户处置', sub: '○无 ○警告 ○删内容 ○禁言 ○封禁 ○限曝光' },
+        { kind: 'form-row', label: '处罚期限 / 说明', sub: '7 天 ｜ 记录审核人与规则' },
+        { kind: 'button-primary', label: '提交处置（写审计）' },
+      ]},
+    ],
+    annotations: {
+      goal: '机审+人审与用户处罚。', entry: '社区-审核 / B02 待办', exit: ['B32', 'B36'], role: '社区审核',
+      data: ['审核队列 — 审核服务'], actions: { primary: '处置', secondary: ['联动举报 B36'] },
+      statesDesc: ['审核队列', '审核处置'], triggers: ['先发后审/先审后发由 B44 配置'], deps: ['B32', 'B44'], patches: ['后端§6.4'],
     },
-    goal: '内容审核与用户处置。',
-  }),
-  listScreen('B36', '举报与申诉', '后端§6.5', 'I', 'P1', '举报申诉', '社区 / 举报与申诉', '举报处理与申诉审核，联动内容与处罚', {
-    table: {
-      cols: ['类型', '举报人', '被举报', '原因', '状态', '操作'],
-      items: ['举报 ｜ U-a ｜ U-b ｜ 广告 ｜ 待处理 ｜ 处理'],
+  },
+  {
+    id: 'B36', name: '举报与申诉', reqCode: '后端§6.5', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'report', label: '举报列表', blocks: [
+        side('举报申诉'),
+        { kind: 'topbar', label: '社区 / 举报', sub: '' },
+        { kind: 'page-header', label: '举报管理' },
+        { kind: 'tabs', items: ['举报', '申诉'], activeStep: 0, tabStates: ['report', 'appeal'], marker: 1 },
+        { kind: 'table', cols: ['举报人', '被举报', '内容', '原因', '证据', '状态', '操作'], items: [
+          'U-a ｜ U-b ｜ 帖子P-099 ｜ 广告 ｜ 截图 ｜ 待处理 ｜ 处理',
+        ], marker: 2 },
+      ]},
+      { id: 'appeal', label: '申诉列表', blocks: [
+        side('举报申诉'),
+        { kind: 'topbar', label: '社区 / 申诉', sub: '' },
+        { kind: 'page-header', label: '申诉管理' },
+        { kind: 'tabs', items: ['举报', '申诉'], activeStep: 1, tabStates: ['report', 'appeal'], marker: 1 },
+        { kind: 'table', cols: ['用户', '原处罚', '理由', '材料', '结果', '操作'], items: [
+          'U-b ｜ 禁言7天 ｜ 误伤 ｜ 说明.pdf ｜ 待审 ｜ 审核',
+        ], marker: 2 },
+      ]},
+    ],
+    annotations: {
+      goal: '举报与申诉闭环，联动内容与处罚。', entry: '社区-举报申诉', exit: ['B35'], role: '社区审核',
+      data: ['举报/申诉单'], actions: { primary: '处理/审核', secondary: [] },
+      statesDesc: ['举报列表', '申诉列表'], triggers: ['结果联动内容状态与用户处罚'], deps: ['B35'], patches: ['后端§6.5'],
     },
-    goal: '举报与申诉闭环。',
-  }),
-  listScreen('B37', '挑战赛管理', '后端§6.7', 'I', 'P1', '挑战赛', '社区 / 挑战赛', '目标/奖励/用户进度/补录补发/复盘', {
-    table: {
-      cols: ['活动', '时间', '报名', '完成率', '状态', '操作'],
-      items: ['7日连打卡 ｜ 08-01~08-07 ｜ 1,200 ｜ 42% ｜ 进行中 ｜ 管理'],
+  },
+  {
+    id: 'B37', name: '挑战赛管理', reqCode: '后端§6.7', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'list', label: '活动列表', blocks: [
+        side('挑战赛'),
+        { kind: 'topbar', label: '社区 / 挑战赛', sub: '' },
+        { kind: 'page-header', label: '挑战赛管理' },
+        { kind: 'table', cols: ['活动', '时间', '报名', '完成率', '状态', '操作'], items: [
+          '7日连打卡 ｜ 08-01~08-07 ｜ 1,200 ｜ 42% ｜ 进行中 ｜ 管理',
+        ], marker: 1 },
+        { kind: 'button-primary', label: '+ 创建挑战赛' },
+      ]},
+      { id: 'users', label: '活动用户', blocks: [
+        side('挑战赛'),
+        { kind: 'topbar', label: '社区 / 挑战赛 / 用户', sub: '7日连打卡' },
+        { kind: 'page-header', label: '活动用户管理' },
+        { kind: 'table', cols: ['用户', '报名时间', '进度', '完成', '排名', '奖励', '异常', '操作'], items: [
+          'U-01 ｜ 08-01 ｜ 5/7 ｜ 否 ｜ 120 ｜ 未发 ｜ 否 ｜ 补录/补发',
+          'U-02 ｜ 08-01 ｜ 7/7 ｜ 是 ｜ 12 ｜ 已发 ｜ 否 ｜ 查看',
+        ], marker: 1 },
+        { kind: 'button-secondary', label: '补录进度 · 补发奖励 · 取消资格 · 处理申诉' },
+      ]},
+      { id: 'review', label: '活动复盘', blocks: [
+        side('挑战赛'),
+        { kind: 'topbar', label: '社区 / 挑战赛 / 复盘', sub: '' },
+        { kind: 'page-header', label: '活动数据复盘' },
+        { kind: 'stat-row', items: ['曝光 20k', '报名 1.2k', '报名转化 6%', '参与 980', '完成 504', '完成率 42%'] },
+        { kind: 'stat-row', items: ['奖励领取 480', '活动期训练 8.2k 次', '活动后留存 35%', '会员转化 48'] },
+      ]},
+    ],
+    annotations: {
+      goal: '挑战赛配置、用户进度与复盘。', entry: '社区-挑战赛', exit: [], role: '运营',
+      data: ['活动/进度/奖励'], actions: { primary: '创建/管理', secondary: ['补录补发', '复盘'] },
+      statesDesc: ['活动列表', '活动用户', '活动复盘'], triggers: [], deps: ['B30 奖励能量值'], patches: ['后端§6.7'],
     },
-    primary: '+ 创建挑战赛',
-    goal: '社区挑战赛运营。',
-  }),
-  listScreen('B38', '活动投放', '后端§6.7 投放', 'I', 'P1', '活动投放', '社区 / 活动投放', '开屏/Banner 等资源位；曝光点击 CTR', {
-    table: {
-      cols: ['资源位', '素材', '时间', '曝光', 'CTR', '状态'],
-      items: ['首页Banner ｜ 挑战赛 ｜ 08-01~08-10 ｜ 20k ｜ 3.1% ｜ 投放中'],
+  },
+  {
+    id: 'B38', name: '活动投放', reqCode: '后端§6.7 投放', priority: 'P1', flow: 'I',
+    states: [
+      { id: 'list', label: '投放列表', blocks: [
+        side('活动投放'),
+        { kind: 'topbar', label: '社区 / 活动投放', sub: '' },
+        { kind: 'page-header', label: '资源位投放（开屏/Banner）' },
+        { kind: 'table', cols: ['资源位', '素材', '时间', '曝光', '点击', 'CTR', '状态'], items: [
+          '首页Banner ｜ 挑战赛 ｜ 08-01~10 ｜ 20k ｜ 620 ｜ 3.1% ｜ 投放中',
+          '开屏 ｜ 会员 ｜ 08-05~12 ｜ 8k ｜ 400 ｜ 5.0% ｜ 定时',
+        ], marker: 1 },
+        { kind: 'button-primary', label: '+ 新建投放' },
+      ]},
+      { id: 'edit', label: '投放配置', blocks: [
+        side('活动投放'),
+        { kind: 'topbar', label: '社区 / 投放 / 编辑', sub: '' },
+        { kind: 'page-header', label: '投放配置' },
+        { kind: 'form-row', label: '展示位置', sub: '首页Banner / 社区顶部 / 个人中心 / 开屏' },
+        { kind: 'form-row', label: '投放时间', sub: '起止 · 定时上下线' },
+        { kind: 'form-row', label: '素材', sub: '图片/视频 · 跳转链接 · 落地页' },
+        { kind: 'form-row', label: '人群', sub: '全量 / 分群 / 标签' },
+        { kind: 'button-primary', label: '保存并上线' },
+      ]},
+    ],
+    annotations: {
+      goal: '资源位活动投放与数据。', entry: '社区-活动投放', exit: [], role: '运营',
+      data: ['投放配置/曝光点击'], actions: { primary: '新建/编辑投放', secondary: [] },
+      statesDesc: ['投放列表', '投放配置'], triggers: [], deps: ['埋点曝光点击'], patches: ['后端§6.7'],
     },
-    primary: '+ 新建投放',
-    goal: '资源位活动投放与数据。',
-  }),
+  },
   listScreen('B47', '社区数据', '后端§6.6', 'I', 'P1', '社区数据', '社区 / 数据分析', '发帖用户/新增帖/互动/审核通过率/举报率/活跃趋势', {
     stats: ['发帖用户 320', '新增帖 45', '互动 1.2k', '审核通过率 92%', '举报率 0.8%'],
     goal: '社区经营数据。',
   }),
-  listScreen('B39', '商品与库存', '后端§8.1-8.2', 'J', 'P1', '商品库存', '商城 / 商品与库存', '实物/能量值/现金/混合；SKU 与库存操作', {
-    table: {
-      cols: ['商品', '类型', 'SKU', '可用库存', '锁定', '状态'],
-      items: ['品牌水杯 ｜ 能量值+现金 ｜ SKU-1 ｜ 120 ｜ 8 ｜ 上架'],
+  {
+    id: 'B39', name: '商品与库存', reqCode: '后端§8.1-8.2', priority: 'P1', flow: 'J',
+    states: [
+      { id: 'list', label: '商品列表', blocks: [
+        side('商品库存'),
+        { kind: 'topbar', label: '商城 / 商品', sub: '' },
+        { kind: 'page-header', label: '商品与 SKU' },
+        { kind: 'table', cols: ['商品', '类型', 'SKU', '现金价', '能量价', '可用/锁定', '状态'], items: [
+          '品牌水杯 ｜ 能量+现金 ｜ SKU-1 ｜ ¥9.9 ｜ 500 ｜ 120/8 ｜ 上架',
+          '冷感巾 ｜ 能量兑换 ｜ SKU-2 ｜ — ｜ 800 ｜ 50/0 ｜ 上架',
+        ], marker: 1 },
+        { kind: 'button-primary', label: '+ 新建商品' },
+      ]},
+      { id: 'stock', label: '库存操作', blocks: [
+        side('商品库存'),
+        { kind: 'topbar', label: '商城 / 库存', sub: 'SKU-1' },
+        { kind: 'page-header', label: '库存操作 · 品牌水杯' },
+        { kind: 'stat-row', items: ['当前 128', '可用 120', '锁定 8', '预警 20'] },
+        { kind: 'form-row', label: '操作', sub: '入库 / 出库 / 锁定 / 释放 / 人工调整 / 盘点' },
+        { kind: 'form-row', label: '数量 / 原因', sub: '10 ｜ 补货' },
+        { kind: 'table', cols: ['时间', '类型', '数量', '操作人', '余额'], items: [
+          '08-06 ｜ 入库 ｜ +20 ｜ ops ｜ 128',
+          '08-05 ｜ 锁定 ｜ -2 ｜ 系统下单 ｜ 108',
+        ], marker: 1 },
+        { kind: 'button-primary', label: '提交（幂等）' },
+      ]},
+    ],
+    annotations: {
+      goal: '商品 SKU 与库存。', entry: '商城-商品库存', exit: ['B40'], role: '电商运营',
+      data: ['商品/SKU/库存流水'], actions: { primary: '建品/库存操作', secondary: [] },
+      statesDesc: ['商品列表', '库存操作'], triggers: ['下单锁定库存'], deps: ['B40'], patches: ['后端§8'],
     },
-    primary: '+ 新建商品',
-    goal: '商城商品与库存管理。',
-  }),
-  listScreen('B40', '商城订单与发货', '后端§8.3-8.4', 'J', 'P1', '商城订单', '商城 / 订单发货', '待支付→完成状态机；批量发货与物流', {
-    stats: ['待发货 8', '已发货 40', '售后中 2'],
-    table: {
-      cols: ['订单', '用户', '商品', '实付', '状态', '操作'],
-      items: ['M-2001 ｜ U-01 ｜ 水杯 ｜ ¥9.9 ｜ 待发货 ｜ 发货'],
+  },
+  {
+    id: 'B40', name: '商城订单与发货', reqCode: '后端§8.3-8.4', priority: 'P1', flow: 'J',
+    states: [
+      { id: 'list', label: '订单列表', blocks: [
+        side('商城订单'),
+        { kind: 'topbar', label: '商城 / 订单', sub: '' },
+        { kind: 'page-header', label: '商城订单' },
+        { kind: 'stat-row', items: ['待支付 3', '待发货 8', '已发货 40', '售后中 2', '已完成 120'] },
+        { kind: 'table', cols: ['订单', '用户', '商品', '能量抵扣', '实付', '状态', '操作'], items: [
+          'M-2001 ｜ U-01 ｜ 水杯×1 ｜ 500 ｜ ¥9.9 ｜ 待发货 ｜ 发货',
+          'M-2000 ｜ U-02 ｜ 冷感巾 ｜ 800 ｜ ¥0 ｜ 已发货 ｜ 物流',
+        ], marker: 1 },
+        { kind: 'button-primary', label: '批量发货' },
+      ]},
+      { id: 'ship', label: '发货', blocks: [
+        side('商城订单'),
+        { kind: 'topbar', label: '商城 / 发货', sub: 'M-2001' },
+        { kind: 'page-header', label: '发货 · M-2001' },
+        { kind: 'form-row', label: '收件人/手机/地址', sub: '小圆 ｜ 138****0000 ｜ 上海市…' },
+        { kind: 'form-row', label: '物流公司 / 单号', sub: '顺丰 ｜ SF123…' },
+        { kind: 'button-primary', label: '确认发货' },
+        { kind: 'button-secondary', label: '导入物流单号 · 查轨迹 · 失败处理' },
+      ]},
+    ],
+    annotations: {
+      goal: '商城订单与物流履约。', entry: '商城-订单 / B02 待发货', exit: ['B39', 'B41'], role: '电商运营',
+      data: ['商城订单/物流'], actions: { primary: '发货/批量发货', secondary: ['轨迹查询'] },
+      statesDesc: ['订单列表', '发货'], triggers: [], deps: ['B39', 'B41'], patches: ['后端§8'],
     },
-    primary: '批量发货',
-    goal: '商城订单与物流履约。',
-  }),
+  },
   listScreen('B41', '售后管理', '后端§8.5', 'J', 'P1', '售后管理', '商城 / 售后', '类型与流程待产品补全；占位列表', {
-    alerts: '原目录售后信息不全：需补退货/换货/仅退款等类型与状态机后再细化。',
+    alerts: '原目录售后信息不全：需补退货/换货/仅退款等类型与状态机后再细化（P2）。',
     table: {
       cols: ['售后单', '订单', '类型', '状态', '操作'],
       items: ['AS-01 ｜ M-1990 ｜ 待定 ｜ 待处理 ｜ 查看'],
