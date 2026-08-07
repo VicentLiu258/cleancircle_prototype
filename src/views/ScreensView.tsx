@@ -95,7 +95,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
           </div>
         ))}
         <p className="px-3 pt-2 text-[10px] leading-relaxed text-gray-400">
-          编号沿用《管理后台 MVP 需求文档》§4 页面清单；全部 P0 页面已覆盖（P1：B02/B17/B22/B24/B25 为后续批次）。
+          对齐《后端需求》全量 B 系列；页内 Tab 已补齐对应状态，可直接点击切换。
         </p>
       </aside>
 
@@ -127,9 +127,16 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
           </div>
         )}
         <div className="mt-4 w-full max-w-[920px] px-4">
-          <AdminFrame screen={screen} stateId={curState.id} onNavigate={selectScreen} />
+          <AdminFrame
+            screen={screen}
+            stateId={curState.id}
+            onNavigate={selectScreen}
+            onSwitchState={setStateId}
+          />
         </div>
-        <p className="mt-3 text-[11px] text-gray-400">带 → 的按钮/表格行可点击跳转 · 左侧菜单高亮项可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切换到移动端 App</p>
+        <p className="mt-3 text-[11px] text-gray-400">
+          页内 Tab 可点击切换对应状态 · 带跳转的按钮/表格行可点 · 左侧菜单可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切到移动端
+        </p>
       </main>
 
       {/* 右栏：标注面板 */}

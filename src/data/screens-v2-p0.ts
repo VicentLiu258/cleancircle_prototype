@@ -197,37 +197,66 @@ export const screensV2P0: ScreenDef[] = [
     reqCode: '后端§1.3',
     priority: 'P0',
     flow: 'E',
-    states: [
-      {
-        id: 'default',
-        label: '趋势三 Tab',
-        blocks: [
-          side('业务趋势'),
-          { kind: 'topbar', label: '工作台 / 业务趋势', sub: '角色：运营 / 财务' },
-          { kind: 'page-header', label: '业务趋势分析', sub: '日/周粒度折线（示意）' },
-          { kind: 'tabs', items: ['用户趋势', '训练趋势', '收入趋势'], activeStep: 0, marker: 1 },
-          {
-            kind: 'panel',
-            label: '折线图占位：新增 / 活跃 / 留存 / 流失',
-            sub: '切换 Tab：训练人数·次数·完成率·打卡·连胜 ｜ 订阅人数·订阅收入·续费收入·退款金额',
-            height: 160,
-            marker: 2,
-          },
-          { kind: 'button-secondary', label: '导出 CSV' },
-        ],
-      },
-    ],
+    states: (() => {
+      const tabs = ['用户趋势', '训练趋势', '收入趋势'];
+      const tabStates = ['user', 'train', 'revenue'];
+      const tabBar = (i: number): WireBlock => ({ kind: 'tabs', items: tabs, activeStep: i, tabStates, marker: 1 });
+      return [
+        {
+          id: 'user',
+          label: '用户趋势',
+          blocks: [
+            side('业务趋势'),
+            { kind: 'topbar', label: '工作台 / 业务趋势', sub: '角色：运营' },
+            { kind: 'page-header', label: '业务趋势 · 用户', sub: '日/周粒度' },
+            tabBar(0),
+            { kind: 'filter-bar', label: '粒度：日 ｜ 范围：近 30 天' },
+            { kind: 'panel', label: '折线图：新增用户 / 活跃 / 留存 / 流失', sub: '四条曲线示意', height: 160, marker: 2 },
+            { kind: 'stat-row', items: ['新增 3.8k', '日活均 3.2k', 'D7 留存 28%', '流失 4.1%'] },
+            { kind: 'button-secondary', label: '导出 CSV' },
+          ],
+        },
+        {
+          id: 'train',
+          label: '训练趋势',
+          blocks: [
+            side('业务趋势'),
+            { kind: 'topbar', label: '工作台 / 业务趋势', sub: '角色：运营' },
+            { kind: 'page-header', label: '业务趋势 · 训练', sub: '日/周粒度' },
+            tabBar(1),
+            { kind: 'filter-bar', label: '粒度：日 ｜ 范围：近 30 天' },
+            { kind: 'panel', label: '折线图：训练人数 / 次数 / 完成率 / 打卡人数 / 连续打卡', height: 160, marker: 2 },
+            { kind: 'stat-row', items: ['训练人数 1.8k', '次数 2.4k', '完成率 91%', '打卡 1.5k', '连7天 210'] },
+            { kind: 'button-secondary', label: '导出 CSV' },
+          ],
+        },
+        {
+          id: 'revenue',
+          label: '收入趋势',
+          blocks: [
+            side('业务趋势'),
+            { kind: 'topbar', label: '工作台 / 业务趋势', sub: '角色：财务' },
+            { kind: 'page-header', label: '业务趋势 · 收入', sub: '日/周粒度' },
+            tabBar(2),
+            { kind: 'filter-bar', label: '粒度：日 ｜ 范围：近 30 天' },
+            { kind: 'panel', label: '折线图：订阅人数 / 订阅收入 / 续费收入 / 退款金额', height: 160, marker: 2 },
+            { kind: 'stat-row', items: ['订阅人数 63/日', '订阅收入 ¥6.2k', '续费 ¥3.1k', '退款 ¥198'] },
+            { kind: 'button-secondary', label: '导出 CSV' },
+          ],
+        },
+      ];
+    })(),
     annotations: {
       goal: '观察用户、训练、收入变化趋势。',
       entry: '工作台-业务趋势',
       exit: ['B02'],
       role: '运营 / 财务',
       data: ['时序指标 — 统计服务'],
-      actions: { primary: '切换指标组与时间粒度', secondary: ['导出'] },
-      statesDesc: ['用户/训练/收入 Tab'],
+      actions: { primary: '点击 Tab 切换指标组', secondary: ['导出'] },
+      statesDesc: ['用户趋势', '训练趋势', '收入趋势'],
       triggers: [],
       deps: ['B02'],
-      patches: ['后端需求§1.3'],
+      patches: ['后端需求§1.3', '三Tab补全'],
     },
   },
 
@@ -238,48 +267,128 @@ export const screensV2P0: ScreenDef[] = [
     reqCode: '后端§2.3',
     priority: 'P0',
     flow: 'F',
-    states: [
-      {
-        id: 'tags',
-        label: '标签库',
-        blocks: [
-          side('用户标签'),
-          { kind: 'topbar', label: '用户与 CRM / 标签与分群', sub: '角色：CRM 运营' },
-          { kind: 'page-header', label: '用户标签', sub: '系统 / 会员 / 周期 / 自定义（后端§2.3）' },
-          { kind: 'tabs', items: ['系统标签', '会员标签', '周期标签', '自定义标签', '用户分群'], activeStep: 3, marker: 1 },
-          {
-            kind: 'table',
-            cols: ['标签名', '分类', '覆盖人数', '来源', '更新', '操作'],
-            items: [
-              '连续打卡 ｜ 系统 ｜ 2,104 ｜ 规则日更 ｜ 今日 ｜ 查看规则',
-              '即将到期会员 ｜ 会员 ｜ 318 ｜ 权益同步 ｜ 实时 ｜ 查看用户',
-              '黄体期 ｜ 周期 ｜ 1,560 ｜ 周期算法 ｜ 实时 ｜ 查看用户',
-              '大基数 ｜ 自定义 ｜ 890 ｜ 人工/问卷映射 ｜ 03-02 ｜ 编辑/打标',
-            ],
-            marker: 2,
-          },
-          { kind: 'button-primary', label: '+ 新建自定义标签' },
-          { kind: 'button-secondary', label: '批量打标' },
-        ],
-      },
-      {
-        id: 'segment',
-        label: '用户分群',
-        blocks: [
-          side('用户标签'),
-          { kind: 'topbar', label: '用户与 CRM / 分群', sub: '角色：CRM 运营' },
-          { kind: 'page-header', label: '用户分群', sub: '条件组合 → 预估人数 → 用于触达 B28' },
-          {
-            kind: 'form-row',
-            label: '分群条件',
-            sub: '会员=即将到期 AND 标签含训练中断 AND 近7日未打开',
-            marker: 1,
-          },
-          { kind: 'stat-row', items: ['预估人数 426', '可触达（允许通知） 391'] },
-          { kind: 'button-primary', label: '保存分群并创建触达任务', to: 'B28' },
-        ],
-      },
-    ],
+    states: (() => {
+      const tabs = ['系统标签', '会员标签', '周期标签', '自定义标签', '用户分群'];
+      const tabStates = ['sys', 'member', 'cycle', 'custom', 'segment'];
+      const tabBar = (i: number): WireBlock => ({ kind: 'tabs', items: tabs, activeStep: i, tabStates, marker: 1 });
+      return [
+        {
+          id: 'sys',
+          label: '系统标签',
+          blocks: [
+            side('用户标签'),
+            { kind: 'topbar', label: '用户与 CRM / 标签与分群', sub: '角色：CRM 运营' },
+            { kind: 'page-header', label: '系统标签', sub: '行为自动生成 · 规则/频率/有效期/互斥只读' },
+            tabBar(0),
+            {
+              kind: 'table',
+              cols: ['标签', '规则摘要', '计算频率', '覆盖', '互斥', '操作'],
+              items: [
+                '连续打卡 ｜ 连胜≥3 ｜ 日更 ｜ 2,104 ｜ 与「打卡中断」互斥 ｜ 查看规则',
+                '训练中断 ｜ 连续2天无打卡 ｜ 日更 ｜ 890 ｜ — ｜ 查看规则',
+                '高活跃 ｜ 近7日活跃≥5 ｜ 日更 ｜ 3,200 ｜ 与低活跃互斥 ｜ 查看规则',
+                '低活跃 ｜ 近14日活跃≤1 ｜ 日更 ｜ 1,100 ｜ — ｜ 查看规则',
+                '已流失 ｜ 连续30日无打开 ｜ 日更 ｜ 420 ｜ — ｜ 查看用户',
+                '召回用户 ｜ 流失后再次打开 ｜ 实时 ｜ 86 ｜ — ｜ 查看用户',
+              ],
+              marker: 2,
+            },
+            { kind: 'alert', tone: 'info', label: '系统标签不可手改名称；变更记来源与历史' },
+          ],
+        },
+        {
+          id: 'member',
+          label: '会员标签',
+          blocks: [
+            side('用户标签'),
+            { kind: 'topbar', label: '用户与 CRM / 标签与分群', sub: '角色：CRM 运营' },
+            { kind: 'page-header', label: '会员标签', sub: '由权益/订阅状态同步' },
+            tabBar(1),
+            {
+              kind: 'table',
+              cols: ['标签', '覆盖', '同步来源', '操作'],
+              items: [
+                '非会员 ｜ 12,400 ｜ 无有效订阅 ｜ 查看用户',
+                '月度会员 ｜ 6,210 ｜ 套餐类型=月 ｜ 查看用户',
+                '季度会员 ｜ 820 ｜ 套餐类型=季 ｜ 查看用户',
+                '年度会员 ｜ 0 ｜ 套餐类型=年 ｜ —',
+                '新订阅 ｜ 210 ｜ 首次订阅≤7天 ｜ 查看用户',
+                '即将到期 ｜ 318 ｜ 到期≤7天 ｜ 查看用户',
+                '自动续费 ｜ 5,100 ｜ 续费开 ｜ 查看用户',
+                '未续费 / 已退款 / 流失会员 ｜ … ｜ 权益状态 ｜ 查看用户',
+              ],
+              marker: 2,
+            },
+          ],
+        },
+        {
+          id: 'cycle',
+          label: '周期标签',
+          blocks: [
+            side('用户标签'),
+            { kind: 'topbar', label: '用户与 CRM / 标签与分群', sub: '角色：CRM / 健康运营' },
+            { kind: 'page-header', label: '周期标签', sub: '月经期 / 卵泡期 / 排卵期 / 黄体期 · 算法同步' },
+            tabBar(2),
+            {
+              kind: 'table',
+              cols: ['阶段', '覆盖人数', '更新', '操作'],
+              items: [
+                '月经期 ｜ 980 ｜ 实时 ｜ 查看用户',
+                '卵泡期 ｜ 2,410 ｜ 实时 ｜ 查看用户',
+                '排卵期 ｜ 1,020 ｜ 实时 ｜ 查看用户',
+                '黄体期 ｜ 1,560 ｜ 实时 ｜ 查看用户',
+              ],
+              marker: 2,
+            },
+            { kind: 'alert', tone: 'info', label: '敏感：列表导出默认不带周期明细（H-08）' },
+          ],
+        },
+        {
+          id: 'custom',
+          label: '自定义标签',
+          blocks: [
+            side('用户标签'),
+            { kind: 'topbar', label: '用户与 CRM / 标签与分群', sub: '角色：CRM 运营' },
+            { kind: 'page-header', label: '自定义标签', sub: '运营自建 · 可分类 · 可批量打标' },
+            tabBar(3),
+            {
+              kind: 'table',
+              cols: ['标签', '分类', '覆盖', '来源', '更新', '操作'],
+              items: [
+                '大基数 ｜ 训练画像 ｜ 890 ｜ 问卷映射/人工 ｜ 03-02 ｜ 编辑/打标',
+                '多囊友好 ｜ 健康 ｜ 120 ｜ 人工 ｜ 07-01 ｜ 编辑',
+                'KOL种子 ｜ 运营 ｜ 45 ｜ 批量导入 ｜ 06-20 ｜ 编辑',
+              ],
+              marker: 2,
+            },
+            { kind: 'button-primary', label: '+ 新建自定义标签' },
+            { kind: 'button-secondary', label: '批量打标' },
+          ],
+        },
+        {
+          id: 'segment',
+          label: '用户分群',
+          blocks: [
+            side('用户标签'),
+            { kind: 'topbar', label: '用户与 CRM / 分群', sub: '角色：CRM 运营' },
+            { kind: 'page-header', label: '用户分群', sub: '条件组合 → 预估人数 → 触达 B28' },
+            tabBar(4),
+            {
+              kind: 'table',
+              cols: ['分群名', '条件摘要', '预估人数', '更新', '操作'],
+              items: [
+                '到期召回 ｜ 即将到期 AND 训练中断 ｜ 426 ｜ 今日 ｜ 编辑/触达',
+                '高价值沉默 ｜ 年卡 AND 低活跃 ｜ 88 ｜ 昨日 ｜ 编辑/触达',
+              ],
+              marker: 2,
+            },
+            { kind: 'form-row', label: '新建条件示例', sub: '会员=即将到期 AND 标签含训练中断 AND 近7日未打开' },
+            { kind: 'stat-row', items: ['预估 426', '可触达（允许通知） 391'] },
+            { kind: 'button-primary', label: '保存分群并创建触达任务', to: 'B28' },
+          ],
+        },
+      ];
+    })(),
     annotations: {
       goal: '管理用户标签与分群，支撑触达与运营分层。',
       entry: '用户与 CRM-标签与分群',
@@ -287,13 +396,13 @@ export const screensV2P0: ScreenDef[] = [
       role: 'CRM 运营',
       data: ['四类标签 — 规则引擎/权益/周期/运营配置', '分群定义 — CRM'],
       actions: {
-        primary: '新建自定义标签 / 保存分群',
-        secondary: ['批量打标', '查看覆盖用户', '查看系统标签规则'],
+        primary: '点击 Tab 切换标签类型；新建自定义/分群',
+        secondary: ['批量打标', '查看覆盖用户', '创建触达'],
       },
-      statesDesc: ['标签库', '用户分群', '规则说明只读'],
+      statesDesc: ['系统标签', '会员标签', '周期标签', '自定义标签', '用户分群'],
       triggers: ['标签变更记来源与历史'],
       deps: ['B18', 'B28', 'B09 答案标签映射'],
-      patches: ['后端需求§2.3'],
+      patches: ['后端需求§2.3', '五Tab补全'],
     },
   },
   {
@@ -511,43 +620,115 @@ export const screensV2P0: ScreenDef[] = [
     reqCode: '后端§7.6',
     priority: 'P0',
     flow: 'F',
-    states: [
-      {
-        id: 'default',
-        label: '对账总览',
-        blocks: [
-          side('财务对账'),
-          { kind: 'topbar', label: '会员与财务 / 对账', sub: '角色：财务' },
-          { kind: 'page-header', label: '财务流水与对账', sub: '金额最小货币单位存储；明确币种/时区/结算周期' },
-          { kind: 'tabs', items: ['微信流水', '支付宝流水', 'Apple 流水', '差异单'], activeStep: 0, marker: 1 },
-          {
-            kind: 'stat-row',
-            items: ['订阅收入 ¥182k', '续费收入 ¥96k', '退款 ¥3.2k', '实际收入 ¥274.8k', 'ARPU ¥42', 'LTV ¥186'],
-          },
-          {
-            kind: 'table',
-            cols: ['日期', '系统订单', '渠道支付', '系统退款', '渠道退款', '手续费', '差异', '原因'],
-            items: [
-              '08-01 ｜ 12,300 ｜ 12,300 ｜ 198 ｜ 198 ｜ 62 ｜ 0 ｜ —',
-              '08-02 ｜ 9,800 ｜ 9,701 ｜ 0 ｜ 0 ｜ 49 ｜ -99 ｜ 回调延迟',
-            ],
-            marker: 2,
-          },
-          { kind: 'button-secondary', label: '生成对账单' },
-        ],
-      },
-    ],
+    states: (() => {
+      const tabs = ['微信流水', '支付宝流水', 'Apple 流水', '差异单'];
+      const tabStates = ['wx', 'ali', 'apple', 'diff'];
+      const tabBar = (i: number): WireBlock => ({ kind: 'tabs', items: tabs, activeStep: i, tabStates, marker: 1 });
+      const kpis: WireBlock = {
+        kind: 'stat-row',
+        items: ['订阅收入 ¥182k', '续费收入 ¥96k', '退款 ¥3.2k', '实际收入 ¥274.8k', 'ARPU ¥42', 'LTV ¥186'],
+      };
+      return [
+        {
+          id: 'wx',
+          label: '微信流水',
+          blocks: [
+            side('财务对账'),
+            { kind: 'topbar', label: '会员与财务 / 对账', sub: '角色：财务 · CNY · 业务时区 UTC+8' },
+            { kind: 'page-header', label: '财务流水 · 微信', sub: '最小货币单位存储' },
+            tabBar(0),
+            kpis,
+            {
+              kind: 'table',
+              cols: ['日期', '系统订单', '渠道支付', '系统退款', '渠道退款', '手续费', '差异'],
+              items: [
+                '08-01 ｜ 8,200 ｜ 8,200 ｜ 99 ｜ 99 ｜ 41 ｜ 0',
+                '08-02 ｜ 6,100 ｜ 6,100 ｜ 0 ｜ 0 ｜ 30 ｜ 0',
+              ],
+              marker: 2,
+            },
+            { kind: 'button-secondary', label: '生成对账单' },
+          ],
+        },
+        {
+          id: 'ali',
+          label: '支付宝流水',
+          blocks: [
+            side('财务对账'),
+            { kind: 'topbar', label: '会员与财务 / 对账', sub: '角色：财务' },
+            { kind: 'page-header', label: '财务流水 · 支付宝' },
+            tabBar(1),
+            kpis,
+            {
+              kind: 'table',
+              cols: ['日期', '系统订单', '渠道支付', '系统退款', '渠道退款', '手续费', '差异'],
+              items: [
+                '08-01 ｜ 2,100 ｜ 2,100 ｜ 0 ｜ 0 ｜ 12 ｜ 0',
+                '08-02 ｜ 1,800 ｜ 1,800 ｜ 99 ｜ 99 ｜ 10 ｜ 0',
+              ],
+              marker: 2,
+            },
+            { kind: 'button-secondary', label: '生成对账单' },
+          ],
+        },
+        {
+          id: 'apple',
+          label: 'Apple 流水',
+          blocks: [
+            side('财务对账'),
+            { kind: 'topbar', label: '会员与财务 / 对账', sub: '角色：财务' },
+            { kind: 'page-header', label: '财务流水 · Apple IAP', sub: '含 App 外退款通知入账' },
+            tabBar(2),
+            kpis,
+            {
+              kind: 'table',
+              cols: ['日期', '系统订单', '渠道支付', '系统退款', '渠道退款', '手续费', '差异'],
+              items: [
+                '08-01 ｜ 2,000 ｜ 2,000 ｜ 99 ｜ 99 ｜ 300 ｜ 0',
+                '08-02 ｜ 1,900 ｜ 1,801 ｜ 0 ｜ 0 ｜ 285 ｜ -99',
+              ],
+              marker: 2,
+            },
+            { kind: 'alert', tone: 'warn', label: '08-02 差异 -99：回调延迟，见「差异单」Tab', marker: 3 },
+            { kind: 'button-secondary', label: '生成对账单' },
+          ],
+        },
+        {
+          id: 'diff',
+          label: '差异单',
+          blocks: [
+            side('财务对账'),
+            { kind: 'topbar', label: '会员与财务 / 对账 / 差异', sub: '角色：财务' },
+            { kind: 'page-header', label: '对账差异处理' },
+            tabBar(3),
+            {
+              kind: 'table',
+              cols: ['日期', '渠道', '系统', '渠道额', '差额', '原因', '状态', '操作'],
+              items: [
+                '08-02 ｜ Apple ｜ 1,900 ｜ 1,801 ｜ -99 ｜ 回调延迟 ｜ 待确认 ｜ 标记/关联订单',
+                '07-28 ｜ 微信 ｜ 99 ｜ 0 ｜ -99 ｜ 用户取消未回调 ｜ 已关闭 ｜ 查看',
+              ],
+              marker: 2,
+            },
+            { kind: 'form-row', label: '登记原因', sub: '回调延迟 / 手续费口径 / 退款时差 / 其他…' },
+            { kind: 'button-primary', label: '保存差异处理（写审计）' },
+            { kind: 'button-secondary', label: '跳转订单', to: 'B21' },
+            { kind: 'button-secondary', label: '跳转退款', to: 'B24' },
+          ],
+        },
+      ];
+    })(),
     annotations: {
       goal: '三渠道流水对账与财务指标。',
       entry: '会员与财务-对账',
       exit: ['B21', 'B24'],
       role: '财务',
       data: ['渠道账单 / 系统订单退款'],
-      actions: { primary: '生成对账单', secondary: ['标记差异原因', '导出'] },
-      statesDesc: ['对账总览', '差异处理'],
+      actions: { primary: '切换渠道 Tab；生成对账单；处理差异', secondary: ['导出', '关联订单/退款'] },
+      statesDesc: ['微信流水', '支付宝流水', 'Apple 流水', '差异单'],
       triggers: [],
       deps: ['B21', 'B24'],
-      patches: ['后端需求§7.6'],
+      patches: ['后端需求§7.6', '四Tab补全'],
     },
   },
 

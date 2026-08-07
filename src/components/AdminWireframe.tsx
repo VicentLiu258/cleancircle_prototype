@@ -104,9 +104,10 @@ function PatchBadge() {
 interface BlockProps {
   block: WireBlock;
   onNavigate: (id: string) => void;
+  onSwitchState?: (stateId: string) => void;
 }
 
-export function BlockView({ block: b, onNavigate }: BlockProps) {
+export function BlockView({ block: b, onNavigate, onSwitchState }: BlockProps) {
   const clickable = !!b.to;
   const patchCls = b.patch ? 'border border-dashed border-amber-400' : '';
   const clickCls = clickable ? 'cursor-pointer hover:ring-2 hover:ring-gray-400 transition' : '';
@@ -190,19 +191,34 @@ export function BlockView({ block: b, onNavigate }: BlockProps) {
       );
     case 'tabs':
       return wrap(
-        <div className={`mx-3 my-1 flex gap-0 border-b border-gray-300 ${patchCls}`}>
-          {(b.items ?? []).map((t, i) => (
-            <span
-              key={i}
-              className={`px-2.5 py-1.5 text-[10.5px] ${
-                i === (b.activeStep ?? 0)
-                  ? 'border-b-2 border-gray-700 font-bold text-gray-800'
-                  : 'text-gray-400'
-              }`}
-            >
-              {t}
-            </span>
-          ))}
+        <div className={`mx-3 my-1 flex flex-wrap gap-0 border-b border-gray-300 ${patchCls}`}>
+          {(b.items ?? []).map((t, i) => {
+            const stateId = b.tabStates?.[i];
+            const active = i === (b.activeStep ?? 0);
+            const canSwitch = !!(stateId && onSwitchState);
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={!canSwitch}
+                onClick={(e) => {
+                  if (!canSwitch) return;
+                  e.stopPropagation();
+                  onSwitchState!(stateId!);
+                }}
+                className={`px-2.5 py-1.5 text-[10.5px] ${
+                  active
+                    ? 'border-b-2 border-gray-700 font-bold text-gray-800'
+                    : canSwitch
+                      ? 'cursor-pointer text-gray-400 hover:text-gray-700'
+                      : 'text-gray-400'
+                }`}
+                title={canSwitch ? `切换到「${t}」` : undefined}
+              >
+                {t}
+              </button>
+            );
+          })}
         </div>,
       );
     case 'steps':
@@ -412,10 +428,12 @@ export function AdminFrame({
   screen,
   stateId,
   onNavigate,
+  onSwitchState,
 }: {
   screen: ScreenDef;
   stateId: string;
   onNavigate: (id: string) => void;
+  onSwitchState?: (stateId: string) => void;
 }) {
   const state = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
   const blocks = state.blocks;
@@ -426,15 +444,15 @@ export function AdminFrame({
   return (
     <div className="flex w-full max-w-[900px] flex-col overflow-hidden rounded-xl border-2 border-gray-700 bg-white shadow-xl" style={{ height: 640 }}>
       {chromeBlock ? (
-        <BlockView block={chromeBlock} onNavigate={onNavigate} />
+        <BlockView block={chromeBlock} onNavigate={onNavigate} onSwitchState={onSwitchState} />
       ) : (
-        <BlockView block={{ kind: 'chrome', label: `admin.cleancircle.cn/${screen.id.toLowerCase()}` }} onNavigate={onNavigate} />
+        <BlockView block={{ kind: 'chrome', label: `admin.cleancircle.cn/${screen.id.toLowerCase()}` }} onNavigate={onNavigate} onSwitchState={onSwitchState} />
       )}
       <div className="flex min-h-0 flex-1">
         {sidebarBlock && <Sidebar active={sidebarBlock.label ?? ''} screenId={screen.id} onNavigate={onNavigate} />}
         <div className="min-w-0 flex-1 overflow-y-auto py-1">
           {content.map((b, i) => (
-            <BlockView key={i} block={b} onNavigate={onNavigate} />
+            <BlockView key={i} block={b} onNavigate={onNavigate} onSwitchState={onSwitchState} />
           ))}
         </div>
       </div>

@@ -30,6 +30,8 @@ export interface WireBlock {
   right?: string[];      // split 右列行
   tone?: 'info' | 'warn' | 'error' | 'ok';
   activeStep?: number;   // steps/tabs 当前高亮序号（0 起）
+  /** tabs 专用：与 items 等长，点击第 i 个 Tab 切换到该 stateId（同屏内） */
+  tabStates?: string[];
   marker?: number;       // 标注序号 ①②③，与标注面板对应
   patch?: boolean;       // true = 产品补全元素，amber 虚线框 + 「补」角标
   to?: string;           // 点击跳转的屏幕ID
