@@ -6,45 +6,82 @@ const crossBg: React.CSSProperties = {
     'linear-gradient(to top right, transparent calc(50% - 1px), #d1d5db calc(50% - 1px), #d1d5db calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom right, transparent calc(50% - 1px), #d1d5db calc(50% - 1px), #d1d5db calc(50% + 1px), transparent calc(50% + 1px))',
 };
 
-// 后台一级/二级菜单（需求文档 §3），covered = 本批已建线框，可点击跳转
+// 后台 IA：对齐《后端需求.docx》（冲突以后端为准，2026-08-07）
 const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
-  { group: '工作台', items: [{ label: '工作台（P1·后续）' }] },
+  { group: '工作台', items: [
+    { label: '运营总览', sid: 'B02' },
+    { label: '转化漏斗', sid: 'B48' },
+    { label: '业务趋势', sid: 'B49' },
+  ]},
+  { group: '用户与 CRM', items: [
+    { label: '用户列表', sid: 'B18' },
+    { label: '用户详情', sid: 'B19' },
+    { label: '标签与分群', sid: 'B17' },
+    { label: '老用户迁移', sid: 'B20' },
+  ]},
+  { group: '消息与触达', items: [
+    { label: '消息模板', sid: 'B15' },
+    { label: '触发器', sid: 'B16' },
+    { label: '触达任务与效果', sid: 'B28' },
+  ]},
+  { group: '问卷评测', items: [
+    { label: '问卷与版本', sid: 'B08' },
+    { label: '问卷编辑器', sid: 'B09' },
+    { label: '评测结果话术', sid: 'B10' },
+  ]},
   { group: '内容中心', items: [
     { label: '视频库', sid: 'B03' },
+    { label: '视频编辑', sid: 'B04' },
     { label: '批量导入', sid: 'B05' },
     { label: '标签库', sid: 'B06' },
     { label: 'AI 打标复核', sid: 'B07' },
-    { label: '知识库（后续）' },
+    { label: '课程组合', sid: 'B31' },
   ]},
-  { group: '评测与排课', items: [
-    { label: '问卷', sid: 'B08' },
-    { label: '评分规则', sid: 'B10' },
-    { label: '报告话术', sid: 'B10' },
+  { group: '排课与建议', items: [
     { label: '排课规则', sid: 'B11' },
-    { label: '模拟测试', sid: 'B13' },
-    { label: '版本记录', sid: 'B08' },
+    { label: '规则编辑', sid: 'B12' },
+    { label: '模拟测试(30天)', sid: 'B13' },
+    { label: '阶段建议', sid: 'B14' },
   ]},
-  { group: '周期建议', items: [{ label: '阶段建议', sid: 'B14' }] },
-  { group: '消息中心', items: [
-    { label: '消息模板', sid: 'B15' },
-    { label: '触发器', sid: 'B16' },
-    { label: '发送记录（后续）' },
+  { group: '训练与能量值', items: [
+    { label: '打卡数据', sid: 'B29' },
+    { label: '能量值规则', sid: 'B30' },
+    { label: '能量值调整', sid: 'B23' },
   ]},
-  { group: '用户中心', items: [
-    { label: '用户列表', sid: 'B18' },
-    { label: '用户详情', sid: 'B19' },
-    { label: '迁移任务', sid: 'B20' },
-    { label: '积分调整', sid: 'B23' },
-  ]},
-  { group: '订阅与财务', items: [
+  { group: '会员与财务', items: [
+    { label: '会员套餐', sid: 'B22' },
     { label: '订阅/订单', sid: 'B21' },
-    { label: '看板（后续）' },
-  ] },
-  { group: '商城（P1）', items: [{ label: '商品/库存（后续）' }] },
-  { group: '社区与活动（P1）', items: [{ label: '挑战赛/UGC（后续）' }] },
+    { label: '退款管理', sid: 'B24' },
+    { label: '财务对账', sid: 'B25' },
+  ]},
+  { group: '社区与活动', items: [
+    { label: '帖子管理', sid: 'B32' },
+    { label: '评论管理', sid: 'B33' },
+    { label: '官方内容', sid: 'B34' },
+    { label: 'UGC 审核', sid: 'B35' },
+    { label: '举报与申诉', sid: 'B36' },
+    { label: '挑战赛', sid: 'B37' },
+    { label: '活动投放', sid: 'B38' },
+    { label: '社区数据', sid: 'B47' },
+  ]},
+  { group: '商城与履约', items: [
+    { label: '商品与库存', sid: 'B39' },
+    { label: '订单与发货', sid: 'B40' },
+    { label: '售后（待补流程）', sid: 'B41' },
+  ]},
+  { group: '客服', items: [
+    { label: '企微配置', sid: 'B42' },
+  ]},
+  { group: '基础运营配置', items: [
+    { label: 'App 版本', sid: 'B43' },
+    { label: '功能开关', sid: 'B44' },
+    { label: '公告与弹窗', sid: 'B45' },
+    { label: '第三方服务', sid: 'B46' },
+  ]},
   { group: '系统管理', items: [
     { label: '角色权限', sid: 'B26' },
     { label: '审计日志', sid: 'B27' },
+    { label: '后台登录', sid: 'B01' },
   ]},
 ];
 

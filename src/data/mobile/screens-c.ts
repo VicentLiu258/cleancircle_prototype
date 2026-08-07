@@ -144,7 +144,7 @@ export const screensC: ScreenDef[] = [
       ]},
     ],
     annotations: {
-      goal: '总览 28 天节奏与打卡历史，管理单日课程。',
+      goal: '总览月历与打卡历史（课表为今日起 30 天滚动），管理单日课程。',
       entry: 'Tab 导航 / S09 / S21 重排后',
       exit: ['S10', 'S29', 'S09'],
       role: '体验用户 / 订阅用户 / 失效用户（历史可见、未来锁定）',

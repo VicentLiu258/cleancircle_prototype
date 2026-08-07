@@ -98,7 +98,7 @@ export const screensSchedule: ScreenDef[] = [
         '兜底课程池 — 运营配置（对应移动端 B-09 兜底卡）',
       ],
       actions: {
-        primary: '保存并去模拟（→B13 验证 28 天结果）',
+        primary: '保存并去模拟（→B13 验证 30 天结果）',
         secondary: ['仅保存草稿', '复制规则', '查看候选集明细'],
         destructive: '删除规则：仅草稿可删除；已发布规则只能停用（B11 二次确认）',
       },
@@ -130,13 +130,13 @@ export const screensSchedule: ScreenDef[] = [
           '样本D 产后 + 腹直肌分离（禁忌层回归）',
           '样本E 无匹配极端组合（兜底回归）',
         ], marker: 1 },
-        { kind: 'button-primary', label: '生成 28 天课表（模拟）', to: 'B13', marker: 2 },
+        { kind: 'button-primary', label: '生成 30 天课表（模拟）', to: 'B13', marker: 2 },
         { kind: 'button-secondary', label: '全部样本一键回归' },
       ]},
-      { id: 'result', label: '28 天结果与解释', blocks: [
+      { id: 'result', label: '30 天结果与解释', blocks: [
         sideSim,
         { kind: 'topbar', label: '评测与排课 / 模拟测试 / 结果', sub: '样本A · 经期+大基数' },
-        { kind: 'page-header', label: '28 天模拟结果 · 逐日可解释', sub: '展示每天课程、命中规则、被排除视频及原因（§5.4）' },
+        { kind: 'page-header', label: '30 天模拟结果 · 逐日可解释', sub: '展示每天课程、命中规则、被排除视频及原因（§5.4）' },
         { kind: 'calendar-grid', label: 'Day 1-28 网格：训练日 / 休息日 / 兜底日（amber 标记）', sub: '当前选中 Day 3', marker: 1 },
         { kind: 'split', label: 'Day 3 · 命中解释', sub: 'Day 3 · 被排除视频及原因', items: [
           '入选：VID-0203 经期舒缓拉伸 12min（得分 96）',
@@ -171,18 +171,18 @@ export const screensSchedule: ScreenDef[] = [
       ]},
     ],
     annotations: {
-      goal: '发布前用样本用户生成并解释 28 天课表，让规则「可解释、可回归、可发布」。',
+      goal: '发布前用样本用户生成并解释 30 天课表，让规则「可解释、可回归、可发布」。',
       entry: 'B12 保存后去模拟；B11 行操作「模拟」',
       exit: ['B11', 'B12'],
       role: '课程/健康运营（模拟与回归）；审核人（发布）',
       data: [
         '样本输入（标签/周期/目标/当日状态） — 手动配置 + 预设典型样本库',
-        '28 天模拟结果 — 规则引擎试算（不写真实用户课表）',
+        '30 天模拟结果 — 规则引擎试算（不写真实用户课表）',
         '命中规则链与被排除视频及原因 — 引擎决策日志',
         '回归差异 — 与线上版本对比',
       ],
       actions: {
-        primary: '生成 28 天课表（模拟）；回归全过后提交审核',
+        primary: '生成 30 天课表（模拟）；回归全过后提交审核',
         secondary: ['逐日查看解释', '导出解释报告', '与线上版本对比', '一键全样本回归'],
         destructive: '提交审核（二次确认）；发布时可选「同时重排已生成未来课表」',
       },
@@ -190,9 +190,9 @@ export const screensSchedule: ScreenDef[] = [
       triggers: [
         '回归 5/5 通过 → 允许提交审核；任一失败 → 阻断并定位差异日',
         '发布 → 新版本对新课表生效；已生成课表按发布选项处理（§5.4）',
-        '排课节奏：报告生成时一次生成 28 天（与移动端 B-08 对齐，H-02）',
+        '排课节奏：评测后一次生成今日起 30 天滚动课表（与移动端 B-08 对齐，H-02 已按新需求修订）',
       ],
-      deps: ['移动端 S08 28 天预览 / S09 今日课程卡与兜底（B-09）', '移动端 S19/S20 Check-in 降级（当日重排触发）', '移动端 S21 经期重排', 'B12 规则来源'],
+      deps: ['移动端 S08 30 天预览 / S09 今日课程卡与兜底（B-09）', '移动端 S19/S20 Check-in 降级（当日重排触发）', '移动端 S21 经期重排', 'B12 规则来源'],
       patches: ['H-02', 'H-04'],
     },
   },

@@ -1,7 +1,7 @@
 // Clean Circle 管理后台线框原型 — 数据类型定义
 // 与移动端线框工程（cleancircle-wireframe）同构，块类型适配桌面后台布局
 
-export type FlowGroup = 'E' | 'A' | 'B' | 'C' | 'D' | 'F' | 'G';
+export type FlowGroup = 'E' | 'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K';
 
 export interface WireBlock {
   kind:
@@ -18,7 +18,7 @@ export interface WireBlock {
     | 'form-row'        // 表单行（label 字段名，sub 控件/取值提示）
     | 'split'           // 左右分栏（label/sub 左右标题，items/right 左右行）
     | 'tag-row'         // 标签建议列表（items，首字符 ✓/✎/✗ 决定样式）
-    | 'calendar-grid'   // 28 天课表网格（模拟结果用）
+    | 'calendar-grid'   // 课表网格（30 天滚动模拟 / 用户课表）
     | 'progress'        // 进度条
     | 'panel'           // 通用灰卡
     | 'button-primary' | 'button-secondary' | 'button-danger'
@@ -82,13 +82,17 @@ export interface PendingQuestion {
 }
 
 export const FLOW_NAMES: Record<FlowGroup, string> = {
-  E: '入口',
-  A: '链路 A · 视频打标复核',
-  B: '链路 B · 问卷评分发布',
-  C: '链路 C · 排课规则模拟',
-  D: '链路 D · 迁移管理',
-  F: '链路 E · 用户与账务',
-  G: '支撑模块 · 建议/消息/权限',
+  E: '工作台 · 运营总览',
+  A: '内容中心 · 视频与课程',
+  B: '问卷评测',
+  C: '排课规则',
+  D: '老用户迁移',
+  F: '用户 CRM 与财务',
+  G: '消息与触达',
+  H: '训练与能量值',
+  I: '社区与活动',
+  J: '商城与履约',
+  K: '基础配置与系统',
 };
 
-export const FLOW_ORDER: FlowGroup[] = ['E', 'A', 'B', 'C', 'D', 'F', 'G'];
+export const FLOW_ORDER: FlowGroup[] = ['E', 'A', 'B', 'C', 'D', 'F', 'G', 'H', 'I', 'J', 'K'];

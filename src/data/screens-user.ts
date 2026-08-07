@@ -1,9 +1,9 @@
-// 链路 E · 用户与账务：B18 用户列表 / B19 用户详情 / B21 订阅订单 / B23 积分调整审批 / B27 审计日志
+// 用户 CRM 与财务：B18 用户列表 / B19 用户详情 / B21 订阅订单 / B23 能量值调整审批 / B27 审计日志
 import type { ScreenDef, WireBlock } from './types';
 
 const sideUser: WireBlock = { kind: 'sidebar', label: '用户列表' };
 const sideFin: WireBlock = { kind: 'sidebar', label: '订阅/订单' };
-const sidePoints: WireBlock = { kind: 'sidebar', label: '积分调整' };
+const sidePoints: WireBlock = { kind: 'sidebar', label: '能量值调整' };
 const sideAudit: WireBlock = { kind: 'sidebar', label: '审计日志' };
 
 export const screensUser: ScreenDef[] = [
@@ -27,7 +27,7 @@ export const screensUser: ScreenDef[] = [
         sideUser,
         { kind: 'topbar', label: '用户中心 / 用户列表', sub: '角色：客服' },
         { kind: 'page-header', label: '用户列表（客服视图）' },
-        { kind: 'alert', tone: 'info', label: '当前角色：客服 —— 手机号脱敏，健康明细不可见；积分补发需审批（§2）', marker: 1 },
+        { kind: 'alert', tone: 'info', label: '当前角色：客服 —— 手机号脱敏，健康明细不可见；能量值补发需审批（§2）', marker: 1 },
         { kind: 'table', cols: ['用户', '手机号', '订阅状态', '迁移状态', '健康数据', '操作'], items: [
           'U-08771 ｜ 139****2210 ｜ 订阅中·月卡 ｜ 全部成功 ｜ 🔒 无权限 ｜ 详情',
           'U-07890 ｜ 137****9012 ｜ 已失效 ｜ 部分成功 ⚠ ｜ 🔒 无权限 ｜ 详情',
@@ -92,15 +92,15 @@ export const screensUser: ScreenDef[] = [
       { id: 'schedule', label: '周期与课表（人工重排）', blocks: [
         sideUser,
         { kind: 'topbar', label: '用户中心 / 用户详情 / 周期与课表', sub: '角色：健康运营（受限权限）' },
-        { kind: 'page-header', label: '周期与课表 · U-08771', sub: '当前阶段：黄体期第 19 天 ｜ 课表规则版本 v9 ｜ 一次生成（H-02）' },
+        { kind: 'page-header', label: '周期与课表 · U-08771', sub: '当前阶段：黄体期第 19 天 ｜ 课表规则版本 v9 ｜ 今日起 30 天滚动（H-02）' },
         { kind: 'tabs', items: ['账户概览', '评测报告', '周期与课表', '运动打卡', '订阅订单', '能量值', '消息工单'], activeStep: 2 },
-        { kind: 'calendar-grid', label: '28 天课表（已完成 ✓ / 今日 / 未来）', sub: '当前 Day 19' },
+        { kind: 'calendar-grid', label: '30 天课表（已完成 ✓ / 今日 / 未来）', sub: '当前 Day 19' },
         { kind: 'alert', tone: 'warn', label: '人工重排为受限权限（H-09）', sub: '仅健康运营可操作，只影响今日起的未来课表，历史不动；二次确认 + 全程审计', marker: 1, patch: true },
         { kind: 'button-secondary', label: '人工重排未来课表（二次确认）', patch: true, marker: 2 },
       ]},
     ],
     annotations: {
-      goal: '单用户 360° 档案：账户、评测、周期课表、打卡、订阅、积分、工单一屏可查，敏感数据按权限分层。',
+      goal: '单用户 360° 档案：账户、评测、周期课表、打卡、订阅、能量值、工单一屏可查，敏感数据按权限分层。',
       entry: 'B18 行点击「详情」',
       exit: ['B18', 'B21', 'B23'],
       role: 'CRM/客服（基础档案）；健康运营（评测/课表分栏 + 敏感数据二次确认）；财务（订阅分栏）',
@@ -111,7 +111,7 @@ export const screensUser: ScreenDef[] = [
       ],
       actions: {
         primary: '按分栏查询用户信息',
-        secondary: ['申请查看敏感答案（二次确认+审计）', '跳转 B21 订阅明细 / B23 积分调整'],
+        secondary: ['申请查看敏感答案（二次确认+审计）', '跳转 B21 订阅明细 / B23 能量值调整'],
         destructive: '人工重排未来课表：受限权限 + 二次确认 + 审计，只改未来不改历史（H-09）',
       },
       statesDesc: ['账户概览', '评测报告（敏感锁定）', '周期与课表（人工重排）', '无敏感数据权限', '数据加载失败'],
@@ -119,7 +119,7 @@ export const screensUser: ScreenDef[] = [
         '查看高敏感数据 → 二次确认 → 写审计日志（§5.11）',
         '迁移部分成功用户 → 置顶提示并联动 B20 失败重试',
       ],
-      deps: ['移动端 S08 课表 / S09 今日 / S26 我的（用户侧同源数据）', '移动端 S16/S26 迁移记录', 'B21 订阅订单', 'B23 积分调整', 'B27 审计'],
+      deps: ['移动端 S08 课表 / S09 今日 / S26 我的（用户侧同源数据）', '移动端 S16/S26 迁移记录', 'B21 订阅订单', 'B23 能量值调整', 'B27 审计'],
       patches: ['H-09'],
     },
   },
@@ -196,12 +196,12 @@ export const screensUser: ScreenDef[] = [
     },
   },
   {
-    id: 'B23', name: '积分调整审批', reqCode: '§4 B23', priority: 'P0', flow: 'F',
+    id: 'B23', name: '能量值调整审批', reqCode: '§4 B23', priority: 'P0', flow: 'F',
     states: [
       { id: 'list', label: '申请列表', blocks: [
         sidePoints,
-        { kind: 'topbar', label: '用户中心 / 积分调整', sub: '角色：客服 / 运营·财务审批' },
-        { kind: 'page-header', label: '人工积分调整', sub: '审批流：客服申请 → 运营/财务审批 → 系统执行 → 结果记录（§6）' },
+        { kind: 'topbar', label: '用户中心 / 能量值调整', sub: '角色：客服 / 运营·财务审批' },
+        { kind: 'page-header', label: '人工能量值调整', sub: '审批流：客服申请 → 运营/财务审批 → 系统执行 → 结果记录（§6）' },
         { kind: 'stat-row', items: ['待审批 3', '本月已执行 28', '已驳回 2', '补发总分值 +9,400'] },
         { kind: 'table', cols: ['申请单', '用户', '调整', '原因', '证据/工单', '申请人', '状态', '操作'], items: [
           'PA-0331 ｜ U-07890 ｜ +500 ｜ 迁移能量值部分失败（批次 #20260728-02） ｜ 工单#331 ｜ 客服C ｜ 待审批 ｜ 审批',
@@ -212,8 +212,8 @@ export const screensUser: ScreenDef[] = [
       ]},
       { id: 'apply', label: '客服提交申请', blocks: [
         sidePoints,
-        { kind: 'topbar', label: '用户中心 / 积分调整 / 新建', sub: '角色：客服' },
-        { kind: 'page-header', label: '新建积分调整申请' },
+        { kind: 'topbar', label: '用户中心 / 能量值调整 / 新建', sub: '角色：客服' },
+        { kind: 'page-header', label: '新建能量值调整申请' },
         { kind: 'form-row', label: '用户', sub: 'U-07890（137****9012）｜ 当前余额 1,240' },
         { kind: 'form-row', label: '调整类型与分值', sub: '增加 +500（减少需额外说明回收依据）' },
         { kind: 'form-row', label: '原因', sub: '迁移能量值部分失败 · 批次 #20260728-02（关联 B20 失败记录）' },
@@ -224,7 +224,7 @@ export const screensUser: ScreenDef[] = [
       ]},
       { id: 'approve', label: '审批与执行', blocks: [
         sidePoints,
-        { kind: 'topbar', label: '用户中心 / 积分调整 / 审批', sub: '角色：运营/财务（审批人 ≠ 申请人）' },
+        { kind: 'topbar', label: '用户中心 / 能量值调整 / 审批', sub: '角色：运营/财务（审批人 ≠ 申请人）' },
         { kind: 'page-header', label: '审批 · PA-0331（U-07890 +500）' },
         { kind: 'steps', items: ['客服申请', '运营/财务审批', '系统执行', '结果记录'], activeStep: 1 },
         { kind: 'panel', label: '余额变动预览', sub: '当前 1,240 → 调整后 1,740 ｜ 生成新流水（业务类型：人工补发 · 关联 PA-0331）', marker: 1 },
@@ -235,8 +235,8 @@ export const screensUser: ScreenDef[] = [
       ]},
     ],
     annotations: {
-      goal: '人工积分调整走审批制：可申请、可审批、可留痕，杜绝直接改余额。',
-      entry: '侧边栏-用户中心-积分调整；B19 用户详情「能量值」分栏',
+      goal: '人工能量值调整走审批制：可申请、可审批、可留痕，杜绝直接改余额。',
+      entry: '侧边栏-用户中心-能量值调整；B19 用户详情「能量值」分栏',
       exit: ['B19'],
       role: '客服（提交申请）；运营/财务（审批，审批人 ≠ 申请人）',
       data: [
@@ -259,12 +259,12 @@ export const screensUser: ScreenDef[] = [
     },
   },
   {
-    id: 'B27', name: '操作审计日志', reqCode: '§4 B27', priority: 'P0', flow: 'F',
+    id: 'B27', name: '操作审计日志', reqCode: '§4 B27', priority: 'P0', flow: 'K',
     states: [
       { id: 'default', label: '日志查询', blocks: [
         sideAudit,
         { kind: 'topbar', label: '系统管理 / 审计日志', sub: '角色：审计/只读 · 超管' },
-        { kind: 'page-header', label: '操作审计日志', sub: '高敏感查看、导出、积分调整、权益修复、规则发布均记录（§5.11）' },
+        { kind: 'page-header', label: '操作审计日志', sub: '高敏感查看、导出、能量值调整、权益修复、规则发布均记录（§5.11）' },
         { kind: 'filter-bar', label: '操作人 ｜ 角色 ｜ 模块 ｜ 对象 ID ｜ 操作类型 ｜ 时间范围 ｜ IP', marker: 1 },
         { kind: 'table', cols: ['时间', '操作人', '角色', '模块', '对象', '操作', '前后差异', '结果', 'IP'], items: [
           '07-30 14:02 ｜ CRM-A ｜ 用户运营 ｜ 迁移 ｜ #20260730-01 ｜ 执行迁移 ｜ — ｜ 成功 ｜ 10.0.8.21',
@@ -308,7 +308,7 @@ export const screensUser: ScreenDef[] = [
       },
       statesDesc: ['日志查询', '单条详情', '筛选无结果', '无权限'],
       triggers: [
-        '高敏感数据查看/导出、积分调整、权益修复、规则/问卷发布、回滚 → 自动写日志（§5.11）',
+        '高敏感数据查看/导出、能量值调整、权益修复、规则/问卷发布、回滚 → 自动写日志（§5.11）',
         '本批链路动作全覆盖：B07 复核、B10/B13 发布、B20 迁移执行、B21 退款、B23 审批',
       ],
       deps: ['全部后台模块（变更事件上报）', '移动端无直接对应屏（后台治理能力）'],

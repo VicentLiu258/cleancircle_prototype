@@ -26,11 +26,11 @@ export function OverviewView({ onNavigate }: Props) {
       <div className="mt-3 rounded-lg border border-gray-200 bg-white p-5">
         <p className="text-sm leading-relaxed text-gray-600">
           Clean Circle 是一款面向女性的周期健康与运动 App，根据用户的生理周期、体质、运动习惯和身心状态，
-          为其生成 28 天定制课表，并提供当日饮食、营养和生活方式建议。
+          为其生成今日起 30 天滚动定制课表，并提供当日饮食、营养和生活方式建议（无长报告）。
         </p>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
           <span className="font-semibold text-gray-700">MVP 仅验证一条核心付费链路：</span>
-          注册/老用户识别 → 体质与周期问卷 → 个人周期报告 + 28 天课表 → 每日反馈、跟练与打卡 → 体验期结束订阅转化；
+          注册/老用户识别 → 体质与周期问卷 → 评测结果话术 + 30 天课表 → 每日反馈、跟练与打卡 → 体验期结束订阅转化；
           老用户承接历史打卡、能量值与买断课程。
         </p>
       </div>

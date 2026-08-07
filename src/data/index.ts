@@ -5,7 +5,9 @@ import { screensSchedule } from './screens-schedule';
 import { screensMigration } from './screens-migration';
 import { screensUser } from './screens-user';
 import { screensSupportA, screensSupportG } from './screens-support';
+import { screensV2P0 } from './screens-v2-p0';
 
+/** 管理后台全量线框：原 22 屏 + 按《后端需求》扩展的 P0/P1 屏 */
 export const screens: ScreenDef[] = [
   ...screensMigration,
   ...screensSupportA,
@@ -14,6 +16,7 @@ export const screens: ScreenDef[] = [
   ...screensSchedule,
   ...screensUser,
   ...screensSupportG,
+  ...screensV2P0,
 ];
 
 export const screenMap: Record<string, ScreenDef> = Object.fromEntries(

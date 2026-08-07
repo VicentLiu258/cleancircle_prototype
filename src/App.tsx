@@ -17,13 +17,13 @@ const NAV: { id: View; label: string }[] = [
 
 const MODES: { id: Mode; label: string; sub: string }[] = [
   { id: 'mobile', label: '移动端 App', sub: 'MVP 主链路 · 31 屏（S01–S31，S18 未分配）' },
-  { id: 'admin', label: '管理后台', sub: '第 3 批 · P0 全集 · 22 屏（B 系列）' },
+  { id: 'admin', label: '管理后台', sub: '对齐《后端需求》· 全量 B 系列线框（P0+P1）' },
 ];
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('admin');
   const [view, setView] = useState<View>('overview');
-  const [adminScreenId, setAdminScreenId] = useState('B01');
+  const [adminScreenId, setAdminScreenId] = useState('B02');
   const [mobileScreenId, setMobileScreenId] = useState('S01');
 
   const goAdminScreen = (id: string) => {

@@ -10,7 +10,7 @@ export function DecisionsView({ onNavigate }: Props) {
       <h2 className="text-2xl font-bold text-gray-800">后台逻辑补全决策（H-01 … H-08）</h2>
       <p className="mt-1 text-sm text-gray-500">
         以下为后台需求文档中冲突/缺失之处，原型按此固化。所有补全项在原型中以 <span className="rounded bg-amber-100 px-1 font-bold text-amber-700">amber「补」</span> 标记区分，均待业务方确认。
-        与移动端线框的 B 系列决策配套使用（B-08 排课节奏、B-09 排课兜底、B-12 迁移幂等分类在后台侧分别对应 H-02、B13 兜底展示、B20 分类结果）。
+        与移动端线框决策配套（移动端 B-08 排课 30 天 = 后台 H-02；能量值 = H-13；无长报告 = H-14）。冲突时以《后端需求》为准。
       </p>
       <div className="mt-4 space-y-4">
         {decisions.map((d) => (

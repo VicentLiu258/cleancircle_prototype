@@ -5,7 +5,7 @@ const sideMig: WireBlock = { kind: 'sidebar', label: '迁移任务' };
 
 export const screensMigration: ScreenDef[] = [
   {
-    id: 'B01', name: '后台登录', reqCode: '§4 B01', priority: 'P0', flow: 'E',
+    id: 'B01', name: '后台登录', reqCode: '§4 B01', priority: 'P0', flow: 'K',
     states: [
       { id: 'default', label: '默认', blocks: [
         { kind: 'chrome', label: 'admin.cleancircle.cn/login' },
@@ -82,14 +82,14 @@ export const screensMigration: ScreenDef[] = [
         sideMig,
         { kind: 'topbar', label: '用户中心 / 迁移任务 / 预校验', sub: '批次 #20260730-01' },
         { kind: 'page-header', label: '预校验结果 · 5,000 行' },
-        { kind: 'stat-row', items: ['通过 4,872', '失败 128', '重复用户 36', '课程 ID 不存在 71', '积分超上限 21'] },
+        { kind: 'stat-row', items: ['通过 4,872', '失败 128', '重复用户 36', '课程 ID 不存在 71', '能量值超上限 21'] },
         { kind: 'table', cols: ['行号', '字段', '失败原因', '原始值'], items: [
           '1024 ｜ 手机号 ｜ 格式错误 ｜ 138-0000',
           '1031 ｜ 课程 ID ｜ GWJ-课程 ID 不存在 ｜ C-8842',
           '1088 ｜ 原用户唯一 ID ｜ 重复用户（已绑定 App 账号 U-5521） ｜ old_9917',
           '1203 ｜ 能量值 ｜ 超过合理性上限 ｜ 999,999',
         ], marker: 1 },
-        { kind: 'alert', tone: 'info', label: '校验项：格式 / 必填 / 重复用户 / 课程 ID 存在性 / 积分合理性（§5.7）' },
+        { kind: 'alert', tone: 'info', label: '校验项：格式 / 必填 / 重复用户 / 课程 ID 存在性 / 能量值合理性（§5.7）' },
         { kind: 'button-primary', label: '仅导入通过行（4,872 条），失败行进错误报告', marker: 2 },
         { kind: 'button-secondary', label: '下载错误报告（Excel，定位到行和字段，§8-1）' },
         { kind: 'button-secondary', label: '返回修正文件' },
@@ -100,7 +100,7 @@ export const screensMigration: ScreenDef[] = [
         { kind: 'page-header', label: '执行中 · 批次 #20260730-01' },
         { kind: 'alert', tone: 'info', label: '大批量任务（>1,000 条）已经负责人审批后执行（§6 审批流）', sub: '审批人：运营负责人 ｜ 审批时间 07-30 13:58 ｜ 灰度 50 条已验证通过', marker: 1 },
         { kind: 'progress', label: '执行进度 62%（3,100 / 5,000）· 幂等执行中', marker: 2 },
-        { kind: 'panel', label: '幂等说明', sub: '幂等键 = 原用户唯一 ID + 批次；重复执行不会重复加积分或创建资产（§5.7）；可随时取消，已写入部分保留并留痕' },
+        { kind: 'panel', label: '幂等说明', sub: '幂等键 = 原用户唯一 ID + 批次；重复执行不会重复加能量值或创建资产（§5.7）；可随时取消，已写入部分保留并留痕' },
         { kind: 'button-danger', label: '取消任务（二次确认）' },
       ]},
       { id: 'result', label: '结果汇总 · 部分成功', blocks: [
@@ -126,7 +126,7 @@ export const screensMigration: ScreenDef[] = [
           '手机号重复绑定 ｜ 5 ｜ 转人工申诉（用户端迁移申诉入口）',
         ], marker: 1 },
         { kind: 'form-row', label: '课程 ID 映射', sub: 'GWJ-C8842 → VID-0203（下拉选择，写映射日志）' },
-        { kind: 'alert', tone: 'info', label: '重试仍走同一幂等键（原用户唯一 ID + 批次），不会重复累计积分或资产', marker: 2 },
+        { kind: 'alert', tone: 'info', label: '重试仍走同一幂等键（原用户唯一 ID + 批次），不会重复累计能量值或资产', marker: 2 },
         { kind: 'button-primary', label: '重新执行失败项（二次确认）' },
         { kind: 'button-secondary', label: '导出失败明细' },
       ]},
@@ -138,7 +138,7 @@ export const screensMigration: ScreenDef[] = [
       role: '用户运营/CRM（上传、校验、执行）；运营负责人（大批量审批，§6）；客服（查看迁移结果）',
       data: [
         '必备字段：原用户唯一 ID / 手机号 / 历史打卡天数 / 能量值 / 已购课程关联 / 历史消耗摘要 — 上传 Excel（H-01）',
-        '预校验结果（格式/必填/重复/课程存在性/积分合理性） — 校验服务（§5.7）',
+        '预校验结果（格式/必填/重复/课程存在性/能量值合理性） — 校验服务（§5.7）',
         '执行进度与分类结果 — 迁移任务表',
         '幂等键：原用户唯一 ID + 批次 — 任务设计',
       ],

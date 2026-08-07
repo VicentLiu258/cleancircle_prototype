@@ -1,4 +1,4 @@
-// 链路 B · 问卷评分发布：B08 问卷列表/版本 → B09 问卷编辑器 → B10 评分/报告话术
+// 问卷评测：B08 问卷列表/版本 → B09 问卷编辑器 → B10 评测结果与推荐话术
 import type { ScreenDef, WireBlock } from './types';
 
 const sideQuiz: WireBlock = { kind: 'sidebar', label: '问卷' };
@@ -20,6 +20,16 @@ export const screensQuiz: ScreenDef[] = [
           'v2 ｜ 已停用 ｜ 10 ｜ 8,203 ｜ 运营A ｜ 查看',
         ], to: 'B09', marker: 1 },
         { kind: 'button-primary', label: '+ 新建问卷（从空白 / 复制线上版本）', to: 'B09' },
+      ]},
+      { id: 'retest', label: '复评策略（14/28 天）', blocks: [
+        { kind: 'sidebar', label: '问卷' },
+        { kind: 'topbar', label: '问卷评测 / 问卷 / 复评策略', sub: '角色：课程/健康运营' },
+        { kind: 'page-header', label: '问卷复评投放', sub: '对齐《后端需求》§3：用户首次填写后第 14 天或第 28 天再次发布' },
+        { kind: 'form-row', label: '启用复评', sub: '● 开启  ○ 关闭' },
+        { kind: 'form-row', label: '再次投放时机', sub: '○ 首次完成后第 14 天  ● 首次完成后第 28 天' },
+        { kind: 'form-row', label: '适用问卷版本', sub: '当前已发布版本 v3（自动跟随）' },
+        { kind: 'alert', tone: 'info', label: '复评完成后可触发标签重算与课表重排（仅未来日），写审计日志', marker: 1 },
+        { kind: 'button-primary', label: '保存复评策略' },
       ]},
       { id: 'locked', label: '已发布不可编辑', blocks: [
         sideQuiz,
@@ -51,13 +61,14 @@ export const screensQuiz: ScreenDef[] = [
         secondary: ['新建问卷', '内部测试邀请', '查看发布快照', '复制为新草稿', '行操作进入 B10 评分规则'],
         destructive: '停用已发布版本：二次确认；影响新用户评测入口，历史报告不受影响',
       },
-      statesDesc: ['默认', '首次空', '已发布锁定提示（只读快照）', '版本对比（后续）', '无发布权限'],
+      statesDesc: ['默认', '复评策略（14/28 天）', '首次空', '已发布锁定提示（只读快照）', '版本对比（后续）', '无发布权限'],
       triggers: [
         '点击已发布版本的「编辑」→ 拦截提示并引导复制新草稿（§5.3）',
         '新版本发布 → 移动端 S04 起新提交用户使用新版本；历史报告保留旧快照',
+        '复评策略：首次完成后第 14/28 天再次投放（《后端需求》§3）',
       ],
       deps: ['移动端 S04 问卷逐题页（渲染版本来源）', '移动端 S06 课表生成（问卷版本快照）', '审批流 §6 问卷与阶段话术'],
-      patches: [],
+      patches: ['后端需求§3 复评'],
     },
   },
   {
@@ -65,8 +76,8 @@ export const screensQuiz: ScreenDef[] = [
     states: [
       { id: 'editing', label: '编辑中', blocks: [
         sideQuiz,
-        { kind: 'topbar', label: '评测与排课 / 问卷 / v4 草稿', sub: '角色：课程/健康运营' },
-        { kind: 'page-header', label: '问卷编辑器 · v4 草稿', sub: '题型：单选/多选/数字/滑杆/日期/文本说明（§5.3）' },
+        { kind: 'topbar', label: '问卷评测 / 问卷 / v4 草稿', sub: '角色：课程/健康运营' },
+        { kind: 'page-header', label: '问卷编辑器 · v4 草稿', sub: '题型：单选/多选/数字/滑杆/日期/文本说明；选项映射用户标签+训练标签（后端§3.3）' },
         { kind: 'split', label: '题目列表（12 题）', sub: '当前选中：Q3 核心目标（单选）', items: [
           'Q1 年龄段 · 单选 · 必填',
           'Q2 运动基础 · 单选 · 必填',
@@ -79,10 +90,11 @@ export const screensQuiz: ScreenDef[] = [
           '文案：你的核心目标是什么？',
           '帮助说明：选择最想改善的一项',
           '选项：减脂(+塑形维度2) / 塑形 / 增肌 / 调理身体 / 改善心情',
-          '每个选项可贡献多维度分与用户标签 → 进入 B10',
+          '每个选项 → 用户标签 + 训练标签 + 维度分（后端§3.3）',
+          '例：减脂 → 用户标签「减脂」｜ 训练标签「燃脂、初级」',
           '条件跳转：Q3=调理身体 → 追加显示 Q7a',
         ] },
-        { kind: 'form-row', label: '业务标签与得分权重', sub: '本选项 → 维度分 + 用户标签（评分的输入，详见 B10）', marker: 1 },
+        { kind: 'form-row', label: '选项标签映射', sub: '用户标签：大基数/初级… ｜ 训练标签：低强度/无跳跃/多囊友好/周期阶段… → 同步 B17', marker: 1 },
         { kind: 'button-primary', label: '保存草稿', to: 'B10' },
         { kind: 'button-secondary', label: '手机端即时预览（渲染同 S04）' },
         { kind: 'button-secondary', label: '提交校验', marker: 2 },
@@ -122,12 +134,12 @@ export const screensQuiz: ScreenDef[] = [
         '校验通过 → 允许提交「内部测试」→ 测试确认后进入「待审核」',
         '跳题规则改动 → 自动重检全部路径的出口完整性',
       ],
-      deps: ['移动端 S04 问卷逐题页（题型/跳题/必填的渲染端）', '移动端 S05 提交确认', 'B10 评分与报告话术'],
+      deps: ['移动端 S04 问卷逐题页（题型/跳题/必填的渲染端）', '移动端 S05 提交确认', 'B10 评测结果与推荐话术'],
       patches: [],
     },
   },
   {
-    id: 'B10', name: '评分与报告话术', reqCode: '§4 B10', priority: 'P0', flow: 'B',
+    id: 'B10', name: '评测结果与推荐话术', reqCode: '§4 B10', priority: 'P0', flow: 'B',
     states: [
       { id: 'weights', label: '评分权重与分段', blocks: [
         sideScore,
@@ -140,12 +152,12 @@ export const screensQuiz: ScreenDef[] = [
           '周期规律性 ｜ Q5/Q6 ｜ — ｜ 规律 / 不规律（影响跳题与阶段估算）',
         ], marker: 1 },
         { kind: 'form-row', label: '用户标签产出', sub: '如 Q2=大基数 → 标签「大基数」；标签直接进入 B12 排课规则适用条件', marker: 2 },
-        { kind: 'button-primary', label: '保存并配置报告话术', to: 'B10' },
+        { kind: 'button-primary', label: '保存并配置评测结果话术', to: 'B10' },
       ]},
       { id: 'copy', label: '话术与冲突校验', blocks: [
         sideScore,
         { kind: 'topbar', label: '评测与排课 / 评分规则 / v4 / 话术', sub: '角色：课程/健康运营' },
-        { kind: 'page-header', label: '报告话术库 · v4', sub: '按分数段、标签组合、周期阶段配置标题/解读/改善建议（§5.3）' },
+        { kind: 'page-header', label: '评测结果话术库 · v4', sub: '按分数段、标签组合、周期阶段配置标题/解读/改善建议（§5.3）' },
         { kind: 'table', cols: ['命中条件', '话术', '优先级', '字数'], items: [
           '经期 + 大基数 ｜ #12 温和启动，先从低冲击开始 ｜ P1 ｜ 86',
           '经期（通用） ｜ #13 经期这样练更舒服 ｜ P2 ｜ 92',
@@ -167,7 +179,7 @@ export const screensQuiz: ScreenDef[] = [
       ]},
     ],
     annotations: {
-      goal: '配置维度权重、分数段与报告话术，保证多话术命中时结果可解释、可审计。',
+      goal: '配置维度权重、分数段与评测结果/推荐话术（无移动端长报告），保证多话术命中时结果可解释、可审计。',
       entry: 'B09 保存后进入；B08 行操作「评分规则」',
       exit: ['B08'],
       role: '课程/健康运营编辑；专业审核人审核发布（B-Q03 人选待定，占位 H-06）',
