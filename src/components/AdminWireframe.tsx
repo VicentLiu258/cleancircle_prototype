@@ -12,6 +12,7 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
     { label: '运营总览', sid: 'B02' },
     { label: '转化漏斗', sid: 'B48' },
     { label: '业务趋势', sid: 'B49' },
+    { label: '用户行为', sid: 'B50' },
   ]},
   { group: '用户与 CRM', items: [
     { label: '用户列表', sid: 'B18' },
@@ -67,7 +68,8 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
   { group: '商城与履约', items: [
     { label: '商品与库存', sid: 'B39' },
     { label: '订单与发货', sid: 'B40' },
-    { label: '售后（待补流程）', sid: 'B41' },
+    { label: '售后管理', sid: 'B41' },
+    { label: '库存对账', sid: 'B51' },
   ]},
   { group: '客服', items: [
     { label: '企微配置', sid: 'B42' },

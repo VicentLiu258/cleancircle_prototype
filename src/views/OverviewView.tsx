@@ -7,7 +7,8 @@ interface Props {
 // 后台 IA：对齐《后端需求.docx》（2026-08-07，冲突以后端为准）
 const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[] }[] = [
   { menu: '工作台', prio: 'P0', pages: [
-    { label: '运营总览 B02', sid: 'B02' }, { label: '转化漏斗 B48', sid: 'B48' }, { label: '业务趋势 B49', sid: 'B49' },
+    { label: '运营总览 B02', sid: 'B02' }, { label: '转化漏斗 B48', sid: 'B48' },
+    { label: '业务趋势 B49', sid: 'B49' }, { label: '用户行为 B50', sid: 'B50' },
   ]},
   { menu: '用户与 CRM', prio: 'P0', pages: [
     { label: '用户列表 B18', sid: 'B18' }, { label: '用户详情 B19', sid: 'B19' },
@@ -40,7 +41,8 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
     { label: '投放 B38', sid: 'B38' }, { label: '社区数据 B47', sid: 'B47' },
   ]},
   { menu: '商城与履约', prio: 'P1', pages: [
-    { label: '商品库存 B39', sid: 'B39' }, { label: '订单发货 B40', sid: 'B40' }, { label: '售后 B41', sid: 'B41' },
+    { label: '商品库存 B39', sid: 'B39' }, { label: '订单发货 B40', sid: 'B40' },
+    { label: '售后 B41', sid: 'B41' }, { label: '库存对账 B51', sid: 'B51' },
   ]},
   { menu: '客服与配置', prio: 'P0', pages: [
     { label: '企微 B42', sid: 'B42' }, { label: '版本 B43', sid: 'B43' }, { label: '开关 B44', sid: 'B44' },
@@ -52,7 +54,7 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
 ];
 
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
-  { title: '工作台 · 经营洞察', chain: ['B02', 'B48', 'B49'], note: '核心 KPI + 待办；转化漏斗；用户/训练/收入趋势' },
+  { title: '工作台 · 经营洞察', chain: ['B02', 'B48', 'B49', 'B50'], note: '核心 KPI + 待办；转化漏斗；趋势；用户行为（事件/路径/留存）' },
   { title: '内容 · 视频到课程', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B31'], note: '导入/标签/视频/AI 复核 → 课程组合（权益与上下架）' },
   { title: '问卷评测发布', chain: ['B08', 'B09', 'B10'], note: '复评 14/28 天；选项映射用户/训练标签；结果话术（无长报告）' },
   { title: '排课规则模拟', chain: ['B11', 'B12', 'B13', 'B14'], note: '规则编辑 → 30 天模拟解释 → 回归发布；阶段建议' },
@@ -61,7 +63,7 @@ const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '训练与能量值', chain: ['B29', 'B30', 'B23'], note: '打卡统计；能量值规则；人工调整审批（统一称能量值）' },
   { title: '会员财务', chain: ['B22', 'B21', 'B24', 'B25'], note: '套餐 → 订阅订单 → 退款（含 Apple 外退）→ 三渠道对账' },
   { title: '社区（P1）', chain: ['B32', 'B35', 'B37', 'B38'], note: '帖子/审核/挑战赛/投放' },
-  { title: '商城（P1）', chain: ['B39', 'B40', 'B41'], note: '商品库存 → 订单发货 → 售后（流程待补）' },
+  { title: '商城（P1）', chain: ['B39', 'B40', 'B41', 'B51'], note: '商品库存 → 订单发货 → 售后全流程 → 库存对账' },
   { title: '配置与系统', chain: ['B42', 'B43', 'B44', 'B45', 'B46', 'B26', 'B27'], note: '企微/版本/开关/公告/三方；角色与审计' },
 ];
 
