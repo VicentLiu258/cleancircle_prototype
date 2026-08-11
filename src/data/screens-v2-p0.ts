@@ -1,6 +1,7 @@
 // v2 P0 扩展屏：按《后端需求.docx》补齐（冲突以后端需求为准）
 // B02/B48/B49/B50 工作台 · B17/B28 CRM 触达 · B22/B24/B25 会员财务 · B29/B30/B31 训练课程 · B42–B46 基础配置
 // P1：B32–B41/B47/B51 社区/商城（含售后与库存对账）
+// 对齐 cleancircle_web 补屏：B52 知识库 · B53 订阅看板 · B54 发送记录
 import type { ScreenDef, WireBlock } from './types';
 
 const side = (label: string): WireBlock => ({ kind: 'sidebar', label });
@@ -1679,6 +1680,213 @@ export const screensV2P0: ScreenDef[] = [
       triggers: ['定时 Job 日切生成对账', '调账→B39 库存流水'],
       deps: ['B39', 'B40', 'B27'],
       patches: ['后端§8.5 库存对账'],
+    },
+  },
+
+  // ——— 对齐 cleancircle_web 实装页（菜单外/菜单内均有对应路由）———
+  {
+    id: 'B52',
+    name: '知识库',
+    reqCode: 'web/content/knowledge',
+    priority: 'P1',
+    flow: 'A',
+    states: [
+      {
+        id: 'list',
+        label: '文章列表',
+        blocks: [
+          side('知识库'),
+          { kind: 'topbar', label: '内容中心 / 知识库', sub: '角色：内容运营 / 健康运营' },
+          { kind: 'page-header', label: '知识库', sub: '文章富文本、适用周期阶段与人群；健康建议需专业审核后发布（对齐 web /content/knowledge）' },
+          { kind: 'stat-row', items: ['已发布 18', '待审核 3', '草稿 5', '本周阅读 2.4k'] },
+          { kind: 'filter-bar', label: '搜索标题 ｜ 分类：全部 ｜ 周期阶段：全部 ｜ 状态：全部', marker: 1 },
+          {
+            kind: 'table',
+            cols: ['标题', '分类', '周期阶段', '状态', '作者', '更新', '操作'],
+            items: [
+              '经期如何安全运动 ｜ 周期健康 ｜ 经期 ｜ 已发布 ｜ 健康运营 ｜ 07-10 ｜ 编辑',
+              '大基数新手第一周指南 ｜ 训练入门 ｜ — ｜ 待审核 ｜ 内容运营 ｜ 08-02 ｜ 审核',
+              '黄体期饮食 Tips ｜ 饮食建议 ｜ 黄体期 ｜ 草稿 ｜ 内容运营 ｜ 08-08 ｜ 编辑',
+            ],
+            marker: 2,
+          },
+          { kind: 'button-primary', label: '+ 新建文章' },
+        ],
+      },
+      {
+        id: 'edit',
+        label: '编辑/审核',
+        blocks: [
+          side('知识库'),
+          { kind: 'topbar', label: '内容中心 / 知识库 / 编辑', sub: '角色：健康运营（安全类终审）' },
+          { kind: 'page-header', label: '编辑文章 · 经期如何安全运动' },
+          { kind: 'form-row', label: '标题 / 分类', sub: '经期如何安全运动 ｜ 周期健康' },
+          { kind: 'form-row', label: '适用周期阶段', sub: '☑ 经期  ☐ 卵泡期  ☐ 排卵期  ☐ 黄体期' },
+          { kind: 'form-row', label: '适用人群标签', sub: '新手、大基数（可选）' },
+          { kind: 'panel', label: '正文（富文本）', sub: '支持图文；健康建议类须专业审核后发布（H-06）', marker: 1 },
+          { kind: 'alert', tone: 'warn', label: '健康类内容发布需课程/健康运营终审', sub: '编辑人 ≠ 审核人；通过后 App 帮助/饮食 Tips 可引用', patch: true, marker: 2 },
+          { kind: 'button-secondary', label: '保存草稿' },
+          { kind: 'button-primary', label: '提交审核 / 发布' },
+          { kind: 'button-secondary', label: '阶段建议联动', to: 'B14' },
+        ],
+      },
+    ],
+    annotations: {
+      goal: '运营维护周期健康/训练入门类知识文章，经专业审核后供 App 引用。',
+      entry: '侧边栏-内容中心-知识库（web 路由 /content/knowledge；菜单可按权限开放）',
+      exit: ['B14', 'B07'],
+      role: '内容运营（编辑）；课程/健康运营（健康类终审）',
+      data: ['文章标题/分类/周期阶段/状态/作者 — 知识库表', '正文富文本 — 内容存储'],
+      actions: {
+        primary: '新建/编辑文章并提交审核',
+        secondary: ['按周期阶段筛选', '下架已发布文章'],
+        destructive: '删除草稿（已发布仅下架）',
+      },
+      statesDesc: ['文章列表', '编辑/审核'],
+      triggers: ['健康类发布 → 健康运营终审 + 审计', '发布后可被 B14 阶段建议 / App 帮助引用'],
+      deps: ['B14 阶段建议', '移动端帮助中心 / Ritual Tips', 'cleancircle_web /content/knowledge'],
+      patches: ['对齐 web 实装页 2026-08-11'],
+    },
+  },
+  {
+    id: 'B53',
+    name: '订阅看板',
+    reqCode: 'web/finance/dashboard',
+    priority: 'P1',
+    flow: 'F',
+    states: [
+      {
+        id: 'default',
+        label: '收入看板',
+        blocks: [
+          side('订阅看板'),
+          { kind: 'topbar', label: '会员与财务 / 订阅看板', sub: '角色：财务 / 运营负责人' },
+          { kind: 'page-header', label: '订阅看板', sub: '业务时区 Asia/Shanghai · 指标可下钻至订单流水（对齐 web /finance/dashboard）' },
+          { kind: 'filter-bar', label: '时间：近 7 天 ｜ 今日 ｜ 昨日 ｜ 近 30 天 ｜ 自定义', marker: 1 },
+          {
+            kind: 'stat-row',
+            items: ['订阅收入 ¥42,860', '新增订阅 186', '续费率 74.8%', '退款金额 ¥1,280'],
+            marker: 2,
+          },
+          {
+            kind: 'split',
+            label: '订阅收入趋势（近 7 日）',
+            sub: '渠道分布',
+            items: [
+              '08-04 ¥2,800',
+              '08-05 ¥4,200',
+              '08-06 ¥3,600',
+              '08-07 ¥5,100',
+              '08-08 ¥6,200',
+              '08-09 ¥5,800',
+              '08-10 ¥7,300',
+            ],
+            right: [
+              'Apple IAP  ¥26,420 · 62%',
+              '微信支付  ¥11,860 · 28%',
+              '支付宝    ¥4,580 · 10%',
+            ],
+          },
+          {
+            kind: 'table',
+            cols: ['指标', '口径', '备注'],
+            items: [
+              '订阅收入 ｜ 支付成功实付分合计，默认不含已退款 ｜ 是否含税/渠道费待签核',
+              '续费率 ｜ 到期 cohort 成功续费人数 / 到期人数 ｜ 按业务日切',
+              '退款金额 ｜ 退款成功入账 ｜ 含 Apple 渠道外退',
+            ],
+            marker: 3,
+          },
+          { kind: 'button-secondary', label: '下钻订单流水', to: 'B21' },
+          { kind: 'button-secondary', label: '退款队列', to: 'B24' },
+          { kind: 'button-secondary', label: '财务对账', to: 'B25' },
+          { kind: 'button-secondary', label: '导出（脱敏+水印，H-08）', patch: true },
+        ],
+      },
+    ],
+    annotations: {
+      goal: '财务/运营快速查看订阅收入、续费与退款，并可下钻到订单与对账。',
+      entry: '侧边栏-会员与财务-订阅看板（web /finance/dashboard）',
+      exit: ['B21', 'B24', 'B25'],
+      role: '财务；运营负责人只读 KPI',
+      data: [
+        '订阅收入/新增/续费率/退款 — finance metrics（与 B25 口径同源）',
+        '渠道分布 — Apple / 微信 / 支付宝',
+      ],
+      actions: {
+        primary: '切换时间范围查看 KPI',
+        secondary: ['下钻订单流水 B21', '导出看板数据（审计）', '跳转退款/对账'],
+      },
+      statesDesc: ['收入看板'],
+      triggers: ['指标点击 → B21 订单流水带同范围筛选'],
+      deps: ['B21 订阅订单', 'B24 退款', 'B25 对账', 'cleancircle_web /finance/dashboard'],
+      patches: ['对齐 web 实装页 2026-08-11'],
+    },
+  },
+  {
+    id: 'B54',
+    name: '发送记录',
+    reqCode: 'web/messages/records',
+    priority: 'P1',
+    flow: 'G',
+    states: [
+      {
+        id: 'default',
+        label: '记录列表',
+        blocks: [
+          side('发送记录'),
+          { kind: 'topbar', label: '消息与触达 / 发送记录', sub: '角色：用户运营/CRM · 只读' },
+          { kind: 'page-header', label: '发送记录', sub: 'Push / 站内信流水只读；可按任务、渠道、结果、用户检索（对齐 web /messages/records）' },
+          { kind: 'alert', tone: 'info', label: '流水数据不可编辑、不可删除', sub: '失败任务请回触达任务页发起受控重试', marker: 1 },
+          { kind: 'filter-bar', label: '任务 ID ｜ 渠道：全部 ｜ 状态：全部 ｜ 用户：— ｜ 时间：近 7 天', marker: 2 },
+          {
+            kind: 'table',
+            cols: ['记录 ID', '内容', '渠道', '来源', '状态', '成功/失败', '时间', '操作'],
+            items: [
+              'msg-0810-01 ｜ 连续打卡 3 天鼓励 ｜ App Push ｜ 触发器 tr-1 ｜ 已完成 ｜ 1,186 / 12 ｜ 08-10 08:00 ｜ 详情',
+              'msg-0809-02 ｜ 体验到期提醒 ｜ 站内信 ｜ 触发器 tr-2 ｜ 处理中 ｜ 340 预估 ｜ 08-09 19:00 ｜ 详情',
+              'msg-0809-01 ｜ 活动报名确认 ｜ Push ｜ 模板 mt-3 ｜ 失败 ｜ 0 / 12 ｜ 08-09 10:00 ｜ 详情',
+            ],
+            marker: 3,
+          },
+          { kind: 'button-secondary', label: '查看触达任务与效果', to: 'B28' },
+          { kind: 'button-secondary', label: '消息模板', to: 'B15' },
+          { kind: 'button-secondary', label: '导出（脱敏+水印，H-08）', patch: true },
+        ],
+      },
+      {
+        id: 'detail',
+        label: '单条详情',
+        blocks: [
+          side('发送记录'),
+          { kind: 'topbar', label: '消息与触达 / 发送记录 / 详情', sub: '← 返回列表' },
+          { kind: 'page-header', label: '发送详情 · msg-0810-01' },
+          { kind: 'form-row', label: '任务 / 模板', sub: '连续打卡 3 天鼓励 ｜ 模板：连胜鼓励 ｜ 触发器 tr-1' },
+          { kind: 'form-row', label: '渠道与结果', sub: 'App Push ｜ 送达 1,186 · 打开 62% · 失败 12（关通知）' },
+          { kind: 'table', cols: ['用户', '手机号', '结果', '失败原因', '打开', '点击'], items: [
+            'U-08771 ｜ 139****2210 ｜ 已送达 ｜ — ｜ ✓ ｜ —',
+            'U-07890 ｜ 137****9012 ｜ 失败 ｜ 用户关闭通知 ｜ — ｜ —',
+          ] },
+          { kind: 'button-secondary', label: '在触达任务中查看效果', to: 'B28' },
+          { kind: 'button-secondary', label: '用户详情', to: 'B19' },
+        ],
+      },
+    ],
+    annotations: {
+      goal: '只读查询 Push/站内信发送流水，支持按任务与用户排查触达问题。',
+      entry: '侧边栏-消息与触达-发送记录（web /messages/records）',
+      exit: ['B28', 'B15', 'B19'],
+      role: '用户运营/CRM（只读）；审计可导出',
+      data: ['发送记录流水 — message_deliveries', '关联任务/模板/触发器'],
+      actions: {
+        primary: '检索与查看详情',
+        secondary: ['导出脱敏记录', '跳转触达任务重试入口（B28）'],
+        destructive: '无 —— 流水不可删改',
+      },
+      statesDesc: ['记录列表', '单条详情'],
+      triggers: ['失败明细 → 引导至 B28 受控重试，本页不提供直接重发'],
+      deps: ['B15 模板', 'B16 触发器', 'B28 触达任务', 'cleancircle_web /messages/records'],
+      patches: ['对齐 web 实装页 2026-08-11'],
     },
   },
 ];

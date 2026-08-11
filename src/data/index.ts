@@ -7,7 +7,7 @@ import { screensUser } from './screens-user';
 import { screensSupportA, screensSupportG } from './screens-support';
 import { screensV2P0 } from './screens-v2-p0';
 
-/** 管理后台全量线框：B01–B51（含售后全流程、用户行为、库存对账） */
+/** 管理后台全量线框：B01–B54（含售后全流程、用户行为、库存对账；对齐 web 知识库/订阅看板/发送记录） */
 export const screens: ScreenDef[] = [
   ...screensMigration,
   ...screensSupportA,
