@@ -7,8 +7,10 @@ import { screensUser } from './screens-user';
 import { screensSupportA, screensSupportG } from './screens-support';
 import { screensV2P0 } from './screens-v2-p0';
 import { screensAppEditor } from './screens-app-editor';
+import { externalCommerceScreenIds, screensExternalCommerce } from './screens-external-commerce';
+import { screensContentOps } from './screens-content-ops';
 
-/** 管理后台全量线框：B01–B56（含 App 页面编辑、今日话术与 AI 课程人工审核） */
+/** 管理后台全量线框：B01–B57（外链商品覆盖旧自营商城屏；含 App/H5 商品入口与内容编排） */
 export const screens: ScreenDef[] = [
   ...screensMigration,
   ...screensSupportA,
@@ -17,8 +19,10 @@ export const screens: ScreenDef[] = [
   ...screensSchedule,
   ...screensUser,
   ...screensSupportG,
-  ...screensV2P0,
+  ...screensV2P0.filter((screen) => !externalCommerceScreenIds.has(screen.id)),
+  ...screensExternalCommerce,
   ...screensAppEditor,
+  ...screensContentOps,
 ];
 
 export const screenMap: Record<string, ScreenDef> = Object.fromEntries(

@@ -1,6 +1,6 @@
 // Clean Circle 线框原型 — 数据类型定义（依据规格说明 §6）
 
-export type FlowGroup = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+export type FlowGroup = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 export interface WireBlock {
   kind:
@@ -68,6 +68,7 @@ export const FLOW_NAMES: Record<FlowGroup, string> = {
   D: 'D · 订阅转化',
   E: 'E · Tab 页',
   F: 'F · P1 页面',
+  G: 'G · 商品导购与分享',
 };
 
-export const FLOW_ORDER: FlowGroup[] = ['A', 'B', 'C', 'D', 'E', 'F'];
+export const FLOW_ORDER: FlowGroup[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];

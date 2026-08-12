@@ -12,11 +12,16 @@ const IA = [
   { tab: '我的 Me', desc: '我的课程、打卡记录、能量值兑换、会员中心（P0）', screens: ['S26', 'S27', 'S28', 'S17', 'S24'] },
 ];
 
+const SUPPORTING = [
+  { title: '商品导购与分享（非独立 Tab）', desc: '今日页/我的页入口 → App 商品列表 → H5 分享页 → 第三方应用下单', screens: ['S32', 'S33', 'S34'] },
+];
+
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '① 新用户首次使用', chain: ['S01', 'S02', 'S03', 'S04', 'S06', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'], note: '修改方案：不再生成长报告，S06 直接生成课表进入 S08' },
   { title: '② 老用户迁移', chain: ['S01', 'S14', 'S15', 'S16', 'S17', 'S04'], note: '迁移后进入评测主链路' },
   { title: '③ 每日使用', chain: ['S09', 'S19', 'S20', 'S10', 'S11', 'S12', 'S13'], note: 'S19 之后也可能直达 S10（无降级）' },
   { title: '④ 订阅转化', chain: ['S22', 'S23', 'S24'], note: '触发点：体验到期次日启动 / 点击锁定课程 / 今日页轻量入口' },
+  { title: '⑤ 商品导购与分享', chain: ['S09', 'S32', 'S33', 'S34'], note: 'App/H5 仅提供商品介绍和入口；第三方平台完成支付、订单、物流与售后' },
 ];
 
 export function OverviewView({ onNavigate }: Props) {
@@ -57,7 +62,23 @@ export function OverviewView({ onNavigate }: Props) {
       </div>
       <p className="mt-2 text-xs text-gray-400">主链路流程页（S01–S08、S11–S16、S22–S23）不属于固定 Tab，由流程推进。</p>
 
-      <h2 className="mt-10 text-2xl font-bold text-gray-800">四条核心流程</h2>
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        {SUPPORTING.map((item) => (
+          <div key={item.title} className="rounded-lg border border-gray-200 bg-white p-4">
+            <p className="text-sm font-bold text-gray-700">{item.title}</p>
+            <p className="mt-1 text-xs leading-relaxed text-gray-400">{item.desc}</p>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {item.screens.map((sid) => (
+                <button key={sid} onClick={() => onNavigate(sid)} className="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 text-[11px] font-mono text-gray-600 hover:bg-gray-700 hover:text-white">
+                  {sid}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="mt-10 text-2xl font-bold text-gray-800">五条核心流程</h2>
       <div className="mt-3 space-y-4">
         {FLOWS.map((f) => (
           <div key={f.title} className="rounded-lg border border-gray-200 bg-white p-4">

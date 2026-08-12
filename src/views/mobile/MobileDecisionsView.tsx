@@ -7,7 +7,7 @@ interface Props {
 export function DecisionsView({ onNavigate }: Props) {
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
-      <h2 className="text-2xl font-bold text-gray-800">逻辑补全决策（B-01 … B-13）</h2>
+      <h2 className="text-2xl font-bold text-gray-800">逻辑补全决策（B-01 … B-14）</h2>
       <p className="mt-1 text-sm text-gray-500">
         以下为需求文档中冲突/缺失之处，原型按此固化。所有补全项在原型中以 <span className="rounded bg-amber-100 px-1 font-bold text-amber-700">amber「补」</span> 标记区分，均待业务方确认。
       </p>

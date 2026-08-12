@@ -93,7 +93,7 @@ export const FLOW_NAMES: Record<FlowGroup, string> = {
   G: '消息与触达',
   H: '训练与能量值',
   I: '社区与活动',
-  J: '商城与履约',
+  J: '商品导购与分享',
   K: '基础配置与系统',
 };
 

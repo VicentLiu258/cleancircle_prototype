@@ -1,4 +1,4 @@
-// 逻辑补全决策 B-01…B-13 与待确认项 M-Q01…M-Q10
+// 逻辑补全决策 B-01…B-14 与待确认项 M-Q01…M-Q10
 import type { DecisionDef, PendingQuestion } from './types';
 
 export const decisions: DecisionDef[] = [
@@ -119,6 +119,15 @@ export const decisions: DecisionDef[] = [
     screens: ['S09', 'S26'],
     status: '产品补全 · 待业务确认',
   },
+  {
+    id: 'B-14', title: '商品入口 = App/H5 导购，第三方平台成交',
+    question: 'App 内商品入口是否需要购物车、站内支付、订单、物流和售后？',
+    conflict: '旧待确认项将商品理解为积分商城或自营实物商城；最新反馈明确后台只配置商品资料与链接，用户在其他应用下单。',
+    decision: 'S09/S26 提供轻量入口，S32 展示精选商品，S33 为可跨应用分享的 H5 商品介绍页，S34 外跳前明确责任并打开天猫等第三方平台；未安装目标 App 时回退第三方 H5。App 不收集收货地址、不建购物车和订单。',
+    reason: '让用户先获得可信商品信息，同时把交易、履约和售后完整留在第三方平台，降低合规和开发复杂度。',
+    screens: ['S09', 'S26', 'S32', 'S33', 'S34'],
+    status: '已按后端反馈4修订 · 2026-08-12',
+  },
 ];
 
 export const pendingQuestions: PendingQuestion[] = [
@@ -129,7 +138,7 @@ export const pendingQuestions: PendingQuestion[] = [
   { id: 'M-Q05', question: '小程序用户、打卡、能量值、订单和课程数据的字段及质量？', impact: '迁移映射和异常处理', placeholder: 'S14–S16 按三类资产抽象展示，字段映射表待数据方提供' },
   { id: 'M-Q06', question: '周期阶段划分和排课安全规则由谁审核？', impact: '医疗/健康风险和规则配置', placeholder: '所有周期文案标注「后台审核话术模板」，报告固定医疗免责声明' },
   { id: 'M-Q07', question: '完课阈值、当日 2 课打卡规则、补打与连胜规则？', impact: '播放、奖励和日历状态', placeholder: '按 B-03/B-04/B-05 固化：80% 阈值、多课全完成才打卡、不补打、断签归零' },
-  { id: 'M-Q08', question: '积分商城是否必须在 MVP 履约实物？', impact: '商品、库存、地址、物流整条链路', placeholder: '原型不含商城页面，仅保留能量值余额与明细（S27）' },
+  { id: 'M-Q08', question: '商品导购首发接入哪些第三方平台？', impact: 'App Link、H5 兜底、外跳提示和分享页测试矩阵', placeholder: '按 B-14 实现 App/H5 商品导购，默认示例为天猫；不含库存、地址、订单、物流和售后。' },
   { id: 'M-Q09', question: '国内上架渠道、支付方案和内容许可证计划？', impact: '支付与上架合规', placeholder: 'S22 仅标注「iOS 默认 Apple IAP」，其余渠道留白待合规方案' },
   { id: 'M-Q10', question: '防盗录期望是防录屏、DRM、跑马灯水印还是并发限制？', impact: '播放器技术方案和成本', placeholder: 'S11 仅标注「鉴权链接+时效+账号异常记录」作为 MVP 底线' },
 ];

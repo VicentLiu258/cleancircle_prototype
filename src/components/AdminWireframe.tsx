@@ -38,6 +38,7 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
     { label: 'AI 打标复核', sid: 'B07' },
     { label: 'AI 课程组合', sid: 'B31' },
     { label: '今日话术', sid: 'B56' },
+    { label: '内容编排', sid: 'B57' },
   ]},
   { group: '排课与建议', items: [
     { label: '排课规则', sid: 'B11' },
@@ -66,11 +67,11 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
     { label: '活动投放', sid: 'B38' },
     { label: '社区数据', sid: 'B47' },
   ]},
-  { group: '商城与履约', items: [
-    { label: '商品与库存', sid: 'B39' },
-    { label: '订单与发货', sid: 'B40' },
-    { label: '售后管理', sid: 'B41' },
-    { label: '库存对账', sid: 'B51' },
+  { group: '商品导购与分享', items: [
+    { label: '外链商品', sid: 'B39' },
+    { label: 'H5 分享页', sid: 'B40' },
+    { label: 'App 商品入口', sid: 'B41' },
+    { label: '外链检查', sid: 'B51' },
   ]},
   { group: '客服', items: [
     { label: '企微配置', sid: 'B42' },

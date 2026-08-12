@@ -2,8 +2,9 @@ import type { ScreenDef } from './types';
 import { screensA } from './screens-a';
 import { screensB } from './screens-b';
 import { screensC } from './screens-c';
+import { screensCommerce } from './screens-commerce';
 
-export const screens: ScreenDef[] = [...screensA, ...screensB, ...screensC];
+export const screens: ScreenDef[] = [...screensA, ...screensB, ...screensC, ...screensCommerce];
 
 export const screenMap: Record<string, ScreenDef> = Object.fromEntries(
   screens.map((s) => [s.id, s]),

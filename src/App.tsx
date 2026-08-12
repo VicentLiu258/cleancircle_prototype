@@ -16,8 +16,8 @@ const NAV: { id: View; label: string }[] = [
 ];
 
 const MODES: { id: Mode; label: string; sub: string }[] = [
-  { id: 'mobile', label: '移动端 App', sub: 'MVP 主链路 · 31 屏（S01–S31，S18 未分配）' },
-  { id: 'admin', label: '管理后台', sub: '全量 B01–B56 线框（含 App 页面编辑、今日话术、AI 课程组合审核）' },
+  { id: 'mobile', label: '移动端 App', sub: '核心主链路 + 商品导购与 H5 分享（S01–S34，S07/S18 未分配）' },
+  { id: 'admin', label: '管理后台', sub: '全量 B01–B57 线框（含外链商品、H5 分享页、内容编排与 AI 审核）' },
 ];
 
 export default function App() {

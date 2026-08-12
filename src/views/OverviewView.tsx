@@ -24,7 +24,8 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
   { menu: '内容中心', prio: 'P0', pages: [
     { label: '视频库 B03', sid: 'B03' }, { label: '编辑 B04', sid: 'B04' }, { label: '导入 B05', sid: 'B05' },
     { label: '标签库 B06', sid: 'B06' }, { label: 'AI 复核 B07', sid: 'B07' },
-    { label: 'AI 课程组合 B31', sid: 'B31' }, { label: '今日话术 B56', sid: 'B56' }, { label: '知识库 B52', sid: 'B52' },
+    { label: 'AI 课程组合 B31', sid: 'B31' }, { label: '今日话术 B56', sid: 'B56' },
+    { label: '内容编排 B57', sid: 'B57' }, { label: '知识库 B52', sid: 'B52' },
   ]},
   { menu: '排课与建议', prio: 'P0', pages: [
     { label: '规则 B11', sid: 'B11' }, { label: '编辑 B12', sid: 'B12' },
@@ -42,9 +43,9 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
     { label: '审核 B35', sid: 'B35' }, { label: '举报 B36', sid: 'B36' }, { label: '挑战赛 B37', sid: 'B37' },
     { label: '投放 B38', sid: 'B38' }, { label: '社区数据 B47', sid: 'B47' },
   ]},
-  { menu: '商城与履约', prio: 'P1', pages: [
-    { label: '商品库存 B39', sid: 'B39' }, { label: '订单发货 B40', sid: 'B40' },
-    { label: '售后 B41', sid: 'B41' }, { label: '库存对账 B51', sid: 'B51' },
+  { menu: '商品导购与分享', prio: 'P1', pages: [
+    { label: '外链商品 B39', sid: 'B39' }, { label: 'H5 分享页 B40', sid: 'B40' },
+    { label: 'App 商品入口 B41', sid: 'B41' }, { label: '外链检查 B51', sid: 'B51' },
   ]},
   { menu: '客服', prio: 'P0', pages: [
     { label: '企微配置 B42', sid: 'B42' },
@@ -62,7 +63,7 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
 
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '工作台 · 经营洞察', chain: ['B02', 'B48', 'B49', 'B50'], note: '核心 KPI + 待办；转化漏斗；趋势；用户行为（事件/路径/留存）' },
-  { title: '内容 · 视频到 AI 课程', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B31', 'B52'], note: '导入/标签/视频/AI 复核 → AI 生成课程方案 → 人工审核发布；知识库文章健康类终审' },
+  { title: '内容 · 视频到 AI 课程', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B31', 'B57', 'B52'], note: '导入/标签/视频/AI 复核 → AI 生成课程方案 → 人工审核 → 专栏/分类/日历编排；知识库健康类终审' },
   { title: 'App 页面与今日话术', chain: ['B56', 'B55'], note: '文案库 → AI 推荐候选 → 人工审核 → 页面组件配置、预览与发布' },
   { title: '问卷评测发布', chain: ['B08', 'B09', 'B10'], note: '复评 14/28 天；选项映射用户/训练标签；结果话术（无长报告）' },
   { title: '排课规则模拟', chain: ['B11', 'B12', 'B13', 'B14'], note: '规则编辑 → 30 天模拟解释 → 回归发布；阶段建议' },
@@ -71,7 +72,7 @@ const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '训练与能量值', chain: ['B29', 'B30', 'B23'], note: '打卡统计；能量值规则；人工调整审批（统一称能量值）' },
   { title: '会员财务', chain: ['B22', 'B53', 'B21', 'B24', 'B25'], note: '套餐 → 订阅看板 → 订阅订单 → 退款（含 Apple 外退）→ 三渠道对账' },
   { title: '社区（P1）', chain: ['B32', 'B35', 'B37', 'B38'], note: '帖子/审核/挑战赛/投放' },
-  { title: '商城（P1）', chain: ['B39', 'B40', 'B41', 'B51'], note: '商品库存 → 订单发货 → 售后全流程 → 库存对账' },
+  { title: '商品导购与分享（P1）', chain: ['B39', 'B40', 'B41', 'B51'], note: '商品资料和外链 → H5 分享页 → App 入口 → 链接健康检查；第三方平台完成下单与履约' },
   { title: '配置与系统', chain: ['B55', 'B42', 'B43', 'B44', 'B45', 'B46', 'B26', 'B27'], note: 'App 页面组件、企微/版本/开关/公告/三方；角色·管理员与审计' },
 ];
 
@@ -98,6 +99,7 @@ const XREF: { mobile: string; cap: string; mScreens: string; aScreens: string[] 
   { mobile: '老用户资产', cap: '迁移导入、幂等、用户档案', mScreens: 'S14–S17', aScreens: ['B20', 'B19'] },
   { mobile: '订阅开通', cap: '套餐、订阅看板、订单、退款、对账', mScreens: 'S22–S24', aScreens: ['B22', 'B53', 'B21', 'B24', 'B25'] },
   { mobile: '课程库 / 已购课', cap: '课程组合与权益 / 知识库', mScreens: 'S29/S17', aScreens: ['B31', 'B52'] },
+  { mobile: 'Jo 姐好物 / H5 分享', cap: '商品资料与外链、H5 分享页、App 入口和链接检查', mScreens: 'S32/S33/S34', aScreens: ['B39', 'B40', 'B41', 'B51'] },
   { mobile: '社区 Homies', cap: '官方内容 / UGC（P1）', mScreens: 'S31', aScreens: ['B34', 'B32'] },
 ];
 
@@ -112,7 +114,7 @@ export function OverviewView({ onNavigate }: Props) {
       <div className="mt-3 rounded-lg border border-gray-200 bg-white p-5">
         <p className="text-sm leading-relaxed text-gray-600">
           以《后端需求.docx》为权威规格；与旧后台原型冲突时<strong className="text-gray-800">以后端需求为准</strong>。
-          线框目标：移动端核心链路<strong className="text-gray-800">可配置、可发布、可追溯、可人工干预</strong>，并覆盖经营看板、CRM、财务、社区与商城原型。
+          线框目标：移动端核心链路<strong className="text-gray-800">可配置、可发布、可追溯、可人工干预</strong>，并覆盖经营看板、CRM、财务、社区与外链商品导购。
         </p>
         <p className="mt-2 text-sm text-gray-600">
           当前共 <span className="font-semibold text-gray-800">{total}</span> 屏线框
@@ -127,10 +129,10 @@ export function OverviewView({ onNavigate }: Props) {
           <li>⑤ 用户标签分群、触达任务与发送记录</li>
           <li>⑥ 能量值规则与调整审批（统一命名）</li>
           <li>⑦ 会员套餐、订阅看板、订单、退款、对账</li>
-          <li>⑧ 社区 / 商城 P1；客服 / 基础配置 / 系统</li>
+          <li>⑧ 社区 / 外链商品导购与 H5 分享 P1；客服 / 基础配置 / 系统</li>
         </ul>
         <p className="mt-3 text-xs text-gray-400">
-          相对 web 补齐：B52 知识库 · B53 订阅看板 · B54 发送记录 · B55 App 页面编辑 · B56 今日话术 · B26 管理员账号态。口径修订见「逻辑补全说明」。
+          相对 web 补齐：B52 知识库 · B53 订阅看板 · B54 发送记录 · B55 App 页面编辑 · B56 今日话术 · B57 内容编排 · B26 管理员账号态。口径修订见「逻辑补全说明」。
         </p>
       </div>
 

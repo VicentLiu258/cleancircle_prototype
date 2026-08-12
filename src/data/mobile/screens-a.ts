@@ -263,6 +263,7 @@ export const screensA: ScreenDef[] = [
         { kind: 'chip-row', label: '快捷调整：「来例假了」→ S21', marker: 6 },
         { kind: 'card', label: '今日饮食营养建议', sub: '阶段化话术（后台审核模板）' },
         { kind: 'card', label: 'Ritual 建议：经期暖饮（进入一个食谱）· 淋巴按摩 · 自我肯定冥想', sub: '每日小仪式，为身体和情绪注入支持', marker: 7, patch: true },
+        { kind: 'card', label: 'Jo 姐好物', sub: '精选训练补给与日常营养 · 第三方平台下单', to: 'S32', marker: 8, patch: true },
         { kind: 'tabbar', label: '今日' },
       ]},
       { id: 'checked', label: '已 Check-in', blocks: [
@@ -274,6 +275,7 @@ export const screensA: ScreenDef[] = [
         { kind: 'card', label: '推荐运动：舒缓瑜伽 · 20min · 低强度 · 约 90 kcal · 全身放松', to: 'S10' },
         { kind: 'button-primary', label: '开始训练', to: 'S10' },
         { kind: 'card', label: 'Ritual 建议：经期暖饮 · 淋巴按摩 · 自我肯定冥想', sub: '每日小仪式，为身体和情绪注入支持' },
+        { kind: 'card', label: 'Jo 姐好物', sub: '查看适合训练与日常营养的精选商品', to: 'S32', patch: true },
         { kind: 'tabbar', label: '今日' },
       ]},
       { id: 'downgraded', label: '已降级', blocks: [
@@ -291,6 +293,7 @@ export const screensA: ScreenDef[] = [
         { kind: 'header', label: '早上好，{昵称}', sub: '1月21日 周三' },
         { kind: 'card', label: '你处于 月经期 · 第 1 天  ☾', sub: '经期第 1 天，请温柔对待自己' },
         { kind: 'card', label: '推荐运动：经期舒缓 · 15min · 低强度 [开始]', to: 'S10' },
+        { kind: 'card', label: 'Jo 姐好物', sub: '商品介绍与第三方下单入口', to: 'S32', patch: true },
         { kind: 'tabbar', label: '今日' },
       ]},
       { id: 'locked', label: '订阅锁定', blocks: [
@@ -300,6 +303,7 @@ export const screensA: ScreenDef[] = [
         { kind: 'card', label: '周期状态（历史可见）：月经期 · 第 2 天' },
         { kind: 'card', label: '推荐运动：  定制课程已锁定', sub: '点击同样进入 S22', to: 'S22', marker: 2 },
         { kind: 'card', label: '打卡记录 / 已购课程仍可查看', sub: 'B-11 权益锁定规则', patch: true },
+        { kind: 'card', label: 'Jo 姐好物仍可浏览', sub: '商品导购不属于订阅权益；第三方平台下单', to: 'S32', patch: true },
         { kind: 'tabbar', label: '今日' },
       ]},
       { id: 'fallback', label: '排课失败（兜底）', blocks: [
@@ -314,18 +318,18 @@ export const screensA: ScreenDef[] = [
     annotations: {
       goal: '定制服务核心首页：让用户 1 分钟内知道今天练什么、为什么。',
       entry: 'S08 了解今天的自己 / 日常启动 App / S13 返回今日',
-      exit: ['S10', 'S19', 'S20', 'S21', 'S22', 'S25', 'S26', 'S29', 'S31'],
+      exit: ['S10', 'S19', 'S20', 'S21', 'S22', 'S25', 'S26', 'S29', 'S31', 'S32'],
       role: '体验用户 / 订阅用户 / 失效用户（锁定态）',
-      data: ['问候/日期 — 本地时区', '周期阶段/第 N 天/预计经期 — 周期算法（月亮元素表示，修改方案 P5）', 'Check-in 状态（能量/情绪/睡眠/身体不适） — 服务端当日记录', '推荐运动（标题/时间/强度/卡路里/部位） — 排课引擎（规则版本留痕）', '今日饮食营养建议 — 阶段话术模板', 'Ritual 建议（经期暖饮/淋巴按摩/自我肯定冥想） — 内容配置（修改方案 P5）', '体验天数 — trialDays 参数（B-01，补）'],
+      data: ['问候/日期 — 本地时区', '周期阶段/第 N 天/预计经期 — 周期算法（月亮元素表示，修改方案 P5）', 'Check-in 状态（能量/情绪/睡眠/身体不适） — 服务端当日记录', '推荐运动（标题/时间/强度/卡路里/部位） — 排课引擎（规则版本留痕）', '今日饮食营养建议 — 阶段话术模板', 'Ritual 建议（经期暖饮/淋巴按摩/自我肯定冥想） — 内容配置（修改方案 P5）', 'Jo 姐好物入口 — B41 App 商品入口配置', '体验天数 — trialDays 参数（B-01，补）'],
       actions: {
         primary: '开始训练（S10）/ 完成 Check-in（S19）',
-        secondary: ['今天太累，运动降级（S20）', '「来例假了」（S21）', 'Ritual：经期暖饮进入食谱', '消息入口', '5 Tab 导航'],
+        secondary: ['今天太累，运动降级（S20）', '「来例假了」（S21）', 'Ritual：经期暖饮进入食谱', 'Jo 姐好物（S32）', '消息入口', '5 Tab 导航'],
         destructive: '「来例假了」触发课表重排，需二次确认（S21）',
       },
       statesDesc: ['未 Check-in', '已 Check-in', '课程未开始/进行中/已完成', '已降级（可撤销）', '体验中（体验第 N 天条）', '订阅锁定（锁定条+续订 CTA）', '排课失败（兜底课卡）', '评测未完成（「继续评测」引导卡，B-11）'],
       triggers: ['体验到期次日首次启动 → 弹付费墙 S22（B-02）', 'Check-in 低能量 → 降级建议（B-06）', '兜底触发：无可匹配视频 → 安全兜底课/建议休息卡（B-09）', 'Push 频控 ≤2 条/日（B-13）'],
-      deps: ['D03 排课规则/兜底', 'D04 当日降级与周期重排规则', 'D05 阶段话术配置', 'D06 消息模板/频控', 'Ritual/食谱内容配置'],
-      patches: ['B-01', 'B-02', 'B-06', 'B-09', 'B-11', 'B-13'],
+      deps: ['D03 排课规则/兜底', 'D04 当日降级与周期重排规则', 'D05 阶段话术配置', 'D06 消息模板/频控', 'Ritual/食谱内容配置', 'B39/B41 外链商品与 App 入口'],
+      patches: ['B-01', 'B-02', 'B-06', 'B-09', 'B-11', 'B-13', 'B-14'],
     },
   },
   {
