@@ -17,7 +17,7 @@ const NAV: { id: View; label: string }[] = [
 
 const MODES: { id: Mode; label: string; sub: string }[] = [
   { id: 'mobile', label: '移动端 App', sub: 'MVP 主链路 · 31 屏（S01–S31，S18 未分配）' },
-  { id: 'admin', label: '管理后台', sub: '对齐 cleancircle_web · 全量 B01–B54 线框（含知识库/订阅看板/发送记录）' },
+  { id: 'admin', label: '管理后台', sub: '全量 B01–B56 线框（含 App 页面编辑、今日话术、AI 课程组合审核）' },
 ];
 
 export default function App() {

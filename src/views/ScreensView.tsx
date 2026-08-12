@@ -95,7 +95,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
           </div>
         ))}
         <p className="px-3 pt-2 text-[10px] leading-relaxed text-gray-400">
-          对齐《后端需求》全量 B 系列；页内 Tab 已补齐对应状态，可直接点击切换。
+          对齐《后端需求》与反馈全量 B 系列；页内 Tab 已补齐对应状态，可直接点击切换。
         </p>
       </aside>
 

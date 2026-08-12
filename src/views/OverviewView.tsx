@@ -24,7 +24,7 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
   { menu: '内容中心', prio: 'P0', pages: [
     { label: '视频库 B03', sid: 'B03' }, { label: '编辑 B04', sid: 'B04' }, { label: '导入 B05', sid: 'B05' },
     { label: '标签库 B06', sid: 'B06' }, { label: 'AI 复核 B07', sid: 'B07' },
-    { label: '课程组合 B31', sid: 'B31' }, { label: '知识库 B52', sid: 'B52' },
+    { label: 'AI 课程组合 B31', sid: 'B31' }, { label: '今日话术 B56', sid: 'B56' }, { label: '知识库 B52', sid: 'B52' },
   ]},
   { menu: '排课与建议', prio: 'P0', pages: [
     { label: '规则 B11', sid: 'B11' }, { label: '编辑 B12', sid: 'B12' },
@@ -50,6 +50,7 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
     { label: '企微配置 B42', sid: 'B42' },
   ]},
   { menu: '基础运营配置', prio: 'P0', pages: [
+    { label: 'App 页面编辑 B55', sid: 'B55' },
     { label: 'App 版本 B43', sid: 'B43' }, { label: '功能开关 B44', sid: 'B44' },
     { label: '公告与弹窗 B45', sid: 'B45' }, { label: '第三方服务 B46', sid: 'B46' },
   ]},
@@ -61,7 +62,8 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
 
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '工作台 · 经营洞察', chain: ['B02', 'B48', 'B49', 'B50'], note: '核心 KPI + 待办；转化漏斗；趋势；用户行为（事件/路径/留存）' },
-  { title: '内容 · 视频到课程', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B31', 'B52'], note: '导入/标签/视频/AI 复核 → 课程组合；知识库文章（健康类需终审）' },
+  { title: '内容 · 视频到 AI 课程', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B31', 'B52'], note: '导入/标签/视频/AI 复核 → AI 生成课程方案 → 人工审核发布；知识库文章健康类终审' },
+  { title: 'App 页面与今日话术', chain: ['B56', 'B55'], note: '文案库 → AI 推荐候选 → 人工审核 → 页面组件配置、预览与发布' },
   { title: '问卷评测发布', chain: ['B08', 'B09', 'B10'], note: '复评 14/28 天；选项映射用户/训练标签；结果话术（无长报告）' },
   { title: '排课规则模拟', chain: ['B11', 'B12', 'B13', 'B14'], note: '规则编辑 → 30 天模拟解释 → 回归发布；阶段建议' },
   { title: 'CRM 与触达', chain: ['B18', 'B19', 'B17', 'B15', 'B16', 'B28', 'B54'], note: '用户档案 + 标签分群 + 模板/触发器 + 触达效果 + 发送记录' },
@@ -70,7 +72,7 @@ const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '会员财务', chain: ['B22', 'B53', 'B21', 'B24', 'B25'], note: '套餐 → 订阅看板 → 订阅订单 → 退款（含 Apple 外退）→ 三渠道对账' },
   { title: '社区（P1）', chain: ['B32', 'B35', 'B37', 'B38'], note: '帖子/审核/挑战赛/投放' },
   { title: '商城（P1）', chain: ['B39', 'B40', 'B41', 'B51'], note: '商品库存 → 订单发货 → 售后全流程 → 库存对账' },
-  { title: '配置与系统', chain: ['B42', 'B43', 'B44', 'B45', 'B46', 'B26', 'B27'], note: '企微/版本/开关/公告/三方；角色·管理员与审计' },
+  { title: '配置与系统', chain: ['B55', 'B42', 'B43', 'B44', 'B45', 'B46', 'B26', 'B27'], note: 'App 页面组件、企微/版本/开关/公告/三方；角色·管理员与审计' },
 ];
 
 const ROLES: { role: string; scope: string; limit: string }[] = [
@@ -87,7 +89,8 @@ const ROLES: { role: string; scope: string; limit: string }[] = [
 const XREF: { mobile: string; cap: string; mScreens: string; aScreens: string[] }[] = [
   { mobile: '问卷逐题 / 复评', cap: '问卷版本、14/28 天复评、标签映射', mScreens: 'S04/S05', aScreens: ['B08', 'B09'] },
   { mobile: '评测后生成课表', cap: '结果话术 + 今日起 30 天课表（无长报告）', mScreens: 'S06/S08', aScreens: ['B10', 'B13'] },
-  { mobile: '滚动 30 天 AI 课表', cap: '视频标签、课程组合、排课规则、兜底', mScreens: 'S08/S09', aScreens: ['B06', 'B07', 'B11', 'B12', 'B31'] },
+  { mobile: '滚动 30 天 AI 课表', cap: '视频标签、AI 课程组合（人工审核）、排课规则、兜底', mScreens: 'S08/S09', aScreens: ['B06', 'B07', 'B11', 'B12', 'B31'] },
+  { mobile: '首页 / 今日话术', cap: '页面组件、文案库、AI 推荐与人工审核', mScreens: 'S01/S09', aScreens: ['B55', 'B56'] },
   { mobile: '「太累」/「来例假了」', cap: '当日降级与周期重排规则', mScreens: 'S19/S20/S21', aScreens: ['B12'] },
   { mobile: '饮食 Tips / Ritual', cap: '周期阶段话术配置', mScreens: 'S09', aScreens: ['B14'] },
   { mobile: 'Push / 站内信', cap: '模板、触发器、触达任务与发送记录', mScreens: 'S09/S26', aScreens: ['B15', 'B16', 'B28', 'B54'] },
@@ -118,7 +121,7 @@ export function OverviewView({ onNavigate }: Props) {
         </p>
         <ul className="mt-3 grid grid-cols-1 gap-1.5 text-[13px] text-gray-600 md:grid-cols-2">
           <li>① 运营总览 / 漏斗 / 趋势与待办</li>
-          <li>② 视频导入打标 + 课程组合 + 知识库</li>
+          <li>② 视频导入打标 + AI 课程组合人工审核 + 知识库</li>
           <li>③ 问卷复评、标签映射、结果话术（无长报告）</li>
           <li>④ 排课规则与 <strong>30 天</strong>模拟</li>
           <li>⑤ 用户标签分群、触达任务与发送记录</li>
@@ -127,7 +130,7 @@ export function OverviewView({ onNavigate }: Props) {
           <li>⑧ 社区 / 商城 P1；客服 / 基础配置 / 系统</li>
         </ul>
         <p className="mt-3 text-xs text-gray-400">
-          相对 web 补齐：B52 知识库 · B53 订阅看板 · B54 发送记录 · B26 管理员账号态。口径修订见「逻辑补全说明」。
+          相对 web 补齐：B52 知识库 · B53 订阅看板 · B54 发送记录 · B55 App 页面编辑 · B56 今日话术 · B26 管理员账号态。口径修订见「逻辑补全说明」。
         </p>
       </div>
 
