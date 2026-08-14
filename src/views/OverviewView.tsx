@@ -24,12 +24,13 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
   { menu: '内容中心', prio: 'P0', pages: [
     { label: '视频库 B03', sid: 'B03' }, { label: '编辑 B04', sid: 'B04' }, { label: '导入 B05', sid: 'B05' },
     { label: '标签库 B06', sid: 'B06' }, { label: 'AI 复核 B07', sid: 'B07' },
-    { label: 'AI 课程组合 B31', sid: 'B31' }, { label: '今日话术 B56', sid: 'B56' },
-    { label: '内容编排 B57', sid: 'B57' }, { label: '知识库 B52', sid: 'B52' },
+    { label: '今日话术 B56', sid: 'B56' }, { label: '内容编排 B57', sid: 'B57' },
+    { label: '知识库 B52', sid: 'B52' },
   ]},
   { menu: '排课与建议', prio: 'P0', pages: [
     { label: '规则 B11', sid: 'B11' }, { label: '编辑 B12', sid: 'B12' },
-    { label: '模拟30天 B13', sid: 'B13' }, { label: '阶段建议 B14', sid: 'B14' },
+    { label: 'AI 课程组合 B31', sid: 'B31' }, { label: '模拟30天 B13', sid: 'B13' },
+    { label: '阶段建议 B14', sid: 'B14' },
   ]},
   { menu: '训练与能量值', prio: 'P0', pages: [
     { label: '打卡 B29', sid: 'B29' }, { label: '规则 B30', sid: 'B30' }, { label: '调整审批 B23', sid: 'B23' },
@@ -63,10 +64,10 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
 
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '工作台 · 经营洞察', chain: ['B02', 'B48', 'B49', 'B50'], note: '核心 KPI + 待办；转化漏斗；趋势；用户行为（事件/路径/留存）' },
-  { title: '内容 · 视频到 AI 课程', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B31', 'B57', 'B52'], note: '导入/标签/视频/AI 复核 → AI 生成课程方案 → 人工审核 → 专栏/分类/日历编排；知识库健康类终审' },
+  { title: '内容 · 视频库与标签', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B57', 'B52'], note: '导入/标签/视频/AI 复核 → 专栏/分类/日历编排；知识库健康类终审' },
   { title: 'App 页面与今日话术', chain: ['B56', 'B55'], note: '文案库 → AI 推荐候选 → 人工审核 → 页面组件配置、预览与发布' },
   { title: '问卷评测发布', chain: ['B08', 'B09', 'B10'], note: '复评 14/28 天；选项映射用户/训练标签；结果话术（无长报告）' },
-  { title: '排课规则模拟', chain: ['B11', 'B12', 'B13', 'B14'], note: '规则编辑 → 30 天模拟解释 → 回归发布；阶段建议' },
+  { title: '排课规则与 AI 推荐', chain: ['B11', 'B12', 'B31', 'B13', 'B14'], note: '规则编辑 → AI 课程推荐抽查 → 30 天模拟解释 → 回归发布；阶段建议' },
   { title: 'CRM 与触达', chain: ['B18', 'B19', 'B17', 'B15', 'B16', 'B28', 'B54'], note: '用户档案 + 标签分群 + 模板/触发器 + 触达效果 + 发送记录' },
   { title: '迁移', chain: ['B20'], note: 'Excel 向导：校验 → 执行 → 部分成功重试（幂等）' },
   { title: '训练与能量值', chain: ['B29', 'B30', 'B23'], note: '打卡统计；能量值规则；人工调整审批（统一称能量值）' },
