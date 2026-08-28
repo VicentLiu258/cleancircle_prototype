@@ -50,14 +50,19 @@ function PatchBadge() {
 
 interface BlockProps {
   block: WireBlock;
-  onNavigate: (id: string) => void;
+  onNavigate: (id: string, stateId?: string) => void;
+  onStateChange: (id: string) => void;
 }
 
-export function BlockView({ block: b, onNavigate }: BlockProps) {
-  const clickable = !!b.to;
+export function BlockView({ block: b, onNavigate, onStateChange }: BlockProps) {
+  const clickable = !!b.to || !!b.toState;
   const patchCls = b.patch ? 'border border-dashed border-amber-400' : '';
   const base = 'relative w-full';
   const clickCls = clickable ? 'cursor-pointer hover:ring-2 hover:ring-gray-400 transition' : '';
+  const handleClick = () => {
+    if (b.to) onNavigate(b.to, b.toState);
+    else if (b.toState) onStateChange(b.toState);
+  };
   const inner = (children: React.ReactNode) => (
     <>
       {b.marker != null && <Badge n={b.marker} />}
@@ -68,8 +73,8 @@ export function BlockView({ block: b, onNavigate }: BlockProps) {
   const wrap = (children: React.ReactNode, extraCls = '') => (
     <div
       className={`${base} ${extraCls} ${clickCls}`}
-      onClick={clickable ? () => onNavigate(b.to!) : undefined}
-      title={clickable ? `跳转到 ${b.to}` : undefined}
+      onClick={clickable ? handleClick : undefined}
+      title={clickable ? (b.to ? `跳转到 ${b.to}${b.toState ? ` · 状态 ${b.toState}` : ''}` : `切换到状态 ${b.toState}`) : undefined}
     >
       {inner(children)}
     </div>
@@ -252,10 +257,12 @@ export function PhoneFrame({
   screen,
   stateId,
   onNavigate,
+  onStateChange,
 }: {
   screen: ScreenDef;
   stateId: string;
-  onNavigate: (id: string) => void;
+  onNavigate: (id: string, stateId?: string) => void;
+  onStateChange: (id: string) => void;
 }) {
   const state = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
   return (
@@ -266,7 +273,7 @@ export function PhoneFrame({
       <div className="mx-auto mt-1.5 h-4 w-24 rounded-full bg-gray-700" />
       <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto py-1">
         {state.blocks.map((b, i) => (
-          <BlockView key={i} block={b} onNavigate={onNavigate} />
+          <BlockView key={i} block={b} onNavigate={onNavigate} onStateChange={onStateChange} />
         ))}
       </div>
     </div>

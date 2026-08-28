@@ -3,6 +3,9 @@
 
 export type FlowGroup = 'E' | 'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K';
 
+/** 非 Bxx 页面：用于把运营演示页挂到后台真实信息架构中。 */
+export const COURSE_TAGGING_VIEW_ID = 'COURSE_TAGGING';
+
 export interface WireBlock {
   kind:
     | 'chrome'          // 浏览器窗口栏（地址栏）

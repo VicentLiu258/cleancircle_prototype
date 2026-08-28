@@ -5,6 +5,7 @@ import { DecisionsView } from './views/DecisionsView';
 import { OverviewView as MobileOverviewView } from './views/mobile/MobileOverviewView';
 import { ScreensView as MobileScreensView } from './views/mobile/MobileScreensView';
 import { DecisionsView as MobileDecisionsView } from './views/mobile/MobileDecisionsView';
+import { COURSE_TAGGING_VIEW_ID } from './data/types';
 
 type Mode = 'mobile' | 'admin';
 type View = 'overview' | 'screens' | 'decisions';
@@ -34,6 +35,11 @@ export default function App() {
   const goMobileScreen = (id: string) => {
     setMobileScreenId(id);
     setMode('mobile');
+    setView('screens');
+  };
+  const goTagging = () => {
+    setAdminScreenId(COURSE_TAGGING_VIEW_ID);
+    setMode('admin');
     setView('screens');
   };
 
@@ -84,6 +90,7 @@ export default function App() {
             onNavigate={setAdminScreenId}
             onShowDecisions={() => setView('decisions')}
             onOpenMobile={goMobileScreen}
+            onOpenTagging={goTagging}
           />
         )}
         {mode === 'admin' && view === 'decisions' && <DecisionsView onNavigate={goAdminScreen} />}

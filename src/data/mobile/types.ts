@@ -13,6 +13,7 @@ export interface WireBlock {
   marker?: number;   // 标注序号，与标注面板对应
   patch?: boolean;   // true = 产品补全元素，amber 虚线框 + 「补」角标
   to?: string;       // 点击跳转的屏幕ID
+  toState?: string;  // 同一屏幕内的状态跳转（用于评审站演示多步流程）
   height?: number;   // 可选高度提示 px
 }
 

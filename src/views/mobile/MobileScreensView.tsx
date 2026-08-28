@@ -43,9 +43,10 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
   const groups = groupByFlow(screens);
   const a = screen.annotations;
 
-  const selectScreen = (id: string) => {
+  const selectScreen = (id: string, targetStateId?: string) => {
     onNavigate(id);
-    setStateId((screenMap[id] ?? screens[0]).states[0].id);
+    const targetScreen = screenMap[id] ?? screens[0];
+    setStateId(targetStateId && targetScreen.states.some((st) => st.id === targetStateId) ? targetStateId : targetScreen.states[0].id);
   };
 
   return (
@@ -102,9 +103,16 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
           </div>
         )}
         <div className="mt-4">
-          <PhoneFrame screen={screen} stateId={curState.id} onNavigate={selectScreen} />
+          <PhoneFrame
+            screen={screen}
+            stateId={curState.id}
+            onNavigate={selectScreen}
+            onStateChange={(nextStateId) => {
+              if (screen.states.some((st) => st.id === nextStateId)) setStateId(nextStateId);
+            }}
+          />
         </div>
-        <p className="mt-3 text-[11px] text-gray-400">带 → 的按钮可点击跳转 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全</p>
+        <p className="mt-3 text-[11px] text-gray-400">带 → 的按钮可点击跳转 · 同页按钮可切换状态 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全</p>
       </main>
 
       {/* 右栏：标注面板 */}

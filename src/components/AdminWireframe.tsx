@@ -1,4 +1,4 @@
-import type { WireBlock, ScreenDef } from '../data/types';
+import { COURSE_TAGGING_VIEW_ID, type WireBlock, type ScreenDef } from '../data/types';
 
 // ——— 图片占位：灰块 + 对角叉线 ———
 const crossBg: React.CSSProperties = {
@@ -42,6 +42,7 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
   { group: '排课与建议', items: [
     { label: '排课规则', sid: 'B11' },
     { label: '规则编辑', sid: 'B12' },
+    { label: '课程标签 & 能量估算', sid: COURSE_TAGGING_VIEW_ID },
     { label: 'AI 课程组合', sid: 'B31' },
     { label: '模拟测试(30天)', sid: 'B13' },
     { label: '阶段建议', sid: 'B14' },
@@ -413,7 +414,7 @@ function Sidebar({ active, screenId, onNavigate }: { active: string; screenId?: 
               <button
                 key={it.label}
                 onClick={it.sid ? () => onNavigate(it.sid!) : undefined}
-                className={`block w-full truncate px-2 py-0.5 text-left text-[9.5px] ${
+                className={`block w-full px-2 text-left text-[9.5px] ${it.sid === COURSE_TAGGING_VIEW_ID ? 'py-1 text-[8.5px] leading-tight whitespace-normal' : 'truncate py-0.5'} ${
                   isActive ? 'bg-gray-700 font-bold text-white' : it.sid ? 'text-gray-600 hover:bg-gray-200' : 'text-gray-300'
                 }`}
                 title={it.sid ? `跳转到 ${it.sid}` : '后续批次'}

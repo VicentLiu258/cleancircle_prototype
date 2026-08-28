@@ -1,13 +1,36 @@
 import { useState } from 'react';
 import { screens, screenMap, groupByFlow } from '../data';
-import { FLOW_NAMES, FLOW_ORDER } from '../data/types';
+import { COURSE_TAGGING_VIEW_ID, FLOW_NAMES, FLOW_ORDER, type ScreenDef } from '../data/types';
 import { AdminFrame } from '../components/AdminWireframe';
+import { CourseTaggingDemoView } from './CourseTaggingDemoView';
+
+const TAGGING_SCREEN: ScreenDef = {
+  id: COURSE_TAGGING_VIEW_ID,
+  name: '课程标签 & 能量估算',
+  reqCode: '产品补全 · 排课依赖',
+  priority: 'P0',
+  flow: 'C',
+  states: [{ id: 'workspace', label: '工作台', blocks: [] }],
+  annotations: {
+    goal: '将视频课程转换为可解释、可复核、可被排课规则读取的课程标签，并提供单次训练能量估算。',
+    entry: '内容中心 > B06 标签库 / B07 AI 打标复核',
+    exit: ['B11', 'B12', 'B13', 'B31'],
+    role: '内容运营；安全类标签由健康运营终审。',
+    data: ['课程视频、字幕 — B03 视频库', '标签字典与发布快照 — B06 标签库', 'MET 模型与体重输入 — 卡路里估算模块'],
+    actions: { primary: 'AI 批量打标、人工复核、发布标签快照', secondary: ['查看卡路里估算', '按状态筛选课程池'] },
+    statesDesc: ['待复核', '异常待处理', '可用于排课', '已发布快照'],
+    triggers: ['只有通过普通标签复核和健康终审的课程，才允许 B12 排课规则读取。', '视频内容或标签字典变更后，需要重新运行打标并生成新版本。'],
+    deps: ['B06 标签库', 'B07 AI 打标复核', 'B12 排课规则编辑'],
+    patches: ['H-01'],
+  },
+};
 
 interface Props {
   screenId: string;
   onNavigate: (screenId: string) => void;
   onShowDecisions: () => void;
   onOpenMobile: (screenId: string) => void;
+  onOpenTagging: () => void;
 }
 
 // 把含 Bxx 的文本渲染成可点击引用；Sxx 可点击切换到移动端 App 对应屏
@@ -58,14 +81,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobile }: Props) {
-  const screen = screenMap[screenId] ?? screens[0];
+export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobile, onOpenTagging }: Props) {
+  const screen = screenId === COURSE_TAGGING_VIEW_ID ? TAGGING_SCREEN : screenMap[screenId] ?? screens[0];
+  const isTagging = screen.id === COURSE_TAGGING_VIEW_ID;
   const [stateId, setStateId] = useState(screen.states[0].id);
   const curState = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
   const groups = groupByFlow(screens);
   const a = screen.annotations;
 
   const selectScreen = (id: string) => {
+    if (id === COURSE_TAGGING_VIEW_ID) {
+      onOpenTagging();
+      return;
+    }
     onNavigate(id);
     setStateId((screenMap[id] ?? screens[0]).states[0].id);
   };
@@ -92,6 +120,17 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
                 </span>
               </button>
             ))}
+            {f === 'C' && (
+              <button
+                type="button"
+                onClick={() => selectScreen(COURSE_TAGGING_VIEW_ID)}
+                className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${isTagging ? 'bg-gray-700 font-semibold text-white' : 'text-slate-700 hover:bg-gray-200'}`}
+              >
+                <span className="font-mono text-[11px]">TAG</span>
+                <span className="min-w-0 flex-1 truncate">课程标签 & 能量估算</span>
+                <span className={`rounded px-1 text-[10px] font-semibold ${isTagging ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>新增</span>
+              </button>
+            )}
           </div>
         ))}
         <p className="px-3 pt-2 text-[10px] leading-relaxed text-gray-400">
@@ -126,16 +165,22 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
             ))}
           </div>
         )}
-        <div className="mt-4 w-full max-w-[920px] px-4">
-          <AdminFrame
-            screen={screen}
-            stateId={curState.id}
-            onNavigate={selectScreen}
-            onSwitchState={setStateId}
-          />
-        </div>
+        {isTagging ? (
+          <div className="mt-4 w-full max-w-[1200px] px-4">
+            <CourseTaggingDemoView embedded />
+          </div>
+        ) : (
+          <div className="mt-4 w-full max-w-[920px] px-4">
+            <AdminFrame
+              screen={screen}
+              stateId={curState.id}
+              onNavigate={selectScreen}
+              onSwitchState={setStateId}
+            />
+          </div>
+        )}
         <p className="mt-3 text-[11px] text-gray-400">
-          页内 Tab 可点击切换对应状态 · 带跳转的按钮/表格行可点 · 左侧菜单可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切到移动端
+          {isTagging ? '课程标签工作台已嵌入后台系统内容区 · 左侧可切换排课与内容相关页面 · 右侧查看页面目标、依赖与发布规则' : '页内 Tab 可点击切换对应状态 · 带跳转的按钮/表格行可点 · 左侧菜单可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切到移动端'}
         </p>
       </main>
 
