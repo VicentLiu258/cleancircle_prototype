@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-type TabId = 'portrait' | 'ai' | 'review' | 'calories';
+type TabId = 'portrait' | 'ai' | 'review' | 'governance' | 'calories';
 type CourseStatus = '待复核' | '可用于排课' | '异常待处理';
 type CourseFilter = 'all' | CourseStatus;
 type Decision = 'accept' | 'edit' | 'reject';
@@ -97,8 +97,8 @@ const COURSES: Course[] = [
       { label: '产后恢复', value: 3 },
     ],
     safety: [
-      { label: '经期谨慎特征', value: '低', tone: 'safe' },
-      { label: '产后谨慎特征', value: '低', tone: 'safe' },
+      { label: '经期风险', value: '低', tone: 'safe' },
+      { label: '产后风险', value: '低', tone: 'safe' },
     ],
     keyActions: ['原地走', '侧步', 'Knee Drive', '轻度深蹲'],
     evidence: [
@@ -137,8 +137,8 @@ const COURSES: Course[] = [
       { label: '产后恢复', value: 1 },
     ],
     safety: [
-      { label: '经期谨慎特征', value: '高', tone: 'danger' },
-      { label: '产后谨慎特征', value: '高', tone: 'danger' },
+      { label: '经期风险', value: '高', tone: 'danger' },
+      { label: '产后风险', value: '高', tone: 'danger' },
     ],
     keyActions: ['Jumping Jack', 'Burpee', 'Mountain Climber', '深蹲跳'],
     evidence: [
@@ -153,7 +153,7 @@ const COURSES: Course[] = [
     name: '25分钟哑铃全身力量',
     subtitle: '持续抗阻 · 局部肌肉疲劳明显',
     type: '力量',
-    secondaryType: '塑形',
+    secondaryType: 'STRENGTH',
     bodyParts: ['全身', '臀腿', '肩部'],
     equipment: ['哑铃'],
     duration: 25,
@@ -177,8 +177,8 @@ const COURSES: Course[] = [
       { label: '产后恢复', value: 1 },
     ],
     safety: [
-      { label: '经期谨慎特征', value: '中', tone: 'warn' },
-      { label: '产后谨慎特征', value: '中', tone: 'warn' },
+      { label: '经期风险', value: '中', tone: 'warn' },
+      { label: '产后风险', value: '中', tone: 'warn' },
     ],
     keyActions: ['深蹲', '弓步', '哑铃划船', '肩上推举'],
     evidence: [
@@ -194,7 +194,7 @@ const TABS: { id: TabId; label: string; hint: string }[] = [
   { id: 'portrait', label: '课程画像', hint: '一节课的完整标签' },
   { id: 'ai', label: 'AI 初次打标', hint: '事实识别与批次进度' },
   { id: 'review', label: '人工复核', hint: '确认、修改与发布' },
-  { id: 'calories', label: '卡路里估算', hint: '标签 × 体重 × 时长' },
+  { id: 'governance', label: '版本与证据治理', hint: '字段证据 × 审核 × 发布快照' },
 ];
 
 const COURSE_FILTERS: { id: CourseFilter; label: string; count: string }[] = [
@@ -348,14 +348,14 @@ export function CourseTaggingDemoView({ embedded = false }: { embedded?: boolean
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              <span>Content Ops</span><ChevronRight size={12} /><span>课程标签与能量估算</span>
+              <span>Content Ops</span><ChevronRight size={12} /><span>Course Profile &amp; 证据治理</span>
             </div>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">课程标签工作台</h1>
-            <p className="mt-1 text-sm text-slate-500">把视频转成可解释、可复核、可用于排课的课程画像，并预估单次训练消耗。</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">Course Profile 治理工作台</h1>
+            <p className="mt-1 text-sm text-slate-500">把视频转成带字段级证据、置信度、审核记录和版本的课程画像；客观标签不等于医学结论。</p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 shadow-sm">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            演示数据 · 标签字典 v1.1 · 卡路里模型 v1.0
+            演示数据 · taxonomy_2026_08_28 · Course Profile v7 · rules_v1.0
           </div>
         </div>
 
@@ -384,7 +384,7 @@ export function CourseTaggingDemoView({ embedded = false }: { embedded?: boolean
               </button>
             ))}
           </div>
-          <span className="mb-2 text-[11px] text-slate-400">演示入口：B06 标签库 → B07 AI复核 → B12 排课</span>
+          <span className="mb-2 text-[11px] text-slate-400">治理入口：B06 字典 → B07 字段证据复核 → B12 规则模拟 → B13 发布</span>
         </div>
 
         {toast && (
@@ -526,6 +526,47 @@ export function CourseTaggingDemoView({ embedded = false }: { embedded?: boolean
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-start justify-between gap-4"><SectionTitle icon={ClipboardCheck} title="人工复核工作台" detail="B07 · 批次 #42 · 当前课程" /><div className="flex items-center gap-2"><span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">待复核 12</span><span className="text-[11px] text-slate-400">优先级：{selectedCourse.impact >= 4 ? 'P0 安全' : 'P1 常规'}</span></div></div><div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]"><div className="rounded-2xl bg-slate-950 p-6 text-white"><div className="flex min-h-[260px] flex-col items-center justify-center text-center"><div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10"><Play size={24} fill="currentColor" /></div><p className="mt-4 text-sm font-semibold">{selectedCourse.name}</p><p className="mt-1 text-[11px] text-slate-400">点击右侧证据片段，模拟跳转视频时间点</p></div><div className="mt-4 flex items-center gap-3"><span className="font-mono text-[10px] text-slate-400">{selectedCourse.evidence[evidenceIndex].time}</span><div className="h-1.5 flex-1 rounded-full bg-white/10"><div className="h-1.5 w-2/5 rounded-full bg-amber-300" /></div><span className="font-mono text-[10px] text-slate-400">{selectedCourse.duration}:00</span></div></div><div className="space-y-3"><div className="rounded-xl border border-slate-200 bg-slate-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">审核建议</p><p className="mt-2 text-xs leading-relaxed text-slate-600">AI已识别 {selectedCourse.keyActions.length} 个关键动作，综合强度 {selectedCourse.overall} 级，置信度 {Math.round(selectedCourse.confidence * 100)}%。</p></div><div className="space-y-2">{selectedCourse.evidence.map((item, index) => <button type="button" key={item.time} onClick={() => setEvidenceIndex(index)} className={cn('w-full rounded-xl border px-3 py-2 text-left text-xs', evidenceIndex === index ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-600 hover:bg-slate-50')}><span className="font-mono text-[10px]">{item.time}</span><span className="ml-2 font-semibold">{item.title}</span></button>)}</div></div></div></section>
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between gap-3"><SectionTitle icon={ShieldCheck} title="逐项裁决标签" detail="修改或驳回必须填写理由" /><span className="text-[11px] text-slate-400">健康类标签不可批量接受</span></div><div className="mt-5 overflow-hidden rounded-xl border border-slate-100"><div className="grid grid-cols-[minmax(0,1fr)_100px_210px] gap-3 bg-slate-50 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400"><span>标签建议</span><span>置信度</span><span>人工裁决</span></div>{[['综合强度', `${selectedCourse.overall}/5`, selectedCourse.confidence, 'overall'], ['心肺负荷', `${selectedCourse.cardio}/5`, selectedCourse.confidence + 0.02, 'cardio'], ['肌肉负荷', `${selectedCourse.muscle}/5`, Math.max(selectedCourse.confidence - 0.07, 0.1), 'muscle'], ['冲击负荷', `${selectedCourse.impact}/5`, selectedCourse.confidence, 'impact'], ['产后谨慎特征', selectedCourse.safety[1].value, selectedCourse.confidence - 0.05, 'safety']].map((item) => { const key = item[3] as string; const confidence = item[2] as number; return <div key={key} className="grid grid-cols-[minmax(0,1fr)_100px_210px] items-center gap-3 border-t border-slate-100 px-4 py-3"><div><p className="text-xs font-semibold text-slate-700">{item[0] as string}</p><p className="mt-0.5 text-[10px] text-slate-400">AI建议：{item[1] as string} · 证据：{selectedCourse.evidence[0].time}</p></div><span className={cn('font-mono text-xs font-bold', confidence < 0.75 ? 'text-rose-600' : 'text-slate-600')}>{Math.round(confidence * 100)}%</span><div className="flex items-center gap-1"><button type="button" onClick={() => setDecision(key, 'accept')} className={cn('rounded-lg px-2 py-1.5 text-[10px] font-semibold', decisions[key] === 'accept' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400')}>接受</button><button type="button" onClick={() => setDecision(key, 'edit')} className={cn('rounded-lg px-2 py-1.5 text-[10px] font-semibold', decisions[key] === 'edit' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400')}>修改</button><button type="button" onClick={() => setDecision(key, 'reject')} className={cn('rounded-lg px-2 py-1.5 text-[10px] font-semibold', decisions[key] === 'reject' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-400')}>驳回</button></div></div>; })}</div><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 text-[11px] text-slate-500"><UserRound size={14} className="text-slate-400" />当前审核人：内容运营 A · 安全类需健康运营终审</div><button type="button" onClick={() => { setReviewSubmitted(true); showToast('复核结果已保存，安全类标签进入健康运营终审'); }} className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800"><CheckCircle2 size={14} />{reviewSubmitted ? '已保存复核结果' : '提交复核结果'}</button></div></section>
                 <section className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4"><div className="flex items-start gap-3"><Info size={16} className="mt-0.5 shrink-0 text-blue-600" /><p className="text-xs leading-relaxed text-blue-800">课程标签只有在普通标签确认、安全标签终审通过后，才会生成“可用于排课”的发布快照。修改前后值、理由、审核人和时间都会写入审计日志。</p></div></section>
+              </>
+            )}
+
+            {activeTab === 'governance' && (
+              <>
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <SectionTitle icon={ShieldCheck} title="Course Profile 发布快照" detail="字段级证据、置信度和审核结果共同决定是否可被排课规则读取" />
+                    <StatusBadge status={selectedCourse.status} />
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {[
+                      ['Profile 版本', 'v7'],
+                      ['Taxonomy', 'taxonomy_2026_08_28'],
+                      ['证据完整度', selectedCourse.confidence >= 0.8 ? '完整' : '待补证据'],
+                      ['审核状态', selectedCourse.status === '可用于排课' ? 'APPROVED' : 'REVIEW_REQUIRED'],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+                        <p className="mt-1 break-words text-sm font-bold text-slate-800">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-xl border border-slate-100 p-4">
+                      <p className="text-[11px] font-semibold text-slate-400">字段来源与置信度</p>
+                      <div className="mt-3 space-y-2 text-xs text-slate-600">
+                        <p>动作事实：视频关键帧 + 字幕 · {Math.round(selectedCourse.confidence * 100)}%</p>
+                        <p>负荷等级：事实 → taxonomy 映射 · {Math.round((selectedCourse.confidence - 0.02) * 100)}%</p>
+                        <p>安全字段：证据片段 {selectedCourse.evidence.length} 条 · 需人工终审</p>
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-amber-100 bg-amber-50/70 p-4">
+                      <p className="text-[11px] font-semibold text-amber-800">发布门槛</p>
+                      <p className="mt-2 text-xs leading-relaxed text-amber-800">低置信、unknown、敏感生命周期风险或字段冲突时，保持 REVIEW_REQUIRED；完成健康复核后才能生成排课可用快照。</p>
+                    </div>
+                  </div>
+                </section>
+                <section className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                  <div className="flex items-start gap-3"><Info size={16} className="mt-0.5 shrink-0 text-blue-600" /><p className="text-xs leading-relaxed text-blue-800">V1 将卡路里/MET 保留为实验性展示字段，不参与 User Training Profile、Hard Filter 或课程排序；推荐只读取 APPROVED Course Profile 的客观属性和安全字段。</p></div>
+                </section>
               </>
             )}
 

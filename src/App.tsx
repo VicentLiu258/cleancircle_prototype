@@ -6,6 +6,7 @@ import { OverviewView as MobileOverviewView } from './views/mobile/MobileOvervie
 import { ScreensView as MobileScreensView } from './views/mobile/MobileScreensView';
 import { DecisionsView as MobileDecisionsView } from './views/mobile/MobileDecisionsView';
 import { COURSE_TAGGING_VIEW_ID } from './data/types';
+import { V1_VERSION_MATRIX } from './data/v1Overlay';
 
 type Mode = 'mobile' | 'admin';
 type View = 'overview' | 'screens' | 'decisions';
@@ -52,7 +53,7 @@ export default function App() {
           <span className="flex h-7 w-7 items-center justify-center rounded bg-gray-800 text-[11px] font-bold text-white">CC</span>
           <div>
             <p className="text-sm font-bold leading-tight text-gray-800">Clean Circle · 线框原型评审站</p>
-            <p className="text-[10px] leading-tight text-gray-400">{curMode.sub} · 灰度线框 · 业务逻辑评审用 · 非视觉稿</p>
+            <p className="text-[10px] leading-tight text-gray-400">{curMode.sub} · 灰度线框 · 业务逻辑评审用 · 非视觉稿 · {V1_VERSION_MATRIX.taxonomy} / {V1_VERSION_MATRIX.ruleSet}</p>
           </div>
         </div>
         <div className="ml-4 flex rounded-lg border border-gray-300 bg-gray-100 p-0.5">

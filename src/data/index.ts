@@ -9,9 +9,10 @@ import { screensV2P0 } from './screens-v2-p0';
 import { screensAppEditor } from './screens-app-editor';
 import { externalCommerceScreenIds, screensExternalCommerce } from './screens-external-commerce';
 import { screensContentOps } from './screens-content-ops';
+import { applyAdminV1Overlay } from './v1Overlay';
 
 /** 管理后台全量线框：B01–B57（外链商品覆盖旧自营商城屏；含 App/H5 商品入口与内容编排） */
-export const screens: ScreenDef[] = [
+export const screens: ScreenDef[] = applyAdminV1Overlay([
   ...screensMigration,
   ...screensSupportA,
   ...screensVideo,
@@ -23,7 +24,7 @@ export const screens: ScreenDef[] = [
   ...screensExternalCommerce,
   ...screensAppEditor,
   ...screensContentOps,
-];
+]);
 
 export const screenMap: Record<string, ScreenDef> = Object.fromEntries(
   screens.map((s) => [s.id, s]),

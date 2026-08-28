@@ -3,8 +3,9 @@ import { screensA } from './screens-a';
 import { screensB } from './screens-b';
 import { screensC } from './screens-c';
 import { screensCommerce } from './screens-commerce';
+import { applyMobileV1Overlay } from '../v1Overlay';
 
-export const screens: ScreenDef[] = [...screensA, ...screensB, ...screensC, ...screensCommerce];
+export const screens: ScreenDef[] = applyMobileV1Overlay([...screensA, ...screensB, ...screensC, ...screensCommerce]);
 
 export const screenMap: Record<string, ScreenDef> = Object.fromEntries(
   screens.map((s) => [s.id, s]),

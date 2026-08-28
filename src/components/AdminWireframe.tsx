@@ -42,7 +42,7 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
   { group: '排课与建议', items: [
     { label: '排课规则', sid: 'B11' },
     { label: '规则编辑', sid: 'B12' },
-    { label: '课程标签 & 能量估算', sid: COURSE_TAGGING_VIEW_ID },
+    { label: 'Course Profile & 证据治理', sid: COURSE_TAGGING_VIEW_ID },
     { label: 'AI 课程组合', sid: 'B31' },
     { label: '模拟测试(30天)', sid: 'B13' },
     { label: '阶段建议', sid: 'B14' },
