@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { screens, screenMap, groupByFlow, defaultBackTarget } from '../../data/mobile';
+import { screens, screenMap, groupByFlow, defaultBackTarget, REVISION_0901 } from '../../data/mobile';
 import { FLOW_NAMES, FLOW_ORDER } from '../../data/mobile/types';
 import { PhoneFrame } from '../../components/MobileWireframe';
 
@@ -38,12 +38,26 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function TagBadge({ tag, active }: { tag: string; active?: boolean }) {
+  return (
+    <span
+      className={`rounded px-1 text-[9px] font-bold ${
+        active ? 'bg-white text-rose-700' : 'bg-rose-600 text-white'
+      }`}
+    >
+      {tag}
+    </span>
+  );
+}
+
 export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
   const screen = screenMap[screenId] ?? screens[0];
   const [stateId, setStateId] = useState(screen.states[0].id);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const curState = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
-  const groups = groupByFlow(screens);
+  const visibleScreens = tagFilter ? screens.filter((s) => s.tags?.includes(tagFilter)) : screens;
+  const groups = groupByFlow(visibleScreens);
   const a = screen.annotations;
 
   const applyScreen = (id: string, targetStateId?: string) => {
@@ -78,10 +92,44 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
     <div className="flex h-full min-h-0">
       {/* 左栏：屏幕列表 */}
       <aside className="w-56 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3">
-        {FLOW_ORDER.map((f) => (
+        <div className="mb-3 px-3">
+          <p className="text-[11px] font-bold text-gray-400">筛选</p>
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            <button
+              onClick={() => setTagFilter(null)}
+              className={`rounded-full border px-2 py-0.5 text-[11px] ${
+                tagFilter === null ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-500 hover:border-gray-500'
+              }`}
+            >
+              全部
+            </button>
+            <button
+              onClick={() => {
+                setTagFilter(REVISION_0901.id);
+                if (!screen.tags?.includes(REVISION_0901.id)) {
+                  selectScreen(REVISION_0901.screens[0]);
+                }
+              }}
+              className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
+                tagFilter === REVISION_0901.id
+                  ? 'border-rose-600 bg-rose-600 text-white'
+                  : 'border-rose-300 bg-rose-50 text-rose-700 hover:border-rose-500'
+              }`}
+            >
+              {REVISION_0901.label}
+            </button>
+          </div>
+          {tagFilter === REVISION_0901.id && (
+            <p className="mt-1.5 text-[10px] leading-relaxed text-gray-400">{REVISION_0901.title} · {visibleScreens.length} 页</p>
+          )}
+        </div>
+        {FLOW_ORDER.map((f) => {
+          const items = groups.get(f) ?? [];
+          if (items.length === 0) return null;
+          return (
           <div key={f} className="mb-3">
             <p className="px-3 py-1 text-[11px] font-bold text-gray-400">{FLOW_NAMES[f]}</p>
-            {(groups.get(f) ?? []).map((s) => (
+            {items.map((s) => (
               <button
                 key={s.id}
                 onClick={() => selectScreen(s.id)}
@@ -91,13 +139,17 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
               >
                 <span className="font-mono text-[11px]">{s.id}</span>
                 <span className="min-w-0 flex-1 truncate">{s.name}</span>
+                {s.tags?.map((tag) => (
+                  <TagBadge key={tag} tag={tag} active={s.id === screen.id} />
+                ))}
                 <span className={`rounded px-1 text-[10px] ${s.priority === 'P0' ? 'bg-gray-800 text-white' : 'bg-gray-300 text-gray-600'} ${s.id === screen.id ? '!bg-white !text-gray-700' : ''}`}>
                   {s.priority}
                 </span>
               </button>
             ))}
           </div>
-        ))}
+          );
+        })}
       </aside>
 
       {/* 中栏：手机线框 */}
@@ -109,6 +161,11 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
           <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${screen.priority === 'P0' ? 'bg-gray-800 text-white' : 'bg-gray-300 text-gray-600'}`}>
             {screen.priority}
           </span>
+          {screen.tags?.map((tag) => (
+            <span key={tag} className="rounded bg-rose-600 px-1.5 py-0.5 text-[11px] font-bold text-white">
+              {tag}
+            </span>
+          ))}
         </div>
         {screen.states.length > 1 && (
           <div className="mt-2 flex flex-wrap justify-center gap-1.5 px-4">

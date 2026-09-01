@@ -34,6 +34,7 @@ export interface ScreenDef {
   reqCode: string;
   priority: 'P0' | 'P1';
   flow: FlowGroup;
+  tags?: string[];       // 如 '0901'，用于评审筛选本次更新页
   states: ScreenState[];
   annotations: {
     goal: string;

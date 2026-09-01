@@ -4,8 +4,14 @@ import { screensB } from './screens-b';
 import { screensC } from './screens-c';
 import { screensCommerce } from './screens-commerce';
 import { applyMobileV1Overlay } from '../v1Overlay';
+import { tagsForScreen } from './revisions';
 
-export const screens: ScreenDef[] = applyMobileV1Overlay([...screensA, ...screensB, ...screensC, ...screensCommerce]);
+export { REVISION_0901, MOBILE_REVISIONS } from './revisions';
+
+export const screens: ScreenDef[] = applyMobileV1Overlay([...screensA, ...screensB, ...screensC, ...screensCommerce]).map((s) => {
+  const tags = [...new Set([...(s.tags ?? []), ...tagsForScreen(s.id)])];
+  return tags.length > 0 ? { ...s, tags } : s;
+});
 
 export const screenMap: Record<string, ScreenDef> = Object.fromEntries(
   screens.map((s) => [s.id, s]),
