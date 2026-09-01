@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { screens, screenMap, groupByFlow } from '../../data/mobile';
+import { screens, screenMap, groupByFlow, defaultBackTarget } from '../../data/mobile';
 import { FLOW_NAMES, FLOW_ORDER } from '../../data/mobile/types';
 import { PhoneFrame } from '../../components/MobileWireframe';
+
+type HistoryEntry = { id: string; stateId: string };
 
 interface Props {
   screenId: string;
@@ -39,15 +41,38 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
   const screen = screenMap[screenId] ?? screens[0];
   const [stateId, setStateId] = useState(screen.states[0].id);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const curState = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
   const groups = groupByFlow(screens);
   const a = screen.annotations;
 
-  const selectScreen = (id: string, targetStateId?: string) => {
+  const applyScreen = (id: string, targetStateId?: string) => {
     onNavigate(id);
     const targetScreen = screenMap[id] ?? screens[0];
     setStateId(targetStateId && targetScreen.states.some((st) => st.id === targetStateId) ? targetStateId : targetScreen.states[0].id);
   };
+
+  const selectScreen = (id: string, targetStateId?: string, source: 'phone' | 'jump' = 'jump') => {
+    if (source === 'phone' && id !== screen.id) {
+      setHistory((h) => [...h.slice(-19), { id: screen.id, stateId }]);
+    } else if (source === 'jump') {
+      setHistory([]);
+    }
+    applyScreen(id, targetStateId);
+  };
+
+  const goBack = () => {
+    if (history.length > 0) {
+      const prev = history[history.length - 1];
+      setHistory((h) => h.slice(0, -1));
+      applyScreen(prev.id, prev.stateId);
+      return;
+    }
+    const fallback = defaultBackTarget(screen);
+    if (fallback) applyScreen(fallback);
+  };
+
+  const canBack = history.length > 0 || !!defaultBackTarget(screen);
 
   return (
     <div className="flex h-full min-h-0">
@@ -106,13 +131,14 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions }: Props) {
           <PhoneFrame
             screen={screen}
             stateId={curState.id}
-            onNavigate={selectScreen}
+            onNavigate={(id, targetStateId) => selectScreen(id, targetStateId, 'phone')}
             onStateChange={(nextStateId) => {
               if (screen.states.some((st) => st.id === nextStateId)) setStateId(nextStateId);
             }}
+            onBack={canBack ? goBack : undefined}
           />
         </div>
-        <p className="mt-3 text-[11px] text-gray-400">带 → 的按钮可点击跳转 · 同页按钮可切换状态 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全</p>
+        <p className="mt-3 text-[11px] text-gray-400">无 Tab 的次级页顶部可返回上级 · 带 → 的按钮可点击跳转 · 同页按钮可切换状态 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全</p>
       </main>
 
       {/* 右栏：标注面板 */}

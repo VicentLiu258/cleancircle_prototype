@@ -809,18 +809,27 @@ Primary 「重新订阅」 / Secondary 「恢复购买」
 ## S25 · 日历月视图 + 单日课程
 
 ```text
-Calendar tab for Clean Circle: monthly cycle + workout status.
+Calendar tab for Clean Circle: 30-day rolling cycle + workout status.
 
-Header 「日历 · 2026 年 1 月」
-Month grid with dual encoding:
-- Phase background colors STRICT: 月经期 #aa6459 / 卵泡期 #ba7872 / 排卵期 #824d48 / 黄体期 #68403e
-- Status marks: ✓ complete, ◐ partial, ● today, ■ future task, □ rest
-Legend chips under grid
-Streak card: 连续打卡 3 天 · 本月累计 220 分钟
+Header 「日历 · 30 天滚动」
+Month grid with TRIPLE encoding per cell:
+- Layer 1 — Phase background colors STRICT: 月经期 #aa6459 / 卵泡期 #ba7872 / 排卵期 #824d48 / 黄体期 #68403e
+- Layer 2 — Top-right completion: ✓ done / ◐ partial / empty
+- Layer 3 — Bottom-center intent icon: ↑ Push / ● Warm / ～ Soft / □ rest / ! fallback (amber ring)
+- Layer 3 — Bottom-left badge (max 1): 🔒 locked / ↺ Re-plan / ◇ self-selected addon
+- Today: Cocoa Brown #49352e ring outline (not an icon)
+Legend rows under grid:
+  Row 1: four phase color chips
+  Row 2: ↑ Push · ● Warm · ～ Soft · □ 休息 · ! 兜底
+  Row 3: ✓ 完成 · ◐ 部分 · ↺ 变更 · ◇ 自选 · 🔒 锁定
+Note: 「颜色表示周期阶段；角标与图标表示训练状态」
+Review card: 本月已完成 8 次 · 160 分钟 (non-punitive, no streak reset)
 Day detail panel: 「1月17日（今日）课程」
-  - 定制课 row with AI badge + [开始]: 舒缓瑜伽 20min
-  - 自选加练 row with different badge + delete: 手臂塑形 10min
-Secondary 「+ 加练」
+  - 定制课 row with AI badge + [开始]: 低冲击核心 15min
+  - 自选加练 row with badge + delete: 手臂塑形 10min
+Secondary 「+ 加练」 sub: 从课程库自选 · 仅计时长与能量，不计打卡连胜 → S29
+Muted footnote: 当日无自选课时，仍可从课程库探索加练
+Commerce resource-slot (patch, scenario-based): 恢复较慢？试试 Jo 姐电解质冲剂 → S32
 Bottom tab bar 日历 active
 
 Beautiful soft data viz, not dense spreadsheet. Chinese UI high-fidelity.

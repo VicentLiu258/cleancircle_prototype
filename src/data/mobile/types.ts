@@ -2,12 +2,15 @@
 
 export type FlowGroup = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
+export type ResourceSlotType = 'work' | 'fuel' | 'care' | 'commerce';
+
 export interface WireBlock {
   kind:
     | 'statusbar' | 'header' | 'image' | 'text' | 'input'
     | 'button-primary' | 'button-secondary' | 'button-danger'
     | 'card' | 'list-item' | 'chip-row' | 'tabbar' | 'divider'
-    | 'calendar-grid' | 'cycle-grid' | 'progress' | 'spacer';
+    | 'calendar-grid' | 'cycle-grid' | 'cycle-ruler' | 'progress' | 'spacer'
+    | 'checkin-row' | 'course-panel' | 'jos-note' | 'resource-slot' | 'trial-strip';
   label: string;
   sub?: string;
   marker?: number;   // 标注序号，与标注面板对应
@@ -15,6 +18,8 @@ export interface WireBlock {
   to?: string;       // 点击跳转的屏幕ID
   toState?: string;  // 同一屏幕内的状态跳转（用于评审站演示多步流程）
   height?: number;   // 可选高度提示 px
+  slot?: ResourceSlotType;  // resource-slot / course-panel 槽位类型
+  source?: string;   // 资源位数据来源，如「排课引擎 D03」
 }
 
 export interface ScreenState {

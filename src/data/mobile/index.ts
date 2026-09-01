@@ -19,3 +19,18 @@ export function groupByFlow(screens: ScreenDef[]) {
   }
   return groups;
 }
+
+/** 入口文案未写出上级页时的兜底（无 Tab 的次级页才使用）。 */
+const BACK_FALLBACK: Record<string, string> = {
+  S21: 'S09',
+};
+
+/** 无浏览历史时，次级页返回的默认上级。优先取入口中第一个其他屏幕 ID。 */
+export function defaultBackTarget(screen: ScreenDef): string | undefined {
+  if (screen.id === 'S01') return undefined;
+  const ids = [...screen.annotations.entry.matchAll(/\bS\d{2}\b/g)].map((m) => m[0]);
+  const parent = ids.find((id) => id !== screen.id && screenMap[id]);
+  if (parent) return parent;
+  const fallback = BACK_FALLBACK[screen.id];
+  return fallback && screenMap[fallback] ? fallback : undefined;
+}

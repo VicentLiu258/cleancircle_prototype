@@ -372,9 +372,24 @@ First viewport order:
 8. Standard full-width five-tab iOS tab bar with 今日 active.
 
 Below fold:
-- A plain section titled “今天还可以做” with two list rows: “饮食建议” and “Ritual”.
+- A plain section titled “今天还可以做” with three resource-slot rows:
+  - Fuel: “今日饮食营养建议” (source: B14 stage copy)
+  - Care: “经期暖饮 · 淋巴按摩 · 自我肯定冥想” (source: Ritual content library)
+  - Commerce: “Jo 姐好物 · 精选训练补给” (source: B41/B55, links to S32)
 - Do not show three Ritual cards in the first viewport.
+- Resource slots use a left color bar (Work=gray, Fuel=green, Care=purple, Commerce=orange) and a small “资源位” badge.
 - “来例假了” is a small utility text action at the end of the cycle section, not a colored promotional chip.
+
+S09 state variants (duplicate frame, change only deltas):
+- unchecked: Check-in row “去记录”; Work shows original plan without Soft/Warm prediction; show downgrade action
+- checked-not-started: default anchor state above
+- in-progress: progress inside workout panel; “继续训练”; hide downgrade
+- completed: actual duration + energy credited; weaken primary CTA
+- downgraded: new course + original course trace; undo action
+- trial-expiring: trial-strip “第 7 天/共 7 天 · 明日到期” at top
+- locked: Work slot locked → S22; history still visible
+- fallback: safe fallback course with B-09 badge
+- assessment-incomplete: “继续评测” card → S04
 
 Exact copy:
 - Greeting: 早上好，小圆

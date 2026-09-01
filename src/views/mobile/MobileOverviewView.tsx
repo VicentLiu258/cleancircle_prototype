@@ -5,7 +5,7 @@ interface Props {
 }
 
 const IA = [
-  { tab: '今日 Today', desc: '定制服务核心首页（全量新建，P0）', screens: ['S09', 'S10', 'S19', 'S20', 'S21'] },
+  { tab: '今日 Today', desc: '定制服务核心首页 · Work/Fuel/Care 资源位 · 9 态（P0）', screens: ['S09', 'S10', 'S19', 'S20', 'S21'] },
   { tab: '课程库 Library', desc: '视频库、搜索筛选（P1，参考 GWJ 原 App）', screens: ['S29', 'S30'] },
   { tab: '日历 Calendar', desc: '课表、打卡、自选加练（P0）', screens: ['S25'] },
   { tab: '社区 Homies', desc: '官方内容占位（P1，复用评估中）', screens: ['S31'] },
@@ -20,9 +20,10 @@ const SUPPORTING = [
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '① 新用户首次使用', chain: ['S01', 'S03', 'S04', 'S19', 'S06', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'], note: 'S02 协议全文为非必须，仅从 S01 登录页《用户协议》《隐私政策》《健康数据处理说明》独立进入；勾选协议后登录直接进入 S03。首次 Check-in 确认 Push / Soft / Warm Day 后，进入 S06 生成课表，再到 S08' },
   { title: '② 老用户迁移', chain: ['S01', 'S14', 'S15', 'S16', 'S17', 'S04', 'S05', 'S19', 'S06', 'S08', 'S09'], note: '迁移完成后进入问卷提交，再完成首次 Check-in 后生成课表' },
-  { title: '③ 每日使用', chain: ['S09', 'S19', 'S21', 'S20', 'S10', 'S11', 'S12', 'S13'], note: 'S21 仅在记录生理期首日后的第 3 天触发；S20「今天太累」保持独立入口' },
-  { title: '④ 订阅转化', chain: ['S22', 'S23', 'S24'], note: '触发点：体验到期次日启动 / 点击锁定课程 / 今日页轻量入口' },
-  { title: '⑤ 商品导购与分享', chain: ['S09', 'S32', 'S33', 'S34'], note: 'App/H5 仅提供商品介绍和入口；第三方平台完成支付、订单、物流与售后' },
+  { title: '③ 每日使用', chain: ['S09', 'S19', 'S21', 'S20', 'S10', 'S11', 'S12', 'S13'], note: 'S09 九态：未 Check-in → 已确认 → 进行中 → 已完成；S21 仅在记录生理期首日后的第 3 天触发；S20 保持独立调整入口' },
+  { title: '④ 订阅转化', chain: ['S09', 'S22', 'S23', 'S09', 'S24'], note: '触发点：S09 trial-strip 体验条 / locked Work 槽位 / 体验到期次日启动；S23 成功返回 S09 checked-not-started' },
+  { title: '⑤ 商品导购与分享', chain: ['S09', 'S32', 'S33', 'S34'], note: 'S09 Commerce 资源位（折叠区 Jo 姐好物）→ App/H5 商品介绍 → 第三方平台下单' },
+  { title: '⑥ 资源位运营', chain: ['B55', 'S09', 'B41', 'B14'], note: 'B55 配置 S09 页面 Work/Fuel/Care/Commerce 槽位排序与规则；Work 关联 D03 排课；Fuel 关联 B14 阶段话术；Commerce 关联 B41 商品入口' },
 ];
 
 export function OverviewView({ onNavigate }: Props) {
@@ -79,7 +80,7 @@ export function OverviewView({ onNavigate }: Props) {
         ))}
       </div>
 
-      <h2 className="mt-10 text-2xl font-bold text-gray-800">五条核心流程</h2>
+      <h2 className="mt-10 text-2xl font-bold text-gray-800">六条核心流程</h2>
       <div className="mt-3 space-y-4">
         {FLOWS.map((f) => (
           <div key={f.title} className="rounded-lg border border-gray-200 bg-white p-4">
