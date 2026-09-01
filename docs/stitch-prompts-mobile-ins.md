@@ -161,12 +161,12 @@ STRICT: every screen must use only the six hex values listed above.
 # 模块 A · 新用户主链路
 
 > Flow A · S01–S06, S08–S13  
-> 叙事：登录 → 协议 → 欢迎 → 问卷 → 确认 → 生成课表 → 本月总览 → 今日 → 详情 → 播放 → 反馈 → 打卡海报
+> 叙事：登录（协议勾选，全文按需查阅） → 欢迎 → 问卷 → 确认 → 生成课表 → 本月总览 → 今日 → 详情 → 播放 → 反馈 → 打卡海报
 
 ### A-00 模块叙事（可选，生成关键屏前用）
 
 ```text
-Clean Circle onboarding flow screens in Instagram-minimal style: login → privacy → welcome → multi-step quiz → confirm → generating schedule → monthly cycle calendar → Today home. Consistent serif+sans mix, moon motifs, rounded cards, breathing whitespace, Oat White background #f3efe8, CTA brand Dried Rose #aa6459. Palette-only six hex. Chinese UI.
+Clean Circle onboarding flow screens in Instagram-minimal style: login (optional legal document links) → welcome → multi-step quiz → confirm → generating schedule → monthly cycle calendar → Today home. Consistent serif+sans mix, moon motifs, rounded cards, breathing whitespace, Oat White background #f3efe8, CTA brand Dried Rose #aa6459. Palette-only six hex. Chinese UI.
 ```
 
 ---
@@ -191,7 +191,7 @@ Layout top → bottom:
 6. Two minimal fields: 手机号 / 验证码 (underline or soft rounded input, secondary style)
 7. Secondary outline button: 「手机号登录」
 8. Tertiary text button: 「Apple 登录（仅 iOS）」
-9. Bottom checkbox row (unchecked by default): 「已阅读并同意《用户协议》《隐私政策》《健康数据处理说明》」 tiny legal links
+9. Bottom checkbox (unchecked by default): 「已阅读并同意」 plus three independent tiny legal links: 《用户协议》 / 《隐私政策》 / 《健康数据处理说明》. Tapping a name opens S02 full-text reader (optional, not a login gate). Checking the box is still required to login.
 
 No clutter, no social proof carousels. Soft shadow on primary only. Chinese UI, high-fidelity mockup.
 ```
@@ -210,22 +210,22 @@ Clean Circle login screen, agreement checkbox still unchecked and slightly highl
 
 ---
 
-## S02 · 隐私协议与健康数据告知
+## S02 · 协议全文查看（非必须）
 
-**线框要点：** 三份协议卡片、健康数据重点说明、同意并继续 / 暂不同意。
+**线框要点：** 从登录页三项协议名称独立进入对应全文；顶部返回 + 标题 + 可滚动正文；底部「返回登录页」。无「同意并继续」，不阻断登录。
 
 ```text
-iPhone screen: first-time privacy & health data consent for Clean Circle.
+iPhone legal document reader for Clean Circle, opened independently from a login-page link (not a mandatory onboarding gate).
 
-Minimal full-screen sheet on Oat White #f3efe8.
-- Serif title: 「请先了解我们如何保护你」
-- Sans subtitle: 「首次登录前展示」
-- Three rounded cards on Oat White #f3efe8 (or same #f3efe8 with aux-3 #ba7872 hairline; NO pure white) stacked: 《用户协议》 / 《隐私政策》 / 《健康数据处理说明》 (each with chevron, last card slightly emphasized with brand #aa6459)
-- Soft body paragraph: 你的周期、身体与情绪数据属高敏感信息，仅用于生成专属课表，可随时在「我的-隐私设置」中删除
-- Primary CTA: 「同意并继续」
-- Ghost button: 「暂不同意」
-
-Calm, trustworthy, legal but not intimidating. No dark patterns. Chinese UI.
+Top nav: back chevron + title 《用户协议》 (variants: 《隐私政策》 / 《健康数据处理说明》)
+Subtitle tiny sans: 独立查阅 · 非登录必经步骤
+Scrollable long-form body in readable sans, generous line-height, section cards:
+- 用户协议: 服务范围 / 账号与使用规范 / 免责声明
+- 隐私政策: 收集信息 / 使用目的 / 共享与披露 / 用户权利
+- 健康数据处理说明: 收集目的 / 范围 / 存储时间 / 删除方式 / 第三方共享
+Helper caption: 阅读本页不会自动勾选登录页协议
+Sticky bottom outline button: 「返回登录页」 → S01
+Not a dark wall of text — section headers medium weight. Calm compliance UI, Instagram-minimal Chinese. No primary "同意并继续".
 ```
 
 ---
@@ -235,7 +235,7 @@ Calm, trustworthy, legal but not intimidating. No dark patterns. Chinese UI.
 **线框要点：** 品牌插画、Hi 昵称、双语文案、主 CTA「我会开始按照周期照顾自己」。
 
 ```text
-Emotional welcome screen for Clean Circle after consent.
+Emotional welcome screen for Clean Circle after login (agreements were checked on the login page; S02 full-text is optional).
 
 Hero: soft abstract moon-phase illustration (4 phases as delicate arcs) in upper half, lots of breathing space.
 Serif headline: 「Hi 小圆，」 (personalized nickname)
@@ -988,7 +988,7 @@ Clean Circle mobile component kit strip: primary pill CTA, secondary outline, te
 | ID | 名称 | 模块 | 优先级 |
 |---|---|---|---|
 | S01 | 启动与登录 | A 新用户 | P0 |
-| S02 | 隐私协议与健康数据告知 | A | P0 |
+| S02 | 协议全文查看（非必须） | A | P0 |
 | S03 | 专属欢迎页 | A | P0 |
 | S04 | 问卷逐题页 | A | P0 |
 | S05 | 问卷提交确认 | A | P0 |

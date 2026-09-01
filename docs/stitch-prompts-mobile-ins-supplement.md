@@ -47,7 +47,7 @@
 | ID | 线框 `states` | 主文档 | 缺口 |
 |---|---|---|---|
 | S01 | default, code-error, no-agree | 3 态 | annotations 另有 loading / →S14 |
-| S02 | default | 1 态 | 协议全文查看 |
+| S02 | user-agreement / privacy-policy / health-data | 3 态 | 三份协议独立全文（非必须） |
 | S03 | default | 1 态 | 无 |
 | S04 | single, date, skip, device | 4 态 | 多选/数字/滑杆、敏感声明、loading |
 | S05 | default | 1 态 | 无 |
@@ -414,20 +414,9 @@ Keep under 1–2 seconds feel. Oat White #f3efe8 only.
 
 ---
 
-## S02 · 协议 · 补充变体
+## S02 · 协议 · 补充说明
 
-### 变体 · 协议全文查看
-
-```text
-Clean Circle legal document reader (from S02 card tap).
-
-Top nav: back chevron + title 《健康数据处理说明》
-Scrollable long-form body in readable sans, generous line-height:
-Sections: 收集目的 / 范围 / 存储时间 / 删除方式 / 第三方共享说明
-Sticky bottom: 「我已阅读」 outline button returning to consent screen
-Not a dark wall of text — section headers serif small caps or medium weight.
-Calm compliance UI, Instagram-minimal Chinese.
-```
+S02 已从登录后必经授权页改为登录页三项协议的独立全文阅读页（用户协议 / 隐私政策 / 健康数据处理说明）。主稿见 `stitch-prompts-mobile-ins.md` S02，不再需要「同意并继续」consent 变体。
 
 ---
 

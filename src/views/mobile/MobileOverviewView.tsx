@@ -9,15 +9,16 @@ const IA = [
   { tab: '课程库 Library', desc: '视频库、搜索筛选（P1，参考 GWJ 原 App）', screens: ['S29', 'S30'] },
   { tab: '日历 Calendar', desc: '课表、打卡、自选加练（P0）', screens: ['S25'] },
   { tab: '社区 Homies', desc: '官方内容占位（P1，复用评估中）', screens: ['S31'] },
-  { tab: '我的 Me', desc: '我的课程、打卡记录、能量值兑换、会员中心（P0）', screens: ['S26', 'S27', 'S28', 'S17', 'S24'] },
+  { tab: '我的 Me', desc: '用户档案、我的课程、我的能量、设置与帮助（P0）', screens: ['S26', 'S27', 'S28', 'S17', 'S24'] },
 ];
 
 const SUPPORTING = [
+  { title: '登录页协议查阅（非必须）', desc: '不进入主链路。仅从 S01 登录页三项协议名称独立进入 S02 对应全文，阅读后返回登录页，不会自动勾选', screens: ['S02'] },
   { title: '商品导购与分享（非独立 Tab）', desc: '今日页/我的页入口 → App 商品列表 → H5 分享页 → 第三方应用下单', screens: ['S32', 'S33', 'S34'] },
 ];
 
 const FLOWS: { title: string; chain: string[]; note?: string }[] = [
-  { title: '① 新用户首次使用', chain: ['S01', 'S02', 'S03', 'S04', 'S19', 'S06', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'], note: '首次 Check-in 确认 Push / Soft / Warm Day 后，进入 S06 生成课表，再到 S08' },
+  { title: '① 新用户首次使用', chain: ['S01', 'S03', 'S04', 'S19', 'S06', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13'], note: 'S02 协议全文为非必须，仅从 S01 登录页《用户协议》《隐私政策》《健康数据处理说明》独立进入；勾选协议后登录直接进入 S03。首次 Check-in 确认 Push / Soft / Warm Day 后，进入 S06 生成课表，再到 S08' },
   { title: '② 老用户迁移', chain: ['S01', 'S14', 'S15', 'S16', 'S17', 'S04', 'S05', 'S19', 'S06', 'S08', 'S09'], note: '迁移完成后进入问卷提交，再完成首次 Check-in 后生成课表' },
   { title: '③ 每日使用', chain: ['S09', 'S19', 'S21', 'S20', 'S10', 'S11', 'S12', 'S13'], note: 'S21 仅在记录生理期首日后的第 3 天触发；S20「今天太累」保持独立入口' },
   { title: '④ 订阅转化', chain: ['S22', 'S23', 'S24'], note: '触发点：体验到期次日启动 / 点击锁定课程 / 今日页轻量入口' },
@@ -60,7 +61,7 @@ export function OverviewView({ onNavigate }: Props) {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-gray-400">主链路流程页（S01–S08、S11–S16、S22–S23）不属于固定 Tab，由流程推进。</p>
+      <p className="mt-2 text-xs text-gray-400">主链路流程页（S01、S03–S08、S11–S16、S22–S23）不属于固定 Tab，由流程推进。S02 为登录页协议查阅，非必须。</p>
 
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
         {SUPPORTING.map((item) => (
