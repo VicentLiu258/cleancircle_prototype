@@ -5,6 +5,7 @@ export type FlowGroup = 'E' | 'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'H' | 'I' | 'J
 
 /** 非 Bxx 页面：用于把运营演示页挂到后台真实信息架构中。 */
 export const COURSE_TAGGING_VIEW_ID = 'COURSE_TAGGING';
+export const ONBOARDING_CONFIG_VIEW_ID = 'ONBOARDING_CONFIG';
 
 export interface WireBlock {
   kind:

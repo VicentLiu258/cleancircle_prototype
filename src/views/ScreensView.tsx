@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { screens, screenMap, groupByFlow } from '../data';
-import { COURSE_TAGGING_VIEW_ID, FLOW_NAMES, FLOW_ORDER, type ScreenDef } from '../data/types';
+import { COURSE_TAGGING_VIEW_ID, ONBOARDING_CONFIG_VIEW_ID, FLOW_NAMES, FLOW_ORDER, type ScreenDef } from '../data/types';
 import { AdminFrame } from '../components/AdminWireframe';
 import { CourseTaggingDemoView } from './CourseTaggingDemoView';
+import { OnboardingConfigView } from './OnboardingConfigView';
 
 const TAGGING_SCREEN: ScreenDef = {
   id: COURSE_TAGGING_VIEW_ID,
@@ -22,6 +23,39 @@ const TAGGING_SCREEN: ScreenDef = {
     triggers: ['只有通过普通标签复核和健康终审的课程，才允许 B12 排课规则读取。', '视频内容或标签字典变更后，需要重新运行打标并生成新版本。'],
     deps: ['B06 标签库', 'B07 AI 打标复核', 'B12 排课规则编辑'],
     patches: ['H-01'],
+  },
+};
+
+const ONBOARDING_CONFIG_SCREEN: ScreenDef = {
+  id: ONBOARDING_CONFIG_VIEW_ID,
+  name: 'Onboarding 问卷配置',
+  reqCode: 'V1 需求文档 · 统一联动版',
+  priority: 'P0',
+  flow: 'B',
+  states: [{ id: 'config', label: '配置总览', blocks: [] }],
+  annotations: {
+    goal: '将 Onboarding 问卷需求文档 V1 中的题目矩阵、生命周期分支、标签映射和 Profile 输出结构可视化，供产品评审与研发字段对接。',
+    entry: '问卷评测 > Onboarding 问卷配置；或 B08/B09 关联入口',
+    exit: ['B08', 'B09', 'B10', 'S04'],
+    role: '产品 / 课程健康运营 / 研发',
+    data: [
+      'Q01–Q15 主问卷题目与选项枚举 — onboarding-config.ts',
+      'L1–L9 女性生命周期分支 — 条件跳转规则',
+      '问卷→用户标签→课程标签映射 — User Training Profile 推导输入',
+      'Profile 输出结构与 Check-in 边界 — V1 统一联动合同',
+    ],
+    actions: {
+      primary: '浏览主问卷、分支、映射与 Profile 结构',
+      secondary: ['展开题目详情', '切换生命周期分支', '查看 Check-in 覆盖规则'],
+    },
+    statesDesc: ['主问卷题目', '生命周期分支', '产后恢复', '标签映射', 'Profile 输出', 'Check-in 边界'],
+    triggers: [
+      'Q15 生命周期选择 → 进入 L1–L9 对应分支',
+      'Q03=产后恢复 或 Q15=产后 → L6 产后细则',
+      'Profile 推导规则变更需同步 B10 与 B12',
+    ],
+    deps: ['S04 Onboarding 问卷', 'B08 问卷版本', 'B09 编辑器', 'B10 Profile 推导', 'B06 Taxonomy'],
+    patches: ['V1-ONBOARDING-CONFIG'],
   },
 };
 
@@ -82,8 +116,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobile, onOpenTagging }: Props) {
-  const screen = screenId === COURSE_TAGGING_VIEW_ID ? TAGGING_SCREEN : screenMap[screenId] ?? screens[0];
+  const screen =
+    screenId === COURSE_TAGGING_VIEW_ID ? TAGGING_SCREEN
+    : screenId === ONBOARDING_CONFIG_VIEW_ID ? ONBOARDING_CONFIG_SCREEN
+    : screenMap[screenId] ?? screens[0];
   const isTagging = screen.id === COURSE_TAGGING_VIEW_ID;
+  const isOnboardingConfig = screen.id === ONBOARDING_CONFIG_VIEW_ID;
   const [stateId, setStateId] = useState(screen.states[0].id);
   const curState = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
   const groups = groupByFlow(screens);
@@ -92,6 +130,10 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
   const selectScreen = (id: string) => {
     if (id === COURSE_TAGGING_VIEW_ID) {
       onOpenTagging();
+      return;
+    }
+    if (id === ONBOARDING_CONFIG_VIEW_ID) {
+      onNavigate(id);
       return;
     }
     onNavigate(id);
@@ -120,6 +162,17 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
                 </span>
               </button>
             ))}
+            {f === 'B' && (
+              <button
+                type="button"
+                onClick={() => selectScreen(ONBOARDING_CONFIG_VIEW_ID)}
+                className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${isOnboardingConfig ? 'bg-gray-700 font-semibold text-white' : 'text-slate-700 hover:bg-gray-200'}`}
+              >
+                <span className="font-mono text-[11px]">CFG</span>
+                <span className="min-w-0 flex-1 truncate">Onboarding 问卷配置</span>
+                <span className={`rounded px-1 text-[10px] font-semibold ${isOnboardingConfig ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>新增</span>
+              </button>
+            )}
             {f === 'C' && (
               <button
                 type="button"
@@ -169,6 +222,10 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
           <div className="mt-4 w-full max-w-[1200px] px-4">
             <CourseTaggingDemoView embedded />
           </div>
+        ) : isOnboardingConfig ? (
+          <div className="mt-4 w-full max-w-[1200px] px-4">
+            <OnboardingConfigView embedded />
+          </div>
         ) : (
           <div className="mt-4 w-full max-w-[920px] px-4">
             <AdminFrame
@@ -180,7 +237,9 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
           </div>
         )}
         <p className="mt-3 text-[11px] text-gray-400">
-          {isTagging ? '课程标签工作台已嵌入后台系统内容区 · 左侧可切换排课与内容相关页面 · 右侧查看页面目标、依赖与发布规则' : '页内 Tab 可点击切换对应状态 · 带跳转的按钮/表格行可点 · 左侧菜单可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切到移动端'}
+          {isTagging ? '课程标签工作台已嵌入后台系统内容区 · 左侧可切换排课与内容相关页面 · 右侧查看页面目标、依赖与发布规则'
+            : isOnboardingConfig ? 'Onboarding 问卷配置已嵌入内容区 · 6 个 Tab 可切换 · 点击题目行展开详情 · 右侧查看业务标注与依赖'
+            : '页内 Tab 可点击切换对应状态 · 带跳转的按钮/表格行可点 · 左侧菜单可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切到移动端'}
         </p>
       </main>
 
