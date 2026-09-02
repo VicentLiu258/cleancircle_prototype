@@ -108,7 +108,7 @@ export const s09TodayScreen: ScreenDef = {
     { id: 'checked-not-started', label: '已确认·未开始', blocks: [
       mStatus(), mTrialStrip('体验第 3 天 / 共 7 天'), mGreet('下午好，{昵称}'), mCycleRuler(),
       mCheckinRow(true, '状态：Soft Day · 能量低'),
-      mWorkPanel('低冲击核心活动 15min', 'ADJUST · MOBILITY · CORE · 20min · 原课可撤销'),
+      mWorkPanel('低冲击核心活动 15min', 'SOFTEN · MOBILITY · CORE · 20min · 保留目标/部位 · 原课可撤销'),
       mJosNote('你选择了 Soft Day · 能量低', '先降低冲击，保留今日训练意图'),
       { kind: 'button-primary', label: '开始训练', to: 'S10' },
       { kind: 'button-secondary', label: '今天太累，调整训练', to: 'S20' },
@@ -134,7 +134,7 @@ export const s09TodayScreen: ScreenDef = {
     { id: 'downgraded', label: '已降级', blocks: [
       mStatus(), mGreet('晚上好，{昵称}'), mCycleRuler(),
       mCheckinRow(true, '状态：Warm Day · 已降级'),
-      mWorkPanel('放松拉伸 10min · 低强度', 'ADJUST → 原课程：核心激活 25min（留痕）', { marker: 4 }),
+      mWorkPanel('低冲击核心活动 15min · 低强度', 'SWAP · Backup A · 原课程：核心激活 25min（留痕）', { marker: 4 }),
       mJosNote('今天训练负担已降低', '若感觉恢复可撤销，恢复原课程'),
       { kind: 'button-primary', label: '开始降级课程', to: 'S10' },
       { kind: 'button-secondary', label: '撤销降级，恢复原课程', to: 'S20', toState: 'undo' },

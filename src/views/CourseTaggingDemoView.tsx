@@ -44,6 +44,8 @@ interface Course {
   subtitle: string;
   type: string;
   secondaryType: string;
+  primaryBodyArea: string;
+  secondaryBodyAreas: string[];
   bodyParts: string[];
   equipment: string[];
   duration: number;
@@ -57,11 +59,20 @@ interface Course {
   jumpRatio: number;
   standingRatio: number;
   floorRatio: number;
+  supineRatio: number;
+  proneRatio: number;
+  kneelingRatio: number;
+  kneeLoad: number;
+  wristBearing: number;
+  lowerBackLoad: number;
+  shoulderLoad: number;
   met: number;
   metRange: [number, number];
   confidence: number;
+  confidenceByField: Record<string, number>;
   goals: { label: string; value: number }[];
   safety: { label: string; value: string; tone: 'safe' | 'warn' | 'danger' }[];
+  riskReasons: { label: string; detail: string }[];
   keyActions: string[];
   evidence: Evidence[];
   lastRun: string;
@@ -74,6 +85,8 @@ const COURSES: Course[] = [
     subtitle: '连续走步 · 无器械 · 适合日常训练',
     type: '健走',
     secondaryType: '有氧',
+    primaryBodyArea: '全身',
+    secondaryBodyAreas: ['腿部', '核心'],
     bodyParts: ['全身', '腿部', '核心'],
     equipment: ['无器械'],
     duration: 20,
@@ -87,9 +100,17 @@ const COURSES: Course[] = [
     jumpRatio: 0,
     standingRatio: 100,
     floorRatio: 0,
+    supineRatio: 0,
+    proneRatio: 0,
+    kneelingRatio: 0,
+    kneeLoad: 2,
+    wristBearing: 1,
+    lowerBackLoad: 1,
+    shoulderLoad: 2,
     met: 3.5,
     metRange: [3.0, 4.0],
     confidence: 0.92,
+    confidenceByField: { basic: 0.98, movement: 0.95, load: 0.91, goal: 0.9, risk: 0.88 },
     goals: [
       { label: '减脂', value: 4 },
       { label: '塑形', value: 2 },
@@ -99,6 +120,10 @@ const COURSES: Course[] = [
     safety: [
       { label: '经期风险', value: '低', tone: 'safe' },
       { label: '产后风险', value: '低', tone: 'safe' },
+    ],
+    riskReasons: [
+      { label: '经期风险依据', detail: '无跳跃、冲击负荷低，适合作为低冲击候选。' },
+      { label: '产后风险依据', detail: '站立为主、无高腹压核心动作；仍需结合用户许可与症状。' },
     ],
     keyActions: ['原地走', '侧步', 'Knee Drive', '轻度深蹲'],
     evidence: [
@@ -114,6 +139,8 @@ const COURSES: Course[] = [
     subtitle: '高密度间歇 · 跳跃与复合动作',
     type: 'HIIT',
     secondaryType: '有氧',
+    primaryBodyArea: '全身',
+    secondaryBodyAreas: ['腿部', '核心'],
     bodyParts: ['全身', '腿部', '核心'],
     equipment: ['无器械'],
     duration: 20,
@@ -127,9 +154,17 @@ const COURSES: Course[] = [
     jumpRatio: 35,
     standingRatio: 78,
     floorRatio: 22,
+    supineRatio: 0,
+    proneRatio: 18,
+    kneelingRatio: 4,
+    kneeLoad: 5,
+    wristBearing: 4,
+    lowerBackLoad: 4,
+    shoulderLoad: 3,
     met: 8,
     metRange: [7, 9],
     confidence: 0.78,
+    confidenceByField: { basic: 0.96, movement: 0.86, load: 0.79, goal: 0.9, risk: 0.74 },
     goals: [
       { label: '减脂', value: 5 },
       { label: '塑形', value: 3 },
@@ -139,6 +174,10 @@ const COURSES: Course[] = [
     safety: [
       { label: '经期风险', value: '高', tone: 'danger' },
       { label: '产后风险', value: '高', tone: 'danger' },
+    ],
+    riskReasons: [
+      { label: '经期风险依据', detail: '跳跃占比35%，冲击负荷5，且包含连续落地动作。' },
+      { label: '产后风险依据', detail: 'Burpee/登山者带来高冲击、腕部承重与核心压力，需排除或强降权。' },
     ],
     keyActions: ['Jumping Jack', 'Burpee', 'Mountain Climber', '深蹲跳'],
     evidence: [
@@ -154,6 +193,8 @@ const COURSES: Course[] = [
     subtitle: '持续抗阻 · 局部肌肉疲劳明显',
     type: '力量',
     secondaryType: 'STRENGTH',
+    primaryBodyArea: '全身',
+    secondaryBodyAreas: ['臀腿', '肩部'],
     bodyParts: ['全身', '臀腿', '肩部'],
     equipment: ['哑铃'],
     duration: 25,
@@ -167,9 +208,17 @@ const COURSES: Course[] = [
     jumpRatio: 0,
     standingRatio: 62,
     floorRatio: 38,
+    supineRatio: 0,
+    proneRatio: 10,
+    kneelingRatio: 12,
+    kneeLoad: 4,
+    wristBearing: 2,
+    lowerBackLoad: 3,
+    shoulderLoad: 4,
     met: 5,
     metRange: [4.5, 6],
     confidence: 0.61,
+    confidenceByField: { basic: 0.94, movement: 0.7, load: 0.62, goal: 0.84, risk: 0.58 },
     goals: [
       { label: '减脂', value: 3 },
       { label: '塑形', value: 5 },
@@ -179,6 +228,10 @@ const COURSES: Course[] = [
     safety: [
       { label: '经期风险', value: '中', tone: 'warn' },
       { label: '产后风险', value: '中', tone: 'warn' },
+    ],
+    riskReasons: [
+      { label: '经期风险依据', detail: '肌肉负荷5，包含弓步/深蹲；是否适用取决于当日状态与能力。' },
+      { label: '产后风险依据', detail: '肩上推举与下肢抗阻需结合运动许可、症状和可修改性复核。' },
     ],
     keyActions: ['深蹲', '弓步', '哑铃划船', '肩上推举'],
     evidence: [
@@ -502,6 +555,46 @@ export function CourseTaggingDemoView({ embedded = false }: { embedded?: boolean
                 </section>
 
                 <div className="grid gap-5 lg:grid-cols-2">
+                  <section className="rounded-2xl border border-blue-100 bg-blue-50/40 p-5 shadow-sm lg:col-span-2">
+                    <SectionTitle icon={Gauge} title="V1 结构化字段补充" detail="Primary/Secondary Body Area、姿态比例与局部负荷，供匹配规则读取" />
+                    <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                      <div className="rounded-xl border border-blue-100 bg-white p-4">
+                        <p className="text-[11px] font-semibold text-slate-400">基础分类</p>
+                        <div className="mt-3 space-y-3 text-xs">
+                          <div><p className="text-[10px] text-slate-400">Primary Body Area</p><p className="mt-1 font-bold text-slate-800">{selectedCourse.primaryBodyArea}</p></div>
+                          <div><p className="text-[10px] text-slate-400">Secondary Body Areas</p><div className="mt-1 flex flex-wrap gap-1.5">{selectedCourse.secondaryBodyAreas.map((area) => <span key={area} className="rounded-lg bg-blue-50 px-2 py-1 font-medium text-blue-800">{area}</span>)}</div></div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-blue-100 bg-white p-4">
+                        <p className="text-[11px] font-semibold text-slate-400">动作形态比例</p>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                          {[
+                            ['Standing', selectedCourse.standingRatio],
+                            ['Floor', selectedCourse.floorRatio],
+                            ['Supine', selectedCourse.supineRatio],
+                            ['Prone', selectedCourse.proneRatio],
+                            ['Kneeling', selectedCourse.kneelingRatio],
+                            ['Jump', selectedCourse.jumpRatio],
+                          ].map(([label, value]) => <div key={label} className="rounded-lg bg-slate-50 px-2.5 py-2"><p className="text-[10px] text-slate-400">{label}</p><p className="mt-0.5 font-bold text-slate-800">{value}%</p></div>)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-blue-100 bg-white p-4">
+                        <p className="text-[11px] font-semibold text-slate-400">局部动作负荷（1–5）</p>
+                        <div className="mt-3 space-y-2.5">
+                          {[
+                            ['Knee Load', selectedCourse.kneeLoad],
+                            ['Wrist Bearing', selectedCourse.wristBearing],
+                            ['Lower Back Load', selectedCourse.lowerBackLoad],
+                            ['Shoulder Load', selectedCourse.shoulderLoad],
+                          ].map(([label, value]) => <div key={label}><div className="mb-1 flex items-center justify-between text-[10px] text-slate-500"><span>{label}</span><b className="text-slate-700">{value}</b></div><ScoreBar value={value as number} color={(value as number) >= 4 ? 'bg-rose-500' : (value as number) === 3 ? 'bg-amber-400' : 'bg-emerald-500'} /></div>)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid gap-2 md:grid-cols-2">
+                      {selectedCourse.riskReasons.map((reason) => <div key={reason.label} className="rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-[11px] text-slate-600"><span className="font-semibold text-slate-800">{reason.label}：</span>{reason.detail}</div>)}
+                    </div>
+                    <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/80 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800"><b>孕期边界：</b>课程侧不生成孕期标签；用户侧命中 Pregnancy = Block 时，不进入自动课程推荐。</div>
+                  </section>
                   <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><SectionTitle icon={Layers3} title="基础属性与动作事实" detail="AI识别出的可观察内容" /><div className="mt-5 grid gap-4 sm:grid-cols-2"><div><p className="text-[11px] font-semibold text-slate-400">训练部位</p><div className="mt-2 flex flex-wrap gap-1.5">{selectedCourse.bodyParts.map((item) => <span key={item} className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600">{item}</span>)}</div></div><div><p className="text-[11px] font-semibold text-slate-400">器械</p><div className="mt-2 flex flex-wrap gap-1.5">{selectedCourse.equipment.map((item) => <span key={item} className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600">{item}</span>)}</div></div></div><div className="mt-5 space-y-3"><div><div className="mb-1 flex justify-between text-[11px] text-slate-500"><span>跳跃动作占比</span><b className="text-slate-700">{selectedCourse.jumpRatio}% · 等级{selectedCourse.jumpLevel}</b></div><div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-violet-500" style={{ width: `${Math.max(selectedCourse.jumpRatio, 2)}%` }} /></div></div><div className="grid grid-cols-2 gap-3"><div className="rounded-xl border border-slate-100 p-3"><p className="text-[10px] text-slate-400">站立占比</p><p className="mt-1 text-sm font-bold text-slate-800">{selectedCourse.standingRatio}%</p></div><div className="rounded-xl border border-slate-100 p-3"><p className="text-[10px] text-slate-400">地面占比</p><p className="mt-1 text-sm font-bold text-slate-800">{selectedCourse.floorRatio}%</p></div></div></div><div className="mt-5"><p className="text-[11px] font-semibold text-slate-400">关键动作</p><div className="mt-2 flex flex-wrap gap-1.5">{selectedCourse.keyActions.map((item) => <span key={item} className="rounded-lg border border-slate-200 px-2 py-1 text-[11px] text-slate-600">{item}</span>)}</div></div></section>
 
                   <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><SectionTitle icon={Target} title="目标贡献与安全特征" detail="用于匹配和安全筛选，不等于医学诊断" /><div className="mt-5 space-y-3">{selectedCourse.goals.map((goal) => <div key={goal.label} className="grid grid-cols-[78px_1fr] items-center gap-3"><span className="text-[11px] text-slate-500">{goal.label}</span><ScoreBar value={goal.value} color={goal.value >= 4 ? 'bg-slate-800' : 'bg-slate-400'} /></div>)}</div><div className="mt-6 border-t border-slate-100 pt-4"><p className="text-[11px] font-semibold text-slate-400">特殊阶段谨慎特征</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{selectedCourse.safety.map((item) => <div key={item.label} className={cn('flex items-center justify-between rounded-xl border px-3 py-2.5', item.tone === 'safe' ? 'border-emerald-100 bg-emerald-50/60' : item.tone === 'warn' ? 'border-amber-100 bg-amber-50/60' : 'border-rose-100 bg-rose-50/60')}><span className="text-[11px] text-slate-600">{item.label}</span><span className={cn('text-xs font-bold', item.tone === 'safe' ? 'text-emerald-700' : item.tone === 'warn' ? 'text-amber-700' : 'text-rose-700')}>{item.value}</span></div>)}</div></div><div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-[11px] leading-relaxed text-blue-700"><Info size={14} className="mr-1 inline-block -mt-0.5" />安全特征用于避让、降权和提示；只有通过复核的标签，才允许被排课规则读取。</div></section>
@@ -562,6 +655,23 @@ export function CourseTaggingDemoView({ embedded = false }: { embedded?: boolean
                       <p className="text-[11px] font-semibold text-amber-800">发布门槛</p>
                       <p className="mt-2 text-xs leading-relaxed text-amber-800">低置信、unknown、敏感生命周期风险或字段冲突时，保持 REVIEW_REQUIRED；完成健康复核后才能生成排课可用快照。</p>
                     </div>
+                  </div>
+                  <div className="mt-5 overflow-hidden rounded-xl border border-slate-100">
+                    <div className="grid grid-cols-[minmax(0,1fr)_140px_100px_140px] gap-3 bg-slate-50 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <span>字段</span><span>当前值</span><span>置信度</span><span>审核状态</span>
+                    </div>
+                    {[
+                      ['Primary Workout Type', selectedCourse.type, 'basic', '课程元数据'],
+                      ['Primary Body Area', selectedCourse.primaryBodyArea, 'basic', '课程元数据'],
+                      ['Overall Intensity', `${selectedCourse.overall}/5`, 'load', '强度证据'],
+                      ['Knee Load', `${selectedCourse.kneeLoad}/5`, 'load', '局部负荷证据'],
+                      ['Goal Contribution', selectedCourse.goals.map((goal) => `${goal.label} ${goal.value}/5`).join(' · '), 'goal', '规则推导'],
+                      ['Postpartum Risk', selectedCourse.safety[1].value, 'risk', '安全终审'],
+                    ].map(([label, value, source, review]) => {
+                      const confidence = selectedCourse.confidenceByField[source];
+                      const status = confidence < 0.75 ? '异常待处理' : confidence < 0.85 ? '待人工复核' : selectedCourse.status === '可用于排课' ? '人工已确认' : 'AI 已生成';
+                      return <div key={label} className="grid grid-cols-[minmax(0,1fr)_140px_100px_140px] items-center gap-3 border-t border-slate-100 px-4 py-3 text-xs"><div><p className="font-semibold text-slate-700">{label}</p><p className="mt-0.5 text-[10px] text-slate-400">来源：{review}</p></div><span className="truncate text-slate-600">{value}</span><span className={cn('font-mono font-bold', confidence < 0.75 ? 'text-rose-600' : 'text-slate-600')}>{Math.round(confidence * 100)}%</span><span className={cn('font-semibold', status === '异常待处理' ? 'text-rose-600' : status === '待人工复核' ? 'text-amber-600' : status === '人工已确认' ? 'text-emerald-600' : 'text-slate-500')}>{status}</span></div>;
+                    })}
                   </div>
                 </section>
                 <section className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
