@@ -100,6 +100,14 @@ const USER_PROFILE_SCREEN: ScreenDef = {
   },
 };
 
+const UPDATED_SCREEN_DATES: Record<string, string> = {
+  B06: '260902',
+  B12: '260902',
+  B13: '260902',
+  B19: '260902',
+  [COURSE_TAGGING_VIEW_ID]: '260902',
+};
+
 interface Props {
   screenId: string;
   onNavigate: (screenId: string) => void;
@@ -216,6 +224,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
               >
                 <span className="font-mono text-[11px]">{s.id}</span>
                 <span className="min-w-0 flex-1 truncate">{s.name}</span>
+                {UPDATED_SCREEN_DATES[s.id] && <span className={`shrink-0 rounded px-1 font-mono text-[8px] ${s.id === screen.id ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>{UPDATED_SCREEN_DATES[s.id]}</span>}
                 <span className={`rounded px-1 text-[10px] ${s.priority === 'P0' ? 'bg-gray-800 text-white' : 'bg-gray-300 text-gray-600'} ${s.id === screen.id ? '!bg-white !text-gray-700' : ''}`}>
                   {s.priority}
                 </span>
@@ -251,6 +260,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
               >
                 <span className="font-mono text-[11px]">TAG</span>
                 <span className="min-w-0 flex-1 truncate">课程标签 & 能量估算</span>
+                <span className={`shrink-0 rounded px-1 font-mono text-[8px] ${isTagging ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>{UPDATED_SCREEN_DATES[COURSE_TAGGING_VIEW_ID]}</span>
                 <span className={`rounded px-1 text-[10px] font-semibold ${isTagging ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>新增</span>
               </button>
             )}

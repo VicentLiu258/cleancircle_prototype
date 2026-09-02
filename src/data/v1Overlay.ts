@@ -192,6 +192,38 @@ const mobileV1Screens: MobileScreenDef[] = [
 const aSide = (label: string): WireBlock => ({ kind: 'sidebar', label });
 const aShell = (label: string, sub: string): WireBlock[] => [aSide(label), { kind: 'topbar', label: `V1 控制面 / ${label}`, sub }, { kind: 'page-header', label }];
 
+const B12_TAB_ITEMS = ['Priority / Hard Filter', 'Plan', 'Re-plan', 'Daily Adapt'];
+const B12_TAB_STATES = ['priority', 'plan', 'replan', 'adapt'];
+const b12Tabs = (activeStep: number): WireBlock => ({ kind: 'tabs', items: B12_TAB_ITEMS, activeStep, tabStates: B12_TAB_STATES, marker: 1 });
+
+const B13_TAB_ITEMS = ['Plan', 'Re-plan', 'Daily Adapt', 'Combined'];
+const B13_TAB_STATES = ['plan', 'replan', 'adapt', 'combined'];
+const b13State = (id: string, label: string, activeStep: number, stage: string, detail: string, decision: string, right: string[]): ScreenDef['states'][number] => ({
+  id,
+  label,
+  blocks: [
+    ...aShell(`推荐系统 / 模拟 / ${stage}`, '角色：规则配置 / QA'),
+    { kind: 'tabs', items: B13_TAB_ITEMS, activeStep, tabStates: B13_TAB_STATES, marker: 1 },
+    { kind: 'split', label: `${stage} · 典型用户夹具`, sub: '共享 fixtures · 不写真实用户计划', items: ['L2 + 膝盖 MODERATE', '目标 FAT_LOSS', '周期事实：实际开始', '课程池：Approved 280'], right: [detail, 'Profile v4 × Course Profile v7', '规则版本：rules_v1.0'], marker: 2 },
+    { kind: 'calendar-grid', label: stage === 'Daily Adapt' ? '今天：Training Intent / Keep / Soften / Backup' : '30 天：训练意图 / Primary / Backup / Re-plan diff', sub: stage === 'Daily Adapt' ? '仅今天可变；未来计划保持不变' : '过去/完成日期不变；点击日期查看阶段', height: 200 },
+    { kind: 'split', label: `${stage} · 决策 trace`, sub: '候选排除与原因', items: [`stage: ${stage.toUpperCase()}`, decision, 'Primary + Backup A/B/C 快照'], right, marker: 3 },
+    { kind: 'alert', tone: 'ok', label: stage === 'Daily Adapt' ? '不变量通过：Daily Adapt 只改今天' : '不变量通过：历史日期不变，结果可追溯', patch: true },
+    { kind: 'button-primary', label: '提交回归结果并申请发布', to: 'B11' },
+  ],
+});
+
+const B19_TAB_ITEMS = ['账户', 'User Profile', '30 天计划', 'Check-in/Re-plan', 'Decision Trace', '敏感访问'];
+const B19_TAB_STATES = ['account', 'profile', 'plan', 'events', 'trace', 'audit'];
+const b19State = (id: string, label: string, activeStep: number, content: WireBlock[]): ScreenDef['states'][number] => ({
+  id,
+  label,
+  blocks: [
+    ...aShell('用户与 CRM / 用户详情 / U-08771', '角色：CRM / 健康运营（受限）'),
+    { kind: 'tabs', items: B19_TAB_ITEMS, activeStep, tabStates: B19_TAB_STATES, marker: 1 },
+    ...content,
+  ],
+});
+
 const adminV1Screens: ScreenDef[] = [
   adminScreen('B03', '课程列表与 Profile 覆盖', '§4 B03', 'A', [{ id: 'default', label: '课程列表', blocks: [
     ...aShell('课程中心 / 课程列表', '角色：课程运营'), { kind: 'page-header', label: '课程列表 · Course Profile 覆盖', sub: '只允许 APPROVED Profile 进入推荐候选；未审核/unknown 安全字段单独统计', patch: true }, { kind: 'stat-row', items: ['312 节课程', '已批准 280', '待审核 24', '高风险待复核 8', '安全字段缺失 6'] }, { kind: 'filter-bar', label: '搜索 ID/标题 ｜ Profile：全部 ｜ Review：全部 ｜ 安全完整度：全部 ｜ 主类型 ｜ 主部位' }, { kind: 'table', cols: ['课程', '主类型', '主部位', '负荷摘要', 'Profile', '审核', '操作'], items: ['VID-0187 ｜ PILATES ｜ CORE ｜ Overall 2 / Impact 1 ｜ v7 ｜ APPROVED ｜ 查看', 'VID-0203 ｜ STRETCH_RECOVERY ｜ FULL_BODY ｜ Overall 1 / Impact 1 ｜ v3 ｜ NEEDS_REVIEW ｜ 去审核', 'VID-0211 ｜ STRENGTH ｜ LOWER_BODY ｜ Wrist unknown ｜ v1 ｜ BLOCKED ｜ 补充字段'], to: 'B04' }, { kind: 'button-primary', label: '+ 新建课程', to: 'B04' }, { kind: 'button-secondary', label: '查看 AI 打标任务', to: 'B07' }] }], {
@@ -225,18 +257,58 @@ const adminV1Screens: ScreenDef[] = [
     ...aShell('推荐系统 / 规则版本', '角色：规则配置 / 发布审批'), { kind: 'page-header', label: '推荐规则 · rules_v1.0', sub: '全局优先级：Safety > Daily Check-in > Goal/Intent > Capacity > Cycle > Preference > History', marker: 1, patch: true }, { kind: 'stat-row', items: ['Priority 1', 'Plan 3', 'Re-plan 2', 'Daily Adapt 4', '回归失败 0'] }, { kind: 'table', cols: ['阶段', '规则集', '作用域', '版本', '状态', '操作'], items: ['Priority ｜ Hard Filter ｜ 全阶段 ｜ v1 ｜ 启用 ｜ 查看', 'Plan ｜ 30 天结构/候选 ｜ 未来 30 天 ｜ v1 ｜ 启用 ｜ 模拟', 'Re-plan ｜ 周期/Profile 变化 ｜ 未来受影响日 ｜ v1 ｜ 启用 ｜ 模拟', 'Daily Adapt ｜ Push/Soft/Warm ｜ 仅今天 ｜ v1 ｜ 草稿 ｜ 编辑'], to: 'B12', marker: 2 }, { kind: 'button-primary', label: '+ 创建规则集', to: 'B12' }] }], {
     goal: '把 Priority、Plan、Re-plan、Daily Adapt 拆成可独立回归、发布和回滚的规则集。', entry: '后台侧边栏-推荐系统', exit: ['B12', 'B13'], role: '规则配置 / 发布审批', data: adminData(['recommendation_rule_sets/versions', '命中率与 No Match 监控', '发布/回滚审计']), actions: { primary: '查看/编辑规则集', secondary: ['模拟', '查看影响评估', '发布/回滚'], destructive: '停用安全规则需二次确认和影响评估' }, statesDesc: ['默认', '草稿', '待审核', '已发布', '回滚'], triggers: ['规则发布记录最低客户端/Schema/taxonomy 兼容版本'], deps: ['B06', 'B07', 'B12', 'B13'], patches: ['V1-RULE-STAGE'],
   }),
-  adminScreen('B12', '四阶段规则编辑器', '§4 B12', 'C', [{ id: 'priority', label: 'Priority / Hard Filter', blocks: [...aShell('推荐规则 / Priority', 'Safety 规则需安全审批'), { kind: 'form-row', label: '优先级（固定）', sub: 'Safety > Daily Check-in > Goal/Training Intent > Fitness Capacity > Cycle Context > Preference > History', marker: 1 }, { kind: 'form-row', label: 'Hard Filter', sub: 'Unknown 安全字段不默认放行；PREGNANT → Block；无安全课程 → NO_SAFE_COURSE_MATCH' }, { kind: 'button-primary', label: '保存并运行回归', to: 'B13' }]}, { id: 'plan', label: 'Plan', blocks: [...aShell('推荐规则 / Plan', '不读取 Daily Check-in'), { kind: 'form-row', label: '训练结构', sub: 'Training Structure → Daily Training Intent → Primary + Backup A/B/C' }, { kind: 'form-row', label: '排序输入', sub: 'Safety（只做安全边界） → Goal → Capacity → Cycle → Frequency/Duration → Preference → History' }, { kind: 'form-row', label: '匹配矩阵', sub: '用户 User Training Profile × 课程 Course Profile；Primary 先于 Backup，缺少安全字段不默认放行' }, { kind: 'form-row', label: '候选约束', sub: '只读取 APPROVED Course Profile；equipment 不参与用户主匹配' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]}, { id: 'replan', label: 'Re-plan', blocks: [...aShell('推荐规则 / Re-plan', '只影响未来受影响日期'), { kind: 'form-row', label: '触发源', sub: '周期事实 / User Profile 新版本 / 规则或课程 Profile 失效' }, { kind: 'form-row', label: '变更类型', sub: 'Keep > Adjust > Replace；过去/已完成日期不变' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]}, { id: 'adapt', label: 'Daily Adapt', blocks: [...aShell('推荐规则 / Daily Adapt', '只影响今天'), { kind: 'form-row', label: 'Push', sub: '默认 Keep，不自动升级' }, { kind: 'form-row', label: 'Soft', sub: '先降低冲击/负荷/跳跃，保留训练意图，再使用 Backup' }, { kind: 'form-row', label: 'Warm', sub: '温和化 → 替换 → Rest' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]}], {
+  adminScreen('B12', '四阶段规则编辑器', '§4 B12', 'C', [
+    { id: 'priority', label: 'Priority / Hard Filter', blocks: [...aShell('推荐规则 / Priority', 'Safety 规则需安全审批'), b12Tabs(0), { kind: 'form-row', label: '优先级（固定）', sub: 'Safety > Daily Check-in > Goal/Training Intent > Fitness Capacity > Cycle Context > Preference > History' }, { kind: 'form-row', label: 'Hard Filter', sub: 'Unknown 安全字段不默认放行；PREGNANT → Block；无安全课程 → NO_SAFE_COURSE_MATCH' }, { kind: 'button-primary', label: '保存并运行回归', to: 'B13' }]},
+    { id: 'plan', label: 'Plan', blocks: [...aShell('推荐规则 / Plan', '不读取 Daily Check-in'), b12Tabs(1), { kind: 'form-row', label: '训练结构', sub: 'Training Structure → Daily Training Intent → Primary + Backup A/B/C' }, { kind: 'form-row', label: '排序输入', sub: 'Safety（只做安全边界） → Goal → Capacity → Cycle → Frequency/Duration → Preference → History' }, { kind: 'form-row', label: '匹配矩阵', sub: '用户 User Training Profile × 课程 Course Profile；Primary 先于 Backup，缺少安全字段不默认放行' }, { kind: 'form-row', label: '候选约束', sub: '只读取 APPROVED Course Profile；equipment 不参与用户主匹配' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
+    { id: 'replan', label: 'Re-plan', blocks: [...aShell('推荐规则 / Re-plan', '只影响未来受影响日期'), b12Tabs(2), { kind: 'form-row', label: '触发源', sub: '周期事实 / User Profile 新版本 / 规则或课程 Profile 失效' }, { kind: 'form-row', label: '变更类型', sub: 'Keep > Adjust > Replace；过去/已完成日期不变' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
+    { id: 'adapt', label: 'Daily Adapt', blocks: [...aShell('推荐规则 / Daily Adapt', '只影响今天'), b12Tabs(3), { kind: 'form-row', label: 'Push', sub: '默认 Keep，不自动升级' }, { kind: 'form-row', label: 'Soft', sub: '先降低冲击/负荷/跳跃，保留训练意图，再使用 Backup' }, { kind: 'form-row', label: 'Warm', sub: '温和化 → 替换 → Rest' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
+  ], {
     goal: '用受限 DSL/决策表编辑四阶段规则，明确输入、作用域、动作、原因码和版本。', entry: 'B11 规则集', exit: ['B11', 'B13'], role: '规则配置 / 安全审核', data: adminData(['rule definition JSON/DSL', 'reason_codes 与解释文案', '输入字段依赖与版本']), actions: { primary: '保存并运行回归', secondary: ['查看候选/排除原因', '复制草稿', '提交审核'], destructive: '已发布规则只能停用/回滚，不能删除' }, statesDesc: ['Priority', 'Plan', 'Re-plan', 'Daily Adapt', '冲突检测失败'], triggers: ['禁止任意脚本；发布前静态校验 + 典型夹具回归'], deps: ['B06 taxonomy', 'B07 approved Profile', 'B13 模拟'], patches: ['V1-RULE-ENGINE', 'D09', 'D10'],
   }),
-  adminScreen('B13', '规则模拟与回归测试', '§4 B13', 'C', [{ id: 'input', label: '样本输入', blocks: [...aShell('推荐系统 / 模拟与回归', '角色：规则配置 / QA'), { kind: 'tabs', items: ['Plan', 'Re-plan', 'Daily Adapt', 'Combined'], activeStep: 0, tabStates: ['plan', 'replan', 'adapt', 'combined'], marker: 1 }, { kind: 'split', label: '典型用户夹具', sub: '共享 fixtures · 不写真实用户计划', items: ['L2 + 膝盖 MODERATE', '目标 FAT_LOSS', '周期事实：实际开始', '课程池：Approved 280'], right: ['孕期 Block', '所有候选被 Hard Filter', '低能量 → Soft → Soften', '同日 Re-plan → Adapt'], marker: 2 }, { kind: 'button-primary', label: '运行模式模拟' }, { kind: 'button-secondary', label: '全部样本回归' }]}, { id: 'result', label: '结果与解释', blocks: [...aShell('推荐系统 / 模拟结果', '显示完整决策 trace'), { kind: 'calendar-grid', label: '30 天：训练意图 / Primary / Backup / Re-plan diff', sub: '过去/完成日期不变；点击日期查看阶段', height: 200 }, { kind: 'split', label: 'Day 3 · 决策 trace', sub: '候选排除与原因', items: ['stage: PLAN', 'Profile v4 × Course Profile v7 × rules_v1.0', 'Primary + Backup A/B/C 快照'], right: ['Hard Filter：Pregnancy → Block', 'VID-0192：Impact 超限 → 排除', 'VID-0201：7 日重复 → 排除', '无安全候选 → Rest/No Match'], marker: 3 }, { kind: 'split', label: '结果动作与作用域', sub: '把未来重排和今日适配拆开验证', items: ['Re-plan：周期实际首日变化', '未来日期：Keep / Adjust / Replace', 'Daily Adapt：今日 Soft → Soften → Backup'], right: ['已完成日期：锁定不变', '用户可撤销今日替换', '每一步都有 reason_code + trace_id'], marker: 4 }, { kind: 'alert', tone: 'ok', label: '不变量通过：Daily Adapt 只改今天；Re-plan 不改历史', patch: true }, { kind: 'button-primary', label: '提交回归结果并申请发布', to: 'B11' }] }], {
+  adminScreen('B13', '规则模拟与回归测试', '§4 B13', 'C', [
+    b13State('plan', 'Plan', 0, 'Plan', 'Hard Filter：Pregnancy → Block', 'Goal / Capacity / Cycle → Primary + Backup A/B/C', ['VID-0192：Impact 超限 → 排除', 'VID-0201：7 日重复 → 排除', '无安全候选 → Rest / No Match']),
+    b13State('replan', 'Re-plan', 1, 'Re-plan', '实际周期首日或 Profile 发生变化', '未来受影响日期：Keep / Adjust / Replace', ['已完成日期：锁定不变', '只更新未来未完成日期', '保留前后计划版本 diff']),
+    b13State('adapt', 'Daily Adapt', 2, 'Daily Adapt', 'ENERGY_LOW / Soft Day', 'Keep → Soften → Backup → Rest', ['只改今天', '保留目标 / 类型 / 部位', '用户确认后可撤销']),
+    b13State('combined', 'Combined', 3, 'Combined', '先 Re-plan 未来，再 Adapt 今天', '周期事实 + 当日状态的组合决策', ['历史不覆盖', '未来显示 Re-plan diff', '今日显示 Daily Adapt trace']),
+  ], {
     goal: '用 Plan/Re-plan/Daily Adapt/Combined 四种模式验证结果、作用域、候选和解释。', entry: 'B12 规则草稿 / B11 行模拟', exit: ['B11', 'B12'], role: '规则配置 / QA / 安全审核', data: adminData(['fixtures 与版本矩阵', 'candidate_snapshots/decision_exclusions', '回归不变量与 diff']), actions: { primary: '运行模拟/回归', secondary: ['导出 trace', '与线上版本对比', '提交发布审批'] }, statesDesc: ['样本输入', '结果解释', '回归通过', '回归失败', '无安全匹配'], triggers: ['Combined 固定先 Re-plan 未来，再 Adapt 今天'], deps: ['B12', 'S08/S09/S20/S21'], patches: ['V1-SIMULATION'],
   }),
   adminScreen('B17', '营销标签与训练档案隔离', '§4 B17', 'F', [{ id: 'default', label: '标签分区', blocks: [
     ...aShell('用户与 CRM / 标签分区', '角色：CRM 运营'), { kind: 'page-header', label: '标签与分群', sub: '营销标签可运营；健康/训练条件只读来自 User Training Profile，不允许自由创建', patch: true }, { kind: 'tabs', items: ['营销标签', '训练档案（只读）', '分群规则'], activeStep: 0, tabStates: ['marketing', 'profile', 'segments'] }, { kind: 'table', cols: ['分区', '示例', '可编辑', '可导出'], items: ['营销 ｜ 来源：内容活动 ｜ 运营活动人群 ｜ 是 ｜ 脱敏后', '训练档案 ｜ fitness_capacity L2、knee MODERATE ｜ 只能由问卷/Profile 产生 ｜ 否（服务端字段）', '敏感生命周期 ｜ POSTPARTUM/PCOS ｜ 受限查看 ｜ 默认否'], marker: 1 }, { kind: 'alert', tone: 'warn', label: '禁止创建「大基数友好/PCOS 友好/产后风险」等自由健康标签', sub: '这些条件必须通过结构化 Profile 和权限审计管理', patch: true }] }], {
     goal: '防止 CRM 自定义标签污染安全规则，并隔离营销与敏感训练数据。', entry: '后台侧边栏-用户与 CRM', exit: ['B19'], role: 'CRM 运营 / 健康审核 / 审计员', data: adminData(['marketing tags', 'User Training Profile 只读摘要', '分群规则与权限']), actions: { primary: '管理营销标签/分群', secondary: ['查看 Profile 摘要（受限）', '导出脱敏营销人群'] }, statesDesc: ['营销标签', 'Profile 只读', '无权限', '导出待审批'], triggers: ['敏感字段默认不导出、不进入通用埋点'], deps: ['User Profile 服务', '权限/审计'], patches: ['V1-RBAC', 'D04'],
   }),
-  adminScreen('B19', '用户 Profile 与推荐决策追踪', '§4 B19', 'F', [{ id: 'overview', label: 'Profile 概览', blocks: [
-    ...aShell('用户与 CRM / 用户详情 / U-08771', '角色：CRM / 健康运营（受限）'), { kind: 'tabs', items: ['账户', 'User Profile', '30 天计划', 'Check-in/Re-plan', 'Decision Trace', '敏感访问'], activeStep: 1, tabStates: ['account', 'profile', 'plan', 'events', 'trace', 'audit'], marker: 1 }, { kind: 'form-row', label: 'User Training Profile', sub: 'v4 · primary_goal FAT_LOSS · capacity L2 · knee MODERATE · lifecycle REGULAR' }, { kind: 'form-row', label: '来源与同意', sub: 'Onboarding v1.0 · 字段来源可追溯 · 敏感数据查看需目的+审计' }, { kind: 'panel', label: '30 天计划：Plan v3 · 训练意图/Primary/Backup A/B/C 可展开', sub: '过去日期锁定；未来变更显示 Re-plan 版本 diff', patch: true }, { kind: 'button-secondary', label: '查看完整标签与血缘', to: 'USER_TRAINING_PROFILE:U-08771:user' }, { kind: 'button-secondary', label: '查看最近一次 Decision Trace', to: 'B19' }]}, { id: 'trace', label: 'Decision Trace', blocks: [...aShell('用户详情 / Decision Trace', '只读审计视图'), { kind: 'steps', items: ['输入快照', 'Hard Filter', '候选池', '最终决策'], activeStep: 3 }, { kind: 'split', label: '今日推荐 · dec_204', sub: '最终：SOFTEN / Soft', items: ['Profile v4', 'Course Profile v7', 'rules_v1.0', 'Check-in ENERGY_LOW'], right: ['Keep：保留目标/训练类型/部位', 'Soften：降低负荷/冲击/跳跃', 'Backup A：仍不适时才启用', '排除：Impact/重复/unknown · reason_codes 可回到 APP'], marker: 2 }, { kind: 'panel', label: '作用域边界', sub: '今日 SOFTEN 属于 Daily Adapt；周期实际首日变化属于 Re-plan，只影响未来未完成日期。', patch: true }, { kind: 'button-secondary', label: '查看候选与排除明细' }, { kind: 'button-secondary', label: '查看敏感访问审计', to: 'B19' }]}, { id: 'audit', label: '敏感访问审计', blocks: [...aShell('用户详情 / 敏感访问审计', '只读审计员'), { kind: 'table', cols: ['时间', '角色', '目的', '字段范围', '结果'], items: ['08-28 10:15 ｜ 健康审核员 ｜ 复核 Profile ｜ limitations/lifecycle ｜ 已记录', '08-27 18:42 ｜ 客服 ｜ 查看账户 ｜ 无敏感字段 ｜ 已拒绝'], marker: 3 }, { kind: 'alert', tone: 'info', label: '营销标签与敏感 Profile 分区；导出默认不包含敏感字段', patch: true }] }], {
+  adminScreen('B19', '用户 Profile 与推荐决策追踪', '§4 B19', 'F', [
+    b19State('account', '账户', 0, [
+      { kind: 'form-row', label: '账号', sub: 'U-08771 · 体验用户 · 订阅有效至 2026-06-20' },
+      { kind: 'form-row', label: '隐私与同意', sub: '健康数据查看需目的+权限；敏感访问自动写入审计' },
+      { kind: 'panel', label: '营销标签与训练档案隔离', sub: 'CRM 运营标签可编辑；User Training Profile 由问卷/Profile 服务生成并只读。', patch: true },
+    ]),
+    b19State('profile', 'User Profile', 1, [
+      { kind: 'form-row', label: 'User Training Profile', sub: 'v4 · primary_goal FAT_LOSS · capacity L2 · knee MODERATE · lifecycle REGULAR' },
+      { kind: 'form-row', label: '字段来源', sub: 'Onboarding v1.0 · 字段来源可追溯 · 敏感数据查看需目的+审计' },
+      { kind: 'split', label: '结构化标签摘要', sub: '来源与规则', items: ['primary_goal：FAT_LOSS', 'fitness_capacity：L2', 'limitations.knee：MODERATE', 'lifecycle.stage：REGULAR'], right: ['Profile v4', 'Profile 推导 B10', '问卷答案可回溯', '冲突字段需安全审核'], marker: 2 },
+      { kind: 'button-secondary', label: '查看完整标签与血缘', to: 'USER_TRAINING_PROFILE:U-08771:user' },
+    ]),
+    b19State('plan', '30 天计划', 2, [
+      { kind: 'panel', label: '30 天计划：Plan v3', sub: '训练意图 / Primary / Backup A/B/C 可展开；过去日期锁定，未来变更显示 Re-plan 版本 diff。', patch: true },
+      { kind: 'calendar-grid', label: '30 天：训练意图 / Primary / Backup / Re-plan diff', sub: '点击日期查看课程、候选和变更原因', height: 190 },
+      { kind: 'split', label: '今日计划', sub: '候选快照', items: ['Training Intent：FAT_LOSS · CORE', 'Primary：核心激活 25min', 'Backup A/B/C：同意图备选'], right: ['课程 Profile v7', '规则 rules_v1.0', '今日不适进入 Daily Adapt', '历史完成记录不改'], marker: 2 },
+    ]),
+    b19State('events', 'Check-in/Re-plan', 3, [
+      { kind: 'table', cols: ['时间', '事件', '作用域', '结果'], items: ['今日 08:10 ｜ ENERGY_LOW ｜ 仅今天 ｜ Soft → Soften', '今日 08:11 ｜ PERIOD_STARTED ｜ 未来未完成日 ｜ Re-plan 预览', '昨日 ｜ FEEL_GREAT ｜ 仅今天 ｜ Keep'], marker: 2 },
+      { kind: 'panel', label: '事件边界', sub: 'Daily Adapt 只改今天；周期事实、Profile 版本或规则失效才触发未来 Re-plan。', patch: true },
+    ]),
+    b19State('trace', 'Decision Trace', 4, [
+      { kind: 'steps', items: ['输入快照', 'Hard Filter', '候选池', '最终决策'], activeStep: 3 },
+      { kind: 'split', label: '今日推荐 · dec_204', sub: '最终：SOFTEN / Soft', items: ['Profile v4', 'Course Profile v7', 'rules_v1.0', 'Check-in ENERGY_LOW'], right: ['Keep：保留目标/训练类型/部位', 'Soften：降低负荷/冲击/跳跃', 'Backup A：仍不适时才启用', '排除：Impact/重复/unknown · reason_codes 可回到 APP'], marker: 2 },
+      { kind: 'panel', label: '作用域边界', sub: '今日 SOFTEN 属于 Daily Adapt；周期实际首日变化属于 Re-plan，只影响未来未完成日期。', patch: true },
+      { kind: 'button-secondary', label: '查看候选与排除明细' },
+    ]),
+    b19State('audit', '敏感访问', 5, [
+      { kind: 'table', cols: ['时间', '角色', '目的', '字段范围', '结果'], items: ['08-28 10:15 ｜ 健康审核员 ｜ 复核 Profile ｜ limitations/lifecycle ｜ 已记录', '08-27 18:42 ｜ 客服 ｜ 查看账户 ｜ 无敏感字段 ｜ 已拒绝'], marker: 3 },
+      { kind: 'alert', tone: 'info', label: '营销标签与敏感 Profile 分区；导出默认不包含敏感字段', patch: true },
+    ]),
+  ], {
     goal: '查看用户长期 Profile、30 天计划、Check-in/Re-plan 和推荐决策全链路。', entry: 'B18 用户列表', exit: ['B18', 'B17'], role: 'CRM / 健康运营 / 审计员', data: adminData(['user_training_profiles/field_sources', 'plans/intents/candidate snapshots', 'checkins/cycle facts/replans/decisions', '敏感访问审计']), actions: { primary: '查看 Profile 与 Decision Trace', secondary: ['查看计划 diff', '查看推荐原因', '申请敏感字段访问'] }, statesDesc: ['Profile', '计划', '事件', 'trace', '敏感审计', '无权限'], triggers: ['所有推荐可通过 trace id 回溯版本与排除原因'], deps: ['User/Profile/Recommendation API', 'B17 权限隔离'], patches: ['V1-USER-TRACE'],
   }),
   adminScreen('B31', '课程池与推荐质量抽查', '后端§4 课程组合抽查', 'C', [{ id: 'list', label: '质量抽查池', blocks: [

@@ -1,98 +1,10 @@
-import { COURSE_TAGGING_VIEW_ID, ONBOARDING_CONFIG_VIEW_ID, USER_TRAINING_PROFILE_VIEW_ID, type WireBlock, type ScreenDef } from '../data/types';
+import { type WireBlock, type ScreenDef } from '../data/types';
 
 // ——— 图片占位：灰块 + 对角叉线 ———
 const crossBg: React.CSSProperties = {
   backgroundImage:
     'linear-gradient(to top right, transparent calc(50% - 1px), #d1d5db calc(50% - 1px), #d1d5db calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom right, transparent calc(50% - 1px), #d1d5db calc(50% - 1px), #d1d5db calc(50% + 1px), transparent calc(50% + 1px))',
 };
-
-// 后台 IA：对齐《后端需求.docx》（冲突以后端为准，2026-08-07）
-const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
-  { group: '工作台', items: [
-    { label: '运营总览', sid: 'B02' },
-    { label: '转化漏斗', sid: 'B48' },
-    { label: '业务趋势', sid: 'B49' },
-    { label: '用户行为', sid: 'B50' },
-  ]},
-  { group: '用户与 CRM', items: [
-    { label: '用户列表', sid: 'B18' },
-    { label: '用户详情', sid: 'B19' },
-    { label: '用户训练档案与标签', sid: USER_TRAINING_PROFILE_VIEW_ID },
-    { label: '标签与分群', sid: 'B17' },
-    { label: '老用户迁移', sid: 'B20' },
-  ]},
-  { group: '消息与触达', items: [
-    { label: '消息模板', sid: 'B15' },
-    { label: '触发器', sid: 'B16' },
-    { label: '触达任务与效果', sid: 'B28' },
-  ]},
-  { group: '问卷评测', items: [
-    { label: '问卷与版本', sid: 'B08' },
-    { label: '问卷编辑器', sid: 'B09' },
-    { label: '评测结果话术', sid: 'B10' },
-    { label: 'Onboarding 问卷配置', sid: ONBOARDING_CONFIG_VIEW_ID },
-    { label: 'Profile 推导工作台', sid: `${USER_TRAINING_PROFILE_VIEW_ID}:U-08771:derivation` },
-  ]},
-  { group: '内容中心', items: [
-    { label: '视频库', sid: 'B03' },
-    { label: '视频编辑', sid: 'B04' },
-    { label: '批量导入', sid: 'B05' },
-    { label: '标签库', sid: 'B06' },
-    { label: 'AI 打标复核', sid: 'B07' },
-    { label: '今日话术', sid: 'B56' },
-    { label: '内容编排', sid: 'B57' },
-  ]},
-  { group: '排课与建议', items: [
-    { label: '排课规则', sid: 'B11' },
-    { label: '规则编辑', sid: 'B12' },
-    { label: 'Course Profile & 证据治理', sid: COURSE_TAGGING_VIEW_ID },
-    { label: 'AI 课程组合', sid: 'B31' },
-    { label: '模拟测试(30天)', sid: 'B13' },
-    { label: '阶段建议', sid: 'B14' },
-  ]},
-  { group: '训练与能量值', items: [
-    { label: '打卡数据', sid: 'B29' },
-    { label: '能量值规则', sid: 'B30' },
-    { label: '能量值调整', sid: 'B23' },
-  ]},
-  { group: '会员与财务', items: [
-    { label: '会员套餐', sid: 'B22' },
-    { label: '订阅/订单', sid: 'B21' },
-    { label: '退款管理', sid: 'B24' },
-    { label: '财务对账', sid: 'B25' },
-  ]},
-  { group: '社区与活动', items: [
-    { label: '帖子管理', sid: 'B32' },
-    { label: '评论管理', sid: 'B33' },
-    { label: '官方内容', sid: 'B34' },
-    { label: 'UGC 审核', sid: 'B35' },
-    { label: '举报与申诉', sid: 'B36' },
-    { label: '挑战赛', sid: 'B37' },
-    { label: '活动投放', sid: 'B38' },
-    { label: '社区数据', sid: 'B47' },
-  ]},
-  { group: '商品导购与分享', items: [
-    { label: '外链商品', sid: 'B39' },
-    { label: 'H5 分享页', sid: 'B40' },
-    { label: 'App 商品入口', sid: 'B41' },
-    { label: '外链检查', sid: 'B51' },
-  ]},
-  { group: '客服', items: [
-    { label: '企微配置', sid: 'B42' },
-  ]},
-  { group: '基础运营配置', items: [
-    { label: 'App 页面编辑', sid: 'B55' },
-    { label: 'App 版本', sid: 'B43' },
-    { label: '功能开关', sid: 'B44' },
-    { label: '公告与弹窗', sid: 'B45' },
-    { label: '第三方服务', sid: 'B46' },
-  ]},
-  { group: '系统管理', items: [
-    { label: '角色权限', sid: 'B26' },
-    { label: '审计日志', sid: 'B27' },
-    { label: '后台登录', sid: 'B01' },
-  ]},
-];
 
 function Badge({ n }: { n: number }) {
   return (
@@ -403,35 +315,6 @@ export function BlockView({ block: b, onNavigate, onSwitchState }: BlockProps) {
   }
 }
 
-// ——— 侧边栏 ———
-function Sidebar({ active, screenId, onNavigate }: { active: string; screenId?: string; onNavigate: (id: string) => void }) {
-  return (
-    <div className="w-[118px] shrink-0 overflow-y-auto border-r border-gray-300 bg-gray-50 py-1.5">
-      <p className="px-2 pb-1.5 text-[10px] font-bold text-gray-700">CC 管理后台</p>
-      {MENU.map((g) => (
-        <div key={g.group} className="mb-1">
-          <p className="px-2 pt-1 text-[8.5px] font-bold uppercase text-gray-400">{g.group}</p>
-          {g.items.map((it) => {
-            const isActive = it.sid ? it.sid === screenId : (it.label === active || it.label.startsWith(active));
-            return (
-              <button
-                key={it.label}
-                onClick={it.sid ? () => onNavigate(it.sid!) : undefined}
-                className={`block w-full px-2 text-left text-[9.5px] ${it.sid === COURSE_TAGGING_VIEW_ID || it.sid === ONBOARDING_CONFIG_VIEW_ID || it.sid?.startsWith(USER_TRAINING_PROFILE_VIEW_ID) ? 'py-1 text-[8.5px] leading-tight whitespace-normal' : 'truncate py-0.5'} ${
-                  isActive ? 'bg-gray-700 font-bold text-white' : it.sid ? 'text-gray-600 hover:bg-gray-200' : 'text-gray-300'
-                }`}
-                title={it.sid ? `跳转到 ${it.sid}` : '后续批次'}
-              >
-                {it.label}
-              </button>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ——— 桌面浏览器框 ———
 export function AdminFrame({
   screen,
@@ -446,7 +329,6 @@ export function AdminFrame({
 }) {
   const state = screen.states.find((s) => s.id === stateId) ?? screen.states[0];
   const blocks = state.blocks;
-  const sidebarBlock = blocks.find((b) => b.kind === 'sidebar');
   const chromeBlock = blocks.find((b) => b.kind === 'chrome');
   const content = blocks.filter((b) => b.kind !== 'sidebar' && b.kind !== 'chrome');
 
@@ -458,7 +340,6 @@ export function AdminFrame({
         <BlockView block={{ kind: 'chrome', label: `admin.cleancircle.cn/${screen.id.toLowerCase()}` }} onNavigate={onNavigate} onSwitchState={onSwitchState} />
       )}
       <div className="flex min-h-0 flex-1">
-        {sidebarBlock && <Sidebar active={sidebarBlock.label ?? ''} screenId={screen.id} onNavigate={onNavigate} />}
         <div className="min-w-0 flex-1 overflow-y-auto py-1">
           {content.map((b, i) => (
             <BlockView key={i} block={b} onNavigate={onNavigate} onSwitchState={onSwitchState} />
