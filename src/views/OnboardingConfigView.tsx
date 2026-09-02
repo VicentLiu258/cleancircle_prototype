@@ -3,6 +3,7 @@ import {
   CHECKIN_BOUNDARY,
   CHECKIN_VS_ONBOARDING,
   CONFLICT_ORDER,
+  FLOW_RELATIONSHIP_GUIDE,
   FRAMEWORK_LAYERS,
   LIFECYCLE_BRANCHES,
   MAIN_QUESTIONS,
@@ -15,16 +16,20 @@ import {
   TAG_MAPPINGS,
   V1_INTERACTION_RULES,
   getRuleTypeLabel,
+  formatSkipHint,
+  listMainQuestionIds,
   type LifecycleBranch,
   type QuestionDef,
+  type QuestionRoute,
   type RuleType,
 } from '../data/onboarding-config';
 import { cn } from '../lib/utils';
 
-type TabId = 'questions' | 'lifecycle' | 'postpartum' | 'mapping' | 'profile' | 'checkin';
+type TabId = 'questions' | 'flow' | 'lifecycle' | 'postpartum' | 'mapping' | 'profile' | 'checkin';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'questions', label: '主问卷题目' },
+  { id: 'flow', label: '跳题逻辑' },
   { id: 'lifecycle', label: '生命周期分支' },
   { id: 'postpartum', label: '产后恢复' },
   { id: 'mapping', label: '标签映射' },
@@ -52,6 +57,155 @@ function linesToArray(text: string): string[] {
 
 function arrayToLines(items: string[]): string {
   return items.join('\n');
+}
+
+function formatRouteSummary(q: QuestionDef, questionIds: string[]): string {
+  const defaultSkip = formatSkipHint(q.id, q.defaultNext, questionIds);
+  const defaultPart = defaultSkip ? `默认→${q.defaultNext}（${defaultSkip}）` : `→ ${q.defaultNext}`;
+  if (q.routes.length === 0) return defaultPart;
+  const cond = q.routes.map((r) => {
+    const skip = formatSkipHint(q.id, r.next, questionIds);
+    return skip ? `${r.when}→${r.next}（${skip}）` : `${r.when}→${r.next}`;
+  }).join('；');
+  return `${defaultPart}｜${cond}`;
+}
+
+function RelationshipGuide() {
+  const g = FLOW_RELATIONSHIP_GUIDE;
+  return (
+    <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-4">
+      <p className="text-[12px] font-bold text-blue-900">{g.title}</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-blue-800">{g.summary}</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        {g.layers.map((l) => (
+          <div key={l.name} className="rounded-md border border-blue-100 bg-white px-2.5 py-2">
+            <p className="text-[10px] font-bold text-blue-900">{l.name} <span className="font-mono text-blue-600">{l.range}</span></p>
+            <p className="mt-0.5 text-[10px] text-blue-700">{l.desc}</p>
+          </div>
+        ))}
+      </div>
+      <ul className="mt-3 space-y-1">
+        {g.keyPoints.map((p) => (
+          <li key={p} className="text-[10px] leading-relaxed text-blue-800">• {p}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FlowDiagram({ questions, branches }: { questions: QuestionDef[]; branches: LifecycleBranch[] }) {
+  const questionIds = useMemo(() => listMainQuestionIds(questions), [questions]);
+
+  return (
+    <div className="space-y-1 font-mono text-[11px]">
+      <p className="mb-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-[10px] leading-relaxed text-gray-600">
+        跳转目标不限于「下一题」：可从当前题直接跳到任意后续 Qxx（如 Q08→Q14 一次跳过 Q09–Q13），或进入 Lx / SUMMARY。
+      </p>
+      {questions.map((q) => {
+        const defaultSkip = formatSkipHint(q.id, q.defaultNext, questionIds);
+        return (
+        <div key={q.id} className="relative">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
+            <span className="font-bold text-gray-800">{q.id}</span>
+            <span className="text-gray-700">{q.title}</span>
+            {q.skippable && <span className="rounded bg-gray-100 px-1 text-[9px] text-gray-500">可跳过</span>}
+            {q.linkedLifecycleId && (
+              <span className="rounded bg-pink-100 px-1 text-[9px] text-pink-700">关联 {q.linkedLifecycleId}</span>
+            )}
+          </div>
+          <div className="ml-4 border-l-2 border-gray-200 py-1 pl-3">
+            <p className="text-[10px] text-gray-500">
+              默认下一题：<span className="font-semibold text-gray-800">{q.defaultNext}</span>
+              {defaultSkip && <span className="ml-1 text-amber-700">（{defaultSkip}）</span>}
+            </p>
+            {q.routes.map((r) => {
+              const skip = formatSkipHint(q.id, r.next, questionIds);
+              return (
+              <p key={r.id} className="mt-0.5 text-[10px] text-amber-800">
+                └ 若 {r.when} → <span className="font-bold">{r.next}</span>
+                {skip && <span className="text-amber-600"> · {skip}</span>}
+                {r.note && <span className="text-gray-400">（{r.note}）</span>}
+              </p>
+            );})}
+          </div>
+        </div>
+      );})}
+      <div className="mt-3 rounded-lg border-2 border-dashed border-pink-300 bg-pink-50/50 px-3 py-2">
+        <p className="text-[11px] font-bold text-pink-900">Q15 之后 · 生命周期分支（非 Q 编号）</p>
+        {branches.map((b) => (
+          <p key={b.id} className="mt-1 text-[10px] text-pink-800">
+            {b.entryQuestionId} 选「{b.entryAnswers.join(' / ')}」→ <span className="font-bold">{b.id}</span>
+            （{b.extraQuestions.length} 道追问）→ {b.afterCompleteNext}
+          </p>
+        ))}
+      </div>
+      <p className="mt-2 text-center text-[10px] font-bold text-gray-600">↓ SUMMARY 档案确认 → 生成 Profile</p>
+    </div>
+  );
+}
+
+function RoutesEditor({
+  fromQuestionId,
+  questionIds,
+  routeTargets,
+  routes,
+  defaultNext,
+  onChangeDefaultNext,
+  onChangeRoutes,
+}: {
+  fromQuestionId: string;
+  questionIds: string[];
+  routeTargets: string[];
+  routes: QuestionRoute[];
+  defaultNext: string;
+  onChangeDefaultNext: (v: string) => void;
+  onChangeRoutes: (r: QuestionRoute[]) => void;
+}) {
+  const update = (idx: number, patch: Partial<QuestionRoute>) => {
+    onChangeRoutes(routes.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
+  };
+  const add = () => {
+    onChangeRoutes([
+      ...routes,
+      { id: `R${routes.length + 1}`, when: '条件描述', answerMatch: [], next: 'Q??', note: '' },
+    ]);
+  };
+  const remove = (idx: number) => onChangeRoutes(routes.filter((_, i) => i !== idx));
+  const defaultSkip = formatSkipHint(fromQuestionId, defaultNext, questionIds);
+
+  return (
+    <div className="md:col-span-2 space-y-2 rounded-lg border border-gray-200 bg-white p-3">
+      <p className="text-[10px] font-bold uppercase text-gray-500">跳题逻辑</p>
+      <p className="text-[10px] leading-relaxed text-gray-500">
+        目标可为任意后续 Qxx、Lx 或 SUMMARY，不限于相邻一题。例如从 {fromQuestionId} 可直接跳到 Q12、Q14 等，中间跳过的题不再展示。
+      </p>
+      <FormField label="默认下一题（无条件时）">
+        <input className={cn(inputCls, 'font-mono')} list={`targets-${fromQuestionId}`} value={defaultNext} onChange={(e) => onChangeDefaultNext(e.target.value)} placeholder="Q07 / Q14 / L6 / SUMMARY" />
+        {defaultSkip && <p className="mt-1 text-[10px] text-amber-700">{defaultSkip}</p>}
+      </FormField>
+      <datalist id={`targets-${fromQuestionId}`}>
+        {routeTargets.map((t) => <option key={t} value={t} />)}
+      </datalist>
+      <p className="text-[10px] text-gray-400">条件跳转（按从上到下匹配；可跨多题）</p>
+      {routes.map((r, i) => {
+        const skip = formatSkipHint(fromQuestionId, r.next, questionIds);
+        return (
+        <div key={r.id} className="grid gap-2 rounded border border-gray-100 bg-gray-50 p-2 sm:grid-cols-2">
+          <input className={inputCls} placeholder="触发条件" value={r.when} onChange={(e) => update(i, { when: e.target.value })} />
+          <input className={inputCls} placeholder="选项关键词（逗号分隔）" value={(r.answerMatch ?? []).join('，')} onChange={(e) => update(i, { answerMatch: e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean) })} />
+          <div>
+            <input className={cn(inputCls, 'font-mono')} list={`targets-${fromQuestionId}`} placeholder="跳转目标 Q14" value={r.next} onChange={(e) => update(i, { next: e.target.value })} />
+            {skip && <p className="mt-0.5 text-[9px] text-amber-700">{skip}</p>}
+          </div>
+          <div className="flex gap-1">
+            <input className={cn(inputCls, 'flex-1')} placeholder="备注" value={r.note ?? ''} onChange={(e) => update(i, { note: e.target.value })} />
+            <button type="button" onClick={() => remove(i)} className="shrink-0 rounded border border-gray-300 px-2 text-[10px] text-gray-500 hover:bg-white">删</button>
+          </div>
+        </div>
+      );})}
+      <button type="button" onClick={add} className="rounded border border-dashed border-gray-400 px-2 py-1 text-[10px] text-gray-600 hover:bg-gray-50">+ 添加条件跳转</button>
+    </div>
+  );
 }
 
 function RuleBadge({ type, showLabel }: { type: RuleType; showLabel?: boolean }) {
@@ -204,12 +358,16 @@ function EditToolbar({
 
 function QuestionEditForm({
   draft,
+  questionIds,
+  routeTargets,
   onChange,
   onSave,
   onCancel,
   dirty,
 }: {
   draft: QuestionDef;
+  questionIds: string[];
+  routeTargets: string[];
   onChange: (next: QuestionDef) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -300,6 +458,15 @@ function QuestionEditForm({
             onChange={(e) => onChange({ ...draft, note: e.target.value })}
           />
         </FormField>
+        <RoutesEditor
+          fromQuestionId={draft.id}
+          questionIds={questionIds}
+          routeTargets={routeTargets}
+          defaultNext={draft.defaultNext}
+          routes={draft.routes}
+          onChangeDefaultNext={(defaultNext) => onChange({ ...draft, defaultNext })}
+          onChangeRoutes={(routes) => onChange({ ...draft, routes })}
+        />
       </div>
       <EditToolbar onSave={onSave} onCancel={onCancel} dirty={dirty} />
     </div>
@@ -345,6 +512,15 @@ function BranchEditForm({
             value={draft.trigger}
             onChange={(e) => onChange({ ...draft, trigger: e.target.value })}
           />
+        </FormField>
+        <FormField label="入口题目">
+          <input className={cn(inputCls, 'font-mono')} value={draft.entryQuestionId} onChange={(e) => onChange({ ...draft, entryQuestionId: e.target.value })} />
+        </FormField>
+        <FormField label="入口答案（逗号分隔）">
+          <input className={inputCls} value={draft.entryAnswers.join('，')} onChange={(e) => onChange({ ...draft, entryAnswers: e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean) })} />
+        </FormField>
+        <FormField label="分支结束后跳转">
+          <input className={cn(inputCls, 'font-mono')} value={draft.afterCompleteNext} onChange={(e) => onChange({ ...draft, afterCompleteNext: e.target.value })} />
         </FormField>
         <FormField label="备注" className="sm:col-span-2">
           <textarea
@@ -394,6 +570,8 @@ function BranchEditForm({
 
 function QuestionRow({
   q,
+  questionIds,
+  routeTargets,
   expanded,
   editing,
   draft,
@@ -405,6 +583,8 @@ function QuestionRow({
   onCancel,
 }: {
   q: QuestionDef;
+  questionIds: string[];
+  routeTargets: string[];
   expanded: boolean;
   editing: boolean;
   draft: QuestionDef | null;
@@ -430,7 +610,7 @@ function QuestionRow({
             {editing && <span className="rounded bg-amber-100 px-1 text-[9px] font-semibold text-amber-700">编辑中</span>}
           </div>
         </td>
-        <td className="px-3 py-2 text-[11px] text-gray-500">{q.branch !== '否' ? q.branch : '—'}</td>
+        <td className="px-3 py-2 text-[11px] text-gray-500">{formatRouteSummary(q, questionIds)}</td>
         <td className="px-3 py-2"><RuleBadge type={q.ruleType} /></td>
         <td className="px-3 py-2 text-[11px] text-gray-400">{expanded ? '▲' : '▼'}</td>
       </tr>
@@ -440,6 +620,8 @@ function QuestionRow({
             {editing && draft ? (
               <QuestionEditForm
                 draft={draft}
+                questionIds={questionIds}
+                routeTargets={routeTargets}
                 onChange={onDraftChange}
                 onSave={onSave}
                 onCancel={onCancel}
@@ -457,6 +639,27 @@ function QuestionRow({
                   </button>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
+                  <Detail label="默认下一题" value={q.defaultNext} mono />
+                  {formatSkipHint(q.id, q.defaultNext, questionIds) && (
+                    <Detail label="默认路径跳过" value={formatSkipHint(q.id, q.defaultNext, questionIds)!} />
+                  )}
+                  <Detail label="可跳过" value={q.skippable ? '是' : '否'} />
+                  {q.routes.length > 0 && (
+                    <div className="md:col-span-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">条件跳转</p>
+                      <ul className="mt-1 space-y-1">
+                        {q.routes.map((r) => {
+                          const skip = formatSkipHint(q.id, r.next, questionIds);
+                          return (
+                          <li key={r.id} className="rounded border border-amber-100 bg-amber-50/50 px-2 py-1 text-[10px] text-gray-700">
+                            若 <span className="font-semibold">{r.when}</span> → <span className="font-mono font-bold">{r.next}</span>
+                            {skip && <span className="text-amber-700"> · {skip}</span>}
+                            {r.note && <span className="text-gray-400"> · {r.note}</span>}
+                          </li>
+                        );})}
+                      </ul>
+                    </div>
+                  )}
                   <Detail label="选项" value={q.options} />
                   <Detail label="后台字段" value={q.backendField} mono />
                   <Detail label="生成用户标签" value={q.userTags} mono />
@@ -499,6 +702,12 @@ export function OnboardingConfigView({ embedded }: Props) {
 
   const branch = branches.find((b) => b.id === selectedBranch) ?? branches[0];
 
+  const questionIds = useMemo(() => listMainQuestionIds(questions), [questions]);
+  const routeTargets = useMemo(
+    () => [...questionIds, ...branches.map((b) => b.id), 'SUMMARY'],
+    [questionIds, branches],
+  );
+
   const questionsDirty = useMemo(
     () => JSON.stringify(questions) !== JSON.stringify(MAIN_QUESTIONS),
     [questions],
@@ -522,7 +731,7 @@ export function OnboardingConfigView({ embedded }: Props) {
 
   const startEditQuestion = useCallback((q: QuestionDef) => {
     setEditingQuestionId(q.id);
-    setQuestionDraft({ ...q });
+    setQuestionDraft(JSON.parse(JSON.stringify(q)) as QuestionDef);
     setExpandedQ(q.id);
   }, []);
 
@@ -640,8 +849,9 @@ export function OnboardingConfigView({ embedded }: Props) {
       <div className="p-5">
         {activeTab === 'questions' && (
           <div className="space-y-4">
+            <RelationshipGuide />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[11px] text-gray-500">点击题目行展开详情；支持编辑标题、选项、标签映射与规则类型</p>
+              <p className="text-[11px] text-gray-500">点击题目行展开详情；可编辑跳题逻辑（默认下一题 + 条件跳转）</p>
               {questionsDirty && (
                 <button
                   type="button"
@@ -669,7 +879,7 @@ export function OnboardingConfigView({ embedded }: Props) {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-100">
-                    {['ID', '题目', '分支', '规则类型（悬停查看说明）', ''].map((h) => (
+                    {['ID', '题目', '跳题逻辑', '规则类型', ''].map((h) => (
                       <th key={h} className="px-3 py-2 text-[10px] font-bold uppercase text-gray-500">{h}</th>
                     ))}
                   </tr>
@@ -679,6 +889,8 @@ export function OnboardingConfigView({ embedded }: Props) {
                     <QuestionRow
                       key={q.id}
                       q={q}
+                      questionIds={questionIds}
+                      routeTargets={routeTargets}
                       expanded={expandedQ === q.id}
                       editing={editingQuestionId === q.id}
                       draft={editingQuestionId === q.id ? questionDraft : null}
@@ -701,15 +913,31 @@ export function OnboardingConfigView({ embedded }: Props) {
             </div>
 
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
-              Q12 器械题 V1 已取消；Q04 次要目标可跳过。修改保存在当前会话内，刷新页面将恢复默认。
+              跳题可跨多题：如 Q06→Q10（跳过 Q07–Q09）、Q08→Q14（跳过 Q09–Q13）。Q11 默认跳 Q13（跳过 Q12）。完整路径见「跳题逻辑」Tab。
             </div>
+          </div>
+        )}
+
+        {activeTab === 'flow' && (
+          <div className="space-y-4">
+            <RelationshipGuide />
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[11px] text-gray-500">主干 Q01–Q15；条件跳转可一次跳过任意多题（如 Q08→Q14）</p>
+              {questionsDirty && (
+                <button type="button" onClick={resetQuestions} className="rounded-md border border-gray-300 px-2.5 py-1 text-[11px] text-gray-600 hover:bg-gray-50">
+                  恢复题目默认
+                </button>
+              )}
+            </div>
+            <FlowDiagram questions={questions} branches={branches} />
           </div>
         )}
 
         {activeTab === 'lifecycle' && (
           <div className="space-y-3">
+            <RelationshipGuide />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[11px] text-gray-500">选择分支后编辑追加问题、后台字段与用户/课程标签</p>
+              <p className="text-[11px] text-gray-500">L1–L9 由 Q15 选项触发；选中后在主问卷之后追加追问，完成后回到 SUMMARY</p>
               {branchesDirty && (
                 <button
                   type="button"
@@ -776,7 +1004,11 @@ export function OnboardingConfigView({ embedded }: Props) {
                       </button>
                     </div>
                     <p className="mt-2 text-[11px] text-gray-500">
-                      <span className="font-semibold">触发：</span>{branch.trigger}
+                      <span className="font-semibold">入口：</span>
+                      {branch.entryQuestionId} 选「{branch.entryAnswers.join(' / ')}」→ 进入本分支
+                    </p>
+                    <p className="mt-1 text-[11px] text-gray-500">
+                      <span className="font-semibold">完成后：</span>→ {branch.afterCompleteNext}
                     </p>
                     <p className="mt-1 text-[11px] text-gray-500">{branch.note}</p>
 

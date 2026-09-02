@@ -5,10 +5,28 @@
 
 export type RuleType = 'Hard' | 'Soft' | 'Context' | 'Hard/Soft' | 'Hard/Context' | 'Context/Soft' | 'Context/Hard';
 
+/** 跳转目标：Qxx 主问卷题号 · Lx 生命周期分支 · SUMMARY 档案确认 · END 结束 */
+export type RouteTarget = string;
+
+const MAIN_Q_ID_RE = /^Q(\d+)$/;
+
+export interface QuestionRoute {
+  id: string;
+  /** 触发条件（展示文案） */
+  when: string;
+  /** 匹配的选项关键词，多个为或关系；空表示见 when 说明 */
+  answerMatch?: string[];
+  /** 跳转目标 */
+  next: RouteTarget;
+  /** 研发备注：如同时打标签、不跳题仅 Context */
+  note?: string;
+}
+
 export interface QuestionDef {
   id: string;
   title: string;
   options: string;
+  /** @deprecated 请用 defaultNext + routes；保留用于列表摘要 */
   branch: string;
   backendField: string;
   userTags: string;
@@ -17,12 +35,25 @@ export interface QuestionDef {
   note: string;
   layer: 'A' | 'B' | 'C' | 'D' | 'E';
   required: boolean;
+  /** 无额外条件时的默认下一题/目标 */
+  defaultNext: RouteTarget;
+  /** 按答案触发的条件跳转 */
+  routes: QuestionRoute[];
+  /** 是否允许用户跳过此题 */
+  skippable?: boolean;
+  /** 关联的生命周期分支（仅作标注，如 Q03→L6） */
+  linkedLifecycleId?: string;
 }
 
 export interface LifecycleBranch {
   id: string;
   name: string;
   trigger: string;
+  /** 从哪道主问卷、什么答案进入 */
+  entryQuestionId: string;
+  entryAnswers: string[];
+  /** 分支追问结束后跳转 */
+  afterCompleteNext: RouteTarget;
   extraQuestions: string[];
   backendFields: string[];
   userTags: string[];
@@ -125,6 +156,24 @@ export function getRuleTypeShort(type: RuleType): string {
   return RULE_TYPE_GLOSSARY[type]?.short ?? type;
 }
 
+/** 主问卷 vs 生命周期分支 — 关系说明 */
+export const FLOW_RELATIONSHIP_GUIDE = {
+  title: '主问卷与生命周期分支是什么关系？',
+  summary:
+    '主问卷 Q01–Q15 是所有人都要走的「主干」；生命周期 L1–L9 是 Q15 根据答案触发的「追加追问子路径」，在主问卷之后插入，不是与 Q01 平行的另一套独立问卷。',
+  layers: [
+    { name: '主干主问卷', range: 'Q01 → Q15', desc: '默认按题号顺序推进；可按答案跳到任意后续题号（不限于相邻一题，如 Q08→Q14 可一次跳过 Q09–Q13）' },
+    { name: '生命周期分支', range: 'L1–L9', desc: '由 Q15 选项触发，追加 1–6 屏情境追问；Q03 选产后恢复会打 L6 标签但不替代 Q15 分支选择' },
+    { name: '汇合点', range: 'SUMMARY', desc: '主问卷 + 命中的 L 分支完成后 → 档案确认 → 生成 User Training Profile' },
+  ],
+  keyPoints: [
+    '跳题目标可以是任意 Qxx、Lx 或 SUMMARY，不限于「下一题」；一次可跳过多道题（如 Q08→Q14 跳过 Q09–Q13）。',
+    'Q06 在 V1 默认下一题是 Q07；也可配置为 Q08 等任意后续题，实现跨题分流。',
+    'Q15 是进入 L1–L9 的主闸门：选「规律周期」→ L1，选「孕期」→ L5，选「不愿回答」→ 直接 SUMMARY。',
+    '生命周期分支里的「追加问题」不是 Q 编号，而是 L 分支内部的子步骤，完成后统一回到 SUMMARY。',
+  ],
+};
+
 export const FRAMEWORK_LAYERS = [
   { layer: 'A', name: '身体基础', scope: '年龄、身高体重、运动限制/不适', outputs: 'age_band、bmi_band（仅参考）、impact/joint constraints', usage: '安全边界与辅助分层' },
   { layer: 'B', name: '核心目标', scope: '减脂、塑形、健康生活、产后恢复', outputs: 'primary_goal、secondary_goal', usage: '决定月度计划结构和课程贡献排序' },
@@ -137,7 +186,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q01', title: '年龄', layer: 'A', required: true,
     options: '数字或年龄段：18–24 / 25–34 / 35–44 / 45–54 / 55+',
-    branch: '否',
+    branch: '默认 → Q02',
+    defaultNext: 'Q02',
+    routes: [],
     backendField: 'age / age_band',
     userTags: 'age_band（年龄段）:*',
     courseTags: '不直接匹配；用于分析与生命周期提示',
@@ -147,7 +198,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q02', title: '身高与体重', layer: 'A', required: true,
     options: 'cm、kg',
-    branch: '否',
+    branch: '默认 → Q03',
+    defaultNext: 'Q03',
+    routes: [],
     backendField: 'height_cm / weight_kg / bmi',
     userTags: 'bmi_band（BMI 区间）:*',
     courseTags: '仅与 fitness_capacity（训练能力）、jump_tolerance（跳跃耐受）、movement_limitations（身体限制）联合影响 impact_load（冲击负荷）/ jump_level（跳跃等级）/ knee_load（膝盖负荷）排序',
@@ -157,7 +210,12 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q03', title: '主要目标', layer: 'B', required: true,
     options: '减脂 / 塑形变紧实 / 健康生活与建立习惯 / 产后恢复（单选）',
-    branch: '产后恢复 → L6',
+    branch: '默认 → Q04；选产后恢复打 L6 标签',
+    defaultNext: 'Q04',
+    routes: [
+      { id: 'Q03-R1', when: '选「产后恢复」', answerMatch: ['产后恢复'], next: 'Q04', note: '不跳题；同时 linkedLifecycleId=L6，后续 Q15 仍决定正式分支' },
+    ],
+    linkedLifecycleId: 'L6',
     backendField: 'primary_goal',
     userTags: 'goal:fat_loss（减脂）/ tone（塑形）/ healthy_habit（健康习惯）/ postpartum_recovery（产后恢复）',
     courseTags: 'goal_contribution（目标贡献）:*',
@@ -167,7 +225,12 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q04', title: '次要目标', layer: 'B', required: false,
     options: '同 Q03',
-    branch: '否',
+    branch: '可跳过 → Q05',
+    defaultNext: 'Q05',
+    routes: [
+      { id: 'Q04-R1', when: '用户点击跳过', next: 'Q05', note: 'skippable=true' },
+    ],
+    skippable: true,
     backendField: 'secondary_goal',
     userTags: 'secondary_goal（次要目标）:*',
     courseTags: 'goal_contribution（目标贡献）:*',
@@ -177,7 +240,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q05', title: '过去4周运动频率', layer: 'C', required: true,
     options: '几乎不运动 / 每周1次 / 每周2–3次 / 每周4次+',
-    branch: '否',
+    branch: '默认 → Q06',
+    defaultNext: 'Q06',
+    routes: [],
     backendField: 'exercise_frequency_4w',
     userTags: 'activity_base（活动基础）:low（低）/mid（中）/high（高）',
     courseTags: 'difficulty（难度）；training_load（训练负荷）',
@@ -187,7 +252,12 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q06', title: '连续活动20分钟感受', layer: 'C', required: true,
     options: '很吃力 / 可完成但需要休息 / 比较轻松 / 轻松且可更久',
-    branch: '否',
+    branch: '默认 → Q07',
+    defaultNext: 'Q07',
+    routes: [
+      { id: 'Q06-R1', when: '很吃力（示例：跨题分流）', answerMatch: ['很吃力'], next: 'Q08', note: '跳过 Q07，直接进入身体限制题' },
+      { id: 'Q06-R2', when: '比较轻松 / 轻松且可更久', answerMatch: ['比较轻松', '轻松'], next: 'Q10', note: '跳过 Q07–Q09，快速路径示例' },
+    ],
     backendField: 'continuous_activity_20m',
     userTags: 'fitness_capacity（训练能力）L1–L5（V1 工作假设/待验证）',
     courseTags: 'overall_intensity（整体强度）；cardio_load（心肺负荷）',
@@ -197,7 +267,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q07', title: '跳跃耐受', layer: 'C', required: true,
     options: '避免跳跃 / 少量可以 / 没问题 / 不确定',
-    branch: '否',
+    branch: '默认 → Q08',
+    defaultNext: 'Q08',
+    routes: [],
     backendField: 'jump_tolerance',
     userTags: 'impact（冲击耐受）:no_jump（避免跳跃）/low（少量）/standard（标准）/unknown（不确定）',
     courseTags: 'impact_level（冲击等级）；jumping_frequency（跳跃频率）',
@@ -207,7 +279,14 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q08', title: '运动时身体限制', layer: 'A', required: true,
     options: '多选：膝 / 腰背 / 手腕承重 / 肩颈 / 盆底或漏尿 / 腹直肌分离 / 其他 / 无',
-    branch: '有选择 → Q09',
+    branch: '有限制 → Q09；盆底/腹直肌 → Q14；仅「无」→ Q10 或 Q12',
+    defaultNext: 'Q10',
+    routes: [
+      { id: 'Q08-R1', when: '选「盆底或漏尿」或「腹直肌分离」', answerMatch: ['盆底', '腹直肌'], next: 'Q14', note: '跨题跳转：跳过 Q09–Q13' },
+      { id: 'Q08-R2', when: '选了其他限制部位（非仅「无」）', answerMatch: ['膝', '腰背', '手腕', '肩颈', '其他'], next: 'Q09' },
+      { id: 'Q08-R3', when: '仅选「无」且前置已确认无跳跃/限制顾虑（示例）', answerMatch: ['无'], next: 'Q12', note: '跨题跳转：跳过 Q09–Q11；Q12 V1 不展示时运行时映射到 Q13' },
+      { id: 'Q08-R4', when: '仅选「无」（默认路径）', answerMatch: ['无'], next: 'Q10', note: '跳过 Q09' },
+    ],
     backendField: 'movement_limitations[]',
     userTags: 'constraint（身体限制）:knee（膝）/back（腰背）/wrist（手腕）/shoulder（肩）/pelvic_floor（盆底）/diastasis（腹直肌分离）',
     courseTags: 'knee_load（膝盖负荷）；lower_back_load（腰背负荷）；wrist_bearing（手腕承重）；overhead_load（过顶负荷）；core_pressure（核心腹压）',
@@ -217,7 +296,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q09', title: '限制程度', layer: 'A', required: true,
     options: '仅偶尔 / 会影响动作 / 医嘱限制运动',
-    branch: '仅 Q08 非「无」显示',
+    branch: '仅 Q08 有局限时展示 → Q10',
+    defaultNext: 'Q10',
+    routes: [],
     backendField: 'limitation_severity',
     userTags: 'severity（限制程度）:mild（轻度）/moderate（中度）/medical（医嘱限制）',
     courseTags: 'contraindication（禁忌）；load_level（负荷等级）；modification_available（可修改课程）',
@@ -227,7 +308,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q10', title: '单次训练时长', layer: 'C', required: true,
     options: '10 / 15 / 20 / 30 / 40+ 分钟（可多选）',
-    branch: '否',
+    branch: '默认 → Q11',
+    defaultNext: 'Q11',
+    routes: [],
     backendField: 'preferred_duration_min[]',
     userTags: 'duration_pref（时长偏好）:*',
     courseTags: 'duration_min（课程时长）',
@@ -237,7 +320,11 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q11', title: '每周计划频率', layer: 'C', required: true,
     options: '2 / 3 / 4 / 5+ 天',
-    branch: '否',
+    branch: '默认 → Q13（跳过 Q12）',
+    defaultNext: 'Q13',
+    routes: [
+      { id: 'Q11-R1', when: 'V1 固定跳过已取消的 Q12', next: 'Q13', note: 'Q12 器械题 V1 不展示' },
+    ],
     backendField: 'planned_days_per_week',
     userTags: 'frequency_pref（频率偏好）:*',
     courseTags: 'program_frequency（计划频率）/ recovery_spacing（恢复间隔）',
@@ -247,7 +334,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q12', title: '器械（V1 取消）', layer: 'C', required: false,
     options: '不展示',
-    branch: '否',
+    branch: 'V1 跳过',
+    defaultNext: 'Q13',
+    routes: [],
     backendField: '无',
     userTags: '无',
     courseTags: '课程侧器械仅作展示/运营元数据',
@@ -257,7 +346,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q13', title: '喜欢的训练方式', layer: 'C', required: true,
     options: '步行/低冲击有氧 / 舞蹈 / 力量 / 普拉提瑜伽 / 拉伸恢复 / 混合（最多3项）',
-    branch: '否',
+    branch: '默认 → Q14',
+    defaultNext: 'Q14',
+    routes: [],
     backendField: 'preferred_formats[]',
     userTags: 'format_pref（形式偏好）:*',
     courseTags: 'workout_format（训练形式）/ modality（运动类型）',
@@ -267,7 +358,9 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q14', title: '不喜欢/希望避免', layer: 'C', required: true,
     options: '同 Q13 + 跳跃 / 地面动作 / 快速转向（多选）',
-    branch: '否',
+    branch: '默认 → Q15',
+    defaultNext: 'Q15',
+    routes: [],
     backendField: 'avoid_formats[]',
     userTags: 'avoid（避免项）:*',
     courseTags: 'workout_format（训练形式）/ impact（冲击）/ floor_work（地面动作）/ coordination（协调难度）',
@@ -277,7 +370,20 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   {
     id: 'Q15', title: '女性生命周期', layer: 'D', required: true,
     options: '规律周期 / 周期不规律 / 激素避孕 / 备孕 / 孕期 / 产后 / 围绝经 / 绝经后 / 不确定 / 不愿回答',
-    branch: '按选择进入 L1–L9',
+    branch: '按选项 → L1–L9 或 SUMMARY',
+    defaultNext: 'SUMMARY',
+    routes: [
+      { id: 'Q15-L1', when: '规律周期', answerMatch: ['规律周期'], next: 'L1' },
+      { id: 'Q15-L2', when: '周期不规律', answerMatch: ['周期不规律'], next: 'L2' },
+      { id: 'Q15-L3', when: '激素避孕', answerMatch: ['激素避孕'], next: 'L3' },
+      { id: 'Q15-L4', when: '备孕', answerMatch: ['备孕'], next: 'L4' },
+      { id: 'Q15-L5', when: '孕期', answerMatch: ['孕期'], next: 'L5' },
+      { id: 'Q15-L6', when: '产后', answerMatch: ['产后'], next: 'L6' },
+      { id: 'Q15-L7', when: '围绝经', answerMatch: ['围绝经'], next: 'L7' },
+      { id: 'Q15-L8', when: '绝经后', answerMatch: ['绝经后'], next: 'L8' },
+      { id: 'Q15-L9', when: '多囊相关情况（若单独选项）', answerMatch: ['多囊'], next: 'L9' },
+      { id: 'Q15-SKIP', when: '不确定 / 不愿回答', answerMatch: ['不确定', '不愿回答'], next: 'SUMMARY', note: '不进入 L 分支追问' },
+    ],
     backendField: 'life_stage',
     userTags: 'life_stage（生命周期阶段）:*',
     courseTags: 'female_life_stage_suitability（女性生命周期适配）',
@@ -286,9 +392,46 @@ export const MAIN_QUESTIONS: QuestionDef[] = [
   },
 ];
 
+/** 主问卷题号列表（用于计算跨题跳转时跳过了哪些题） */
+export function listMainQuestionIds(questions: QuestionDef[] = MAIN_QUESTIONS): string[] {
+  return questions.map((q) => q.id).filter((id) => MAIN_Q_ID_RE.test(id));
+}
+
+/** 从 fromId 跳到 toTarget 时，中间被跳过的主问卷题号（不含起点与终点） */
+export function getSkippedBetween(
+  fromId: string,
+  toTarget: RouteTarget,
+  questionIds?: string[],
+): string[] {
+  const ids = questionIds ?? listMainQuestionIds();
+  const fromM = fromId.match(MAIN_Q_ID_RE);
+  const toM = toTarget.match(MAIN_Q_ID_RE);
+  if (!fromM || !toM) return [];
+  const fromN = Number(fromM[1]);
+  const toN = Number(toM[1]);
+  if (toN <= fromN + 1) return [];
+  return ids.filter((id) => {
+    const n = Number(id.slice(1));
+    return n > fromN && n < toN;
+  });
+}
+
+/** 跨题跳转的可读说明，如「跳过 Q09–Q13（共 5 题）」 */
+export function formatSkipHint(
+  fromId: string,
+  toTarget: RouteTarget,
+  questionIds?: string[],
+): string | null {
+  const skipped = getSkippedBetween(fromId, toTarget, questionIds);
+  if (skipped.length === 0) return null;
+  if (skipped.length === 1) return `跳过 ${skipped[0]}`;
+  return `跳过 ${skipped[0]}–${skipped[skipped.length - 1]}（共 ${skipped.length} 题）`;
+}
+
 export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   {
     id: 'L1', name: '规律周期', trigger: 'Q15 = 规律周期',
+    entryQuestionId: 'Q15', entryAnswers: ['规律周期'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['最近一次月经首日', '平均周期长度（可选）'],
     backendFields: ['last_period_date', 'avg_cycle_days'],
     userTags: ['cycle:regular（规律周期）', 'phase_estimate（阶段估算）'],
@@ -298,6 +441,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L2', name: '周期不规律', trigger: 'Q15 = 周期不规律',
+    entryQuestionId: 'Q15', entryAnswers: ['周期不规律'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['周期通常差异', '最近一次月经（均可跳过）'],
     backendFields: ['cycle_variability', 'last_period_date'],
     userTags: ['cycle:irregular（周期不规律）'],
@@ -307,6 +451,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L3', name: '激素避孕', trigger: 'Q15 = 激素避孕',
+    entryQuestionId: 'Q15', entryAnswers: ['激素避孕'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['方式：口服/宫内/植入/注射/其他/不愿回答'],
     backendFields: ['hormonal_contraception_type'],
     userTags: ['cycle:hormonal_contraception（激素避孕）'],
@@ -316,6 +461,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L4', name: '备孕', trigger: 'Q15 = 备孕',
+    entryQuestionId: 'Q15', entryAnswers: ['备孕'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['是否有医生给出的运动限制：是/否'],
     backendFields: ['trying_to_conceive', 'medical_restriction'],
     userTags: ['life_stage:ttc（备孕）'],
@@ -325,6 +471,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L5', name: '孕期', trigger: 'Q15 = 孕期',
+    entryQuestionId: 'Q15', entryAnswers: ['孕期'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['孕周或孕早/中/晚期', '医生是否允许运动', '是否出现警示症状'],
     backendFields: ['pregnancy_stage', 'clearance', 'warning_signs[]'],
     userTags: ['pregnancy:trimester_*（孕期阶段）', 'clearance:*（运动许可）'],
@@ -334,6 +481,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L6', name: '产后', trigger: 'Q15 = 产后 或 Q03 = 产后恢复',
+    entryQuestionId: 'Q15', entryAnswers: ['产后'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['距分娩时间', '分娩方式', '是否获运动许可', '盆底/漏尿', '腹直肌分离', '疼痛/出血等警示'],
     backendFields: ['postpartum_weeks', 'delivery_type', 'clearance', 'symptoms[]'],
     userTags: ['postpartum:early/returning/rebuilt（产后阶段）', 'pelvic_floor:*（盆底）', 'diastasis:*（腹直肌分离）'],
@@ -343,6 +491,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L7', name: '围绝经', trigger: 'Q15 = 围绝经',
+    entryQuestionId: 'Q15', entryAnswers: ['围绝经'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['是否经历周期变化', '主要训练相关困扰：睡眠/潮热/关节/疲劳/无'],
     backendFields: ['perimenopause_symptoms[]'],
     userTags: ['life_stage:perimenopause（围绝经）', 'context:*（情境标签）'],
@@ -352,6 +501,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L8', name: '绝经后', trigger: 'Q15 = 绝经后',
+    entryQuestionId: 'Q15', entryAnswers: ['绝经后'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['是否有医生给出的骨骼/心血管/关节运动限制'],
     backendFields: ['postmenopause_restrictions[]'],
     userTags: ['life_stage:postmenopause（绝经后）', 'constraint:*（身体限制）'],
@@ -361,6 +511,7 @@ export const LIFECYCLE_BRANCHES: LifecycleBranch[] = [
   },
   {
     id: 'L9', name: '多囊 Context', trigger: 'Q15 = 多囊相关情况',
+    entryQuestionId: 'Q15', entryAnswers: ['多囊'], afterCompleteNext: 'SUMMARY',
     extraQuestions: ['是否愿意标记「多囊相关情况」', '当前是否有明确医嘱限制'],
     backendFields: ['pcos_context', 'medical_restriction'],
     userTags: ['context:pcos（多囊情境）'],
