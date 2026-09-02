@@ -1,4 +1,4 @@
-import { COURSE_TAGGING_VIEW_ID, ONBOARDING_CONFIG_VIEW_ID, type WireBlock, type ScreenDef } from '../data/types';
+import { COURSE_TAGGING_VIEW_ID, ONBOARDING_CONFIG_VIEW_ID, USER_TRAINING_PROFILE_VIEW_ID, type WireBlock, type ScreenDef } from '../data/types';
 
 // ——— 图片占位：灰块 + 对角叉线 ———
 const crossBg: React.CSSProperties = {
@@ -17,6 +17,7 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
   { group: '用户与 CRM', items: [
     { label: '用户列表', sid: 'B18' },
     { label: '用户详情', sid: 'B19' },
+    { label: '用户训练档案与标签', sid: USER_TRAINING_PROFILE_VIEW_ID },
     { label: '标签与分群', sid: 'B17' },
     { label: '老用户迁移', sid: 'B20' },
   ]},
@@ -30,6 +31,7 @@ const MENU: { group: string; items: { label: string; sid?: string }[] }[] = [
     { label: '问卷编辑器', sid: 'B09' },
     { label: '评测结果话术', sid: 'B10' },
     { label: 'Onboarding 问卷配置', sid: ONBOARDING_CONFIG_VIEW_ID },
+    { label: 'Profile 推导工作台', sid: `${USER_TRAINING_PROFILE_VIEW_ID}:U-08771:derivation` },
   ]},
   { group: '内容中心', items: [
     { label: '视频库', sid: 'B03' },
@@ -415,7 +417,7 @@ function Sidebar({ active, screenId, onNavigate }: { active: string; screenId?: 
               <button
                 key={it.label}
                 onClick={it.sid ? () => onNavigate(it.sid!) : undefined}
-                className={`block w-full px-2 text-left text-[9.5px] ${it.sid === COURSE_TAGGING_VIEW_ID || it.sid === ONBOARDING_CONFIG_VIEW_ID ? 'py-1 text-[8.5px] leading-tight whitespace-normal' : 'truncate py-0.5'} ${
+                className={`block w-full px-2 text-left text-[9.5px] ${it.sid === COURSE_TAGGING_VIEW_ID || it.sid === ONBOARDING_CONFIG_VIEW_ID || it.sid?.startsWith(USER_TRAINING_PROFILE_VIEW_ID) ? 'py-1 text-[8.5px] leading-tight whitespace-normal' : 'truncate py-0.5'} ${
                   isActive ? 'bg-gray-700 font-bold text-white' : it.sid ? 'text-gray-600 hover:bg-gray-200' : 'text-gray-300'
                 }`}
                 title={it.sid ? `跳转到 ${it.sid}` : '后续批次'}

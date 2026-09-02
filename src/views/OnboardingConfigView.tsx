@@ -686,9 +686,10 @@ function Detail({ label, value, mono, className }: { label: string; value: strin
 
 interface Props {
   embedded?: boolean;
+  onOpenUserProfile?: () => void;
 }
 
-export function OnboardingConfigView({ embedded }: Props) {
+export function OnboardingConfigView({ embedded, onOpenUserProfile }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>('questions');
   const [questions, setQuestions] = useState<QuestionDef[]>(cloneQuestions);
   const [branches, setBranches] = useState<LifecycleBranch[]>(cloneBranches);
@@ -1105,6 +1106,20 @@ export function OnboardingConfigView({ embedded }: Props) {
               </tbody>
             </table>
             </div>
+            {onOpenUserProfile && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2">
+                <p className="text-[11px] text-blue-900">
+                  配置定义了标签如何产生；查看样本用户完成问卷后的实际标签结果：
+                </p>
+                <button
+                  type="button"
+                  onClick={onOpenUserProfile}
+                  className="mt-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-[11px] font-medium text-blue-800 hover:bg-blue-50"
+                >
+                  查看样本用户标签结果 →
+                </button>
+              </div>
+            )}
           </div>
         )}
 

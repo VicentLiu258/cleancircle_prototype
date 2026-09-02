@@ -1,5 +1,5 @@
 import { screens } from '../data';
-import { ONBOARDING_CONFIG_VIEW_ID } from '../data/types';
+import { ONBOARDING_CONFIG_VIEW_ID, USER_TRAINING_PROFILE_VIEW_ID } from '../data/types';
 
 interface Props {
   onNavigate: (screenId: string) => void;
@@ -13,6 +13,7 @@ const IA: { menu: string; prio: string; pages: { label: string; sid?: string }[]
   ]},
   { menu: '用户与 CRM', prio: 'P0', pages: [
     { label: '用户列表 B18', sid: 'B18' }, { label: '用户详情 B19', sid: 'B19' },
+    { label: '用户训练档案 UTP', sid: USER_TRAINING_PROFILE_VIEW_ID },
     { label: '标签与分群 B17', sid: 'B17' }, { label: '迁移 B20', sid: 'B20' },
   ]},
   { menu: '消息与触达', prio: 'P0', pages: [
@@ -68,9 +69,9 @@ const FLOWS: { title: string; chain: string[]; note?: string }[] = [
   { title: '工作台 · 经营洞察', chain: ['B02', 'B48', 'B49', 'B50'], note: '核心 KPI + 待办；转化漏斗；趋势；用户行为（事件/路径/留存）' },
   { title: '内容 · 视频库与标签', chain: ['B05', 'B06', 'B03', 'B04', 'B07', 'B57', 'B52'], note: '导入/标签/视频/AI 复核 → 专栏/分类/日历编排；知识库健康类终审' },
   { title: 'App 页面与今日话术', chain: ['B56', 'B55'], note: '文案库 → AI 推荐候选 → 人工审核 → 页面组件配置、预览与发布' },
-  { title: '问卷评测发布', chain: ['B08', 'B09', 'B10', ONBOARDING_CONFIG_VIEW_ID], note: '复评 14/28 天；选项映射用户/训练标签；结果话术（无长报告）；Onboarding 问卷配置可视化' },
+  { title: '问卷评测发布', chain: ['B08', 'B09', 'B10', ONBOARDING_CONFIG_VIEW_ID, USER_TRAINING_PROFILE_VIEW_ID], note: '复评 14/28 天；选项映射用户/训练标签；Profile 推导与样本用户标签展示' },
   { title: '排课规则与 AI 推荐', chain: ['B11', 'B12', 'B31', 'B13', 'B14'], note: '规则编辑 → AI 课程推荐抽查 → 30 天模拟解释 → 回归发布；阶段建议' },
-  { title: 'CRM 与触达', chain: ['B18', 'B19', 'B17', 'B15', 'B16', 'B28', 'B54'], note: '用户档案 + 标签分群 + 模板/触发器 + 触达效果 + 发送记录' },
+  { title: 'CRM 与触达', chain: ['B18', 'B19', USER_TRAINING_PROFILE_VIEW_ID, 'B17', 'B15', 'B16', 'B28', 'B54'], note: '用户档案 + 训练标签 + 标签分群 + 模板/触发器 + 触达效果' },
   { title: '迁移', chain: ['B20'], note: 'Excel 向导：校验 → 执行 → 部分成功重试（幂等）' },
   { title: '训练与能量值', chain: ['B29', 'B30', 'B23'], note: '打卡统计；能量值规则；人工调整审批（统一称能量值）' },
   { title: '会员财务', chain: ['B22', 'B53', 'B21', 'B24', 'B25'], note: '套餐 → 订阅看板 → 订阅订单 → 退款（含 Apple 外退）→ 三渠道对账' },
@@ -147,7 +148,7 @@ export function OverviewView({ onNavigate }: Props) {
             <div className="mt-2 flex flex-wrap items-center gap-1">
               {f.chain.map((sid, i) => {
                 const s = screens.find((x) => x.id === sid);
-                const label = s?.name ?? (sid === ONBOARDING_CONFIG_VIEW_ID ? 'Onboarding 问卷配置' : sid);
+                const label = s?.name ?? (sid === ONBOARDING_CONFIG_VIEW_ID ? 'Onboarding 问卷配置' : sid === USER_TRAINING_PROFILE_VIEW_ID ? '用户训练档案与标签' : sid);
                 return (
                   <span key={`${f.title}-${sid}-${i}`} className="flex items-center gap-1">
                     <button
@@ -155,7 +156,7 @@ export function OverviewView({ onNavigate }: Props) {
                       className="rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-mono text-gray-700 hover:bg-gray-700 hover:text-white"
                       title={s ? `${s.name}（${s.reqCode} · ${s.priority}）` : label}
                     >
-                      {sid === ONBOARDING_CONFIG_VIEW_ID ? 'CFG' : sid} {label}
+                      {sid === ONBOARDING_CONFIG_VIEW_ID ? 'CFG' : sid === USER_TRAINING_PROFILE_VIEW_ID ? 'UTP' : sid} {label}
                     </button>
                     {i < f.chain.length - 1 && <span className="text-gray-300">→</span>}
                   </span>
