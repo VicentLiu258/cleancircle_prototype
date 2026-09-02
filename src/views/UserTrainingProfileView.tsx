@@ -10,6 +10,7 @@ import {
   deriveUserProfile,
   deriveUserTags,
   formatProfileJson,
+  formatUserTagDisplay,
   getDerivationRules,
   getTagLineage,
   runSampleDerivations,
@@ -36,13 +37,22 @@ function RuleBadge({ type }: { type: RuleType }) {
   );
 }
 
-function Chip({ children, tone = 'gray' }: { children: React.ReactNode; tone?: 'gray' | 'blue' | 'green' }) {
+function Chip({ children, tone = 'gray', title }: { children: React.ReactNode; tone?: 'gray' | 'blue' | 'green'; title?: string }) {
   const cls =
     tone === 'blue' ? 'bg-blue-50 text-blue-800 border-blue-100'
     : tone === 'green' ? 'bg-emerald-50 text-emerald-800 border-emerald-100'
     : 'bg-gray-100 text-gray-700 border-gray-200';
   return (
-    <span className={cn('inline-block rounded border px-1.5 py-0.5 text-[10px] font-mono', cls)}>{children}</span>
+    <span className={cn('inline-block rounded border px-1.5 py-0.5 text-[10px]', cls)} title={title}>{children}</span>
+  );
+}
+
+function UserTagChip({ tagKey, labelZh }: { tagKey: string; labelZh: string }) {
+  return (
+    <Chip tone="blue" title={formatUserTagDisplay(tagKey, labelZh)}>
+      <span className="font-mono">{tagKey}</span>
+      <span className="ml-1 font-sans text-[9px] font-normal opacity-90">（{labelZh}）</span>
+    </Chip>
   );
 }
 
@@ -211,9 +221,10 @@ export function UserTrainingProfileView({
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-3">
                 <p className="text-[11px] font-bold text-blue-900">用户标签（{userTags.length}）</p>
+                <p className="mt-0.5 text-[10px] text-blue-700/80">英文键名 + 括号内中文释义</p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {userTags.map((t) => (
-                    <Chip key={t.key} tone="blue">{t.label}</Chip>
+                    <UserTagChip key={t.key} tagKey={t.key} labelZh={t.labelZh} />
                   ))}
                 </div>
               </div>
@@ -266,7 +277,9 @@ export function UserTrainingProfileView({
                       <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="px-2 py-1.5 text-gray-600">{l.inputDomain}</td>
                         <td className="px-2 py-1.5 font-mono text-gray-800">{l.field}</td>
-                        <td className="px-2 py-1.5"><Chip tone="blue">{l.userTag}</Chip></td>
+                        <td className="px-2 py-1.5">
+                          <UserTagChip tagKey={l.userTag} labelZh={l.userTagZh} />
+                        </td>
                         <td className="px-2 py-1.5">
                           <div className="flex flex-wrap gap-0.5">
                             {l.courseTags.length === 0

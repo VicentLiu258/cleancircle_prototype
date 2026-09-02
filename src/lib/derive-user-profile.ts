@@ -41,6 +41,8 @@ export interface UserTrainingProfile {
 export interface DerivedTag {
   key: string;
   label: string;
+  /** 中文释义，展示为 key（释义） */
+  labelZh: string;
   group: string;
 }
 
@@ -48,6 +50,8 @@ export interface TagLineage {
   field: string;
   inputDomain: string;
   userTag: string;
+  /** 用户标签中文释义 */
+  userTagZh: string;
   courseTags: string[];
   sourceQuestionId: string;
   sourceAnswer: string;
@@ -224,6 +228,144 @@ function courseTagsForDomain(domain: string): string[] {
   return row.courseTag.split('；').map((s) => s.trim()).filter(Boolean);
 }
 
+const FIELD_ZH: Record<string, string> = {
+  age_band: '年龄段',
+  bmi_band: 'BMI 区间',
+  primary_goal: '主要目标',
+  secondary_goal: '次要目标',
+  activity_base: '活动基础',
+  fitness_capacity: '训练能力',
+  jump_tolerance: '跳跃耐受',
+  duration_pref: '时长偏好',
+  frequency_pref: '每周计划频率',
+  format_pref: '训练形式偏好',
+  avoid: '避免项',
+  life_stage: '生命周期阶段',
+  'constraint.knee': '膝盖限制',
+  'constraint.back': '腰背限制',
+  'constraint.wrist': '手腕限制',
+  'constraint.shoulder': '肩颈限制',
+  'constraint.pelvic_floor': '盆底限制',
+  'constraint.diastasis': '腹直肌分离',
+  'constraint.other': '其他身体限制',
+  pelvic_floor: '盆底标记',
+  diastasis: '腹直肌分离标记',
+};
+
+const CAPACITY_ZH: Record<string, string> = {
+  L1: '很吃力/几乎不运动',
+  L2: '可完成但需休息',
+  L3: '比较轻松',
+  L4: '轻松且可更久',
+  L5: '高活动量',
+};
+
+const GOAL_ZH: Record<string, string> = {
+  FAT_LOSS: '减脂',
+  TONING: '塑形变紧实',
+  HEALTHY_HABIT: '健康生活与建立习惯',
+  POSTPARTUM: '产后恢复',
+};
+
+const IMPACT_ZH: Record<string, string> = {
+  no_jump: '避免跳跃',
+  low: '少量跳跃可以',
+  standard: '跳跃没问题',
+  unknown: '跳跃耐受不确定',
+};
+
+const LIFE_STAGE_ZH: Record<string, string> = {
+  REGULAR: '规律周期',
+  IRREGULAR: '周期不规律',
+  HORMONAL_CONTRACEPTION: '激素避孕',
+  TTC: '备孕',
+  PREGNANT: '孕期',
+  POSTPARTUM: '产后',
+  PERIMENOPAUSE: '围绝经',
+  POSTMENOPAUSE: '绝经后',
+  PCOS: '多囊相关',
+  UNKNOWN: '不确定',
+  DECLINED: '不愿回答',
+};
+
+const AGE_BAND_ZH: Record<string, string> = {
+  '18_24': '18–24 岁',
+  '25_34': '25–34 岁',
+  '35_44': '35–44 岁',
+  '45_54': '45–54 岁',
+  '55_plus': '55 岁以上',
+  reference_only: '仅作参考',
+};
+
+const FORMAT_ZH: Record<string, string> = {
+  WALK: '步行/低冲击有氧',
+  DANCE: '舞蹈',
+  STRENGTH: '力量',
+  PILATES_YOGA: '普拉提瑜伽',
+  STRETCH: '拉伸恢复',
+  MIXED: '混合',
+  JUMPING: '跳跃',
+  FLOOR_WORK: '地面动作',
+  COORDINATION: '快速转向',
+};
+
+function describeCourseTagZh(courseTag: string, inputDomain: string): string {
+  const parts = courseTag.match(/（([^）]+)）/g);
+  if (parts?.length) return parts.map((s) => s.slice(1, -1)).join('；');
+  return inputDomain;
+}
+
+/** 从标签字符串或字段/答案生成中文释义 */
+export function describeUserTagZh(
+  field: string,
+  userTag: string,
+  sourceAnswer: string,
+  inputDomain: string,
+): string {
+  const embedded = userTag.match(/（([^）]+)）/g);
+  if (embedded?.length) {
+    return embedded.map((s) => s.slice(1, -1)).join('；');
+  }
+
+  const fieldLabel = FIELD_ZH[field] ?? inputDomain;
+  const colonIdx = userTag.indexOf(':');
+  const tagKey = colonIdx >= 0 ? userTag.slice(0, colonIdx) : userTag;
+  const tagVal = colonIdx >= 0 ? userTag.slice(colonIdx + 1) : '';
+
+  if (field === 'age_band' || tagKey === 'age_band') return AGE_BAND_ZH[tagVal] ?? sourceAnswer ?? fieldLabel;
+  if (tagKey === 'bmi_band') return 'BMI 仅作参考，不单独决策';
+  if (field === 'primary_goal' || tagKey === 'goal') return GOAL_ZH[tagVal.toUpperCase()] ?? sourceAnswer ?? fieldLabel;
+  if (field === 'secondary_goal') return GOAL_ZH[tagVal.toUpperCase()] ?? sourceAnswer ?? '次要目标';
+  if (tagKey === 'activity_base') return `过去4周运动频率·${sourceAnswer || tagVal}`;
+  if (tagKey === 'fitness_capacity') return `训练能力 ${tagVal}（${CAPACITY_ZH[tagVal] ?? sourceAnswer}）`;
+  if (tagKey === 'impact') return IMPACT_ZH[tagVal] ?? sourceAnswer ?? fieldLabel;
+  if (tagKey === 'constraint') {
+    const areaZh: Record<string, string> = { knee: '膝', back: '腰背', wrist: '手腕', shoulder: '肩颈', pelvic_floor: '盆底', diastasis: '腹直肌', other: '其他' };
+    const area = areaZh[tagVal] ?? tagVal;
+    return sourceAnswer.includes('·') ? `身体限制·${sourceAnswer}` : `身体限制·${area}`;
+  }
+  if (tagKey === 'pelvic_floor_flag') return '盆底或漏尿相关限制';
+  if (tagKey === 'diastasis_flag') return '腹直肌分离相关限制';
+  if (tagKey === 'duration_pref') return `偏好 ${tagVal.replace(/,/g, '/')} 分钟训练`;
+  if (tagKey === 'frequency_pref') return `每周计划 ${tagVal} 天`;
+  if (tagKey === 'format_pref') {
+    const parts = tagVal.split(',').map((v) => FORMAT_ZH[v] ?? v);
+    return `喜欢·${parts.join('、')}`;
+  }
+  if (tagKey === 'avoid') {
+    const parts = tagVal.split(',').map((v) => FORMAT_ZH[v] ?? v);
+    return `希望避免·${parts.join('、')}`;
+  }
+  if (tagKey === 'life_stage') return LIFE_STAGE_ZH[tagVal] ?? sourceAnswer ?? fieldLabel;
+
+  if (sourceAnswer && !sourceAnswer.includes('Q')) return `${fieldLabel}·${sourceAnswer}`;
+  return fieldLabel;
+}
+
+export function formatUserTagDisplay(userTag: string, labelZh: string): string {
+  return `${userTag}（${labelZh}）`;
+}
+
 export function getTagLineage(sub: UserOnboardingSubmission): TagLineage[] {
   const profile = deriveUserProfile(sub);
   const rows: TagLineage[] = [];
@@ -238,7 +380,8 @@ export function getTagLineage(sub: UserOnboardingSubmission): TagLineage[] {
     ruleType: RuleType,
     profileGroup: string,
   ) => {
-    rows.push({ field, inputDomain, userTag, courseTags, sourceQuestionId, sourceAnswer, ruleType, profileGroup });
+    const userTagZh = describeUserTagZh(field, userTag, sourceAnswer, inputDomain);
+    rows.push({ field, inputDomain, userTag, userTagZh, courseTags, sourceQuestionId, sourceAnswer, ruleType, profileGroup });
   };
 
   push('age_band', '基础', `age_band:${profile.age_band}`, [], 'Q01', str(getAnswer(sub, 'Q01')), 'Context', '基础');
@@ -313,7 +456,8 @@ export function getTagLineage(sub: UserOnboardingSubmission): TagLineage[] {
 export function deriveUserTags(sub: UserOnboardingSubmission): DerivedTag[] {
   return getTagLineage(sub).map((l) => ({
     key: l.userTag,
-    label: l.userTag,
+    label: formatUserTagDisplay(l.userTag, l.userTagZh),
+    labelZh: l.userTagZh,
     group: l.profileGroup,
   }));
 }
@@ -325,7 +469,12 @@ export function deriveCourseTags(sub: UserOnboardingSubmission): DerivedTag[] {
     l.courseTags.forEach((ct) => {
       if (!seen.has(ct)) {
         seen.add(ct);
-        tags.push({ key: ct, label: ct, group: l.inputDomain });
+        tags.push({
+          key: ct,
+          label: ct,
+          labelZh: describeCourseTagZh(ct, l.inputDomain),
+          group: l.inputDomain,
+        });
       }
     });
   });
