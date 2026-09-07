@@ -15,22 +15,32 @@ import { UserTrainingProfileView } from './UserTrainingProfileView';
 
 const TAGGING_SCREEN: ScreenDef = {
   id: COURSE_TAGGING_VIEW_ID,
-  name: '课程标签 & 能量估算',
-  reqCode: '产品补全 · 排课依赖',
+  name: '课程标签 V2 & 能量估算',
+  reqCode: '课程打标细则 V2',
   priority: 'P0',
   flow: 'C',
   states: [{ id: 'workspace', label: '工作台', blocks: [] }],
   annotations: {
-    goal: '将视频课程转换为可解释、可复核、可被排课规则读取的课程标签，并提供单次训练能量估算。',
-    entry: '内容中心 > B06 标签库 / B07 AI 打标复核',
-    exit: ['B11', 'B12', 'B13', 'B31'],
-    role: '内容运营；安全类标签由健康运营终审。',
-    data: ['课程视频、字幕 — B03 视频库', '标签字典与发布快照 — B06 标签库', 'MET 模型与体重输入 — 卡路里估算模块'],
-    actions: { primary: 'AI 批量打标、人工复核、发布标签快照', secondary: ['查看卡路里估算', '按状态筛选课程池'] },
-    statesDesc: ['待复核', '异常待处理', '可用于排课', '已发布快照'],
-    triggers: ['只有通过普通标签复核和健康终审的课程，才允许 B12 排课规则读取。', '视频内容或标签字典变更后，需要重新运行打标并生成新版本。'],
-    deps: ['B06 标签库', 'B07 AI 打标复核', 'B12 排课规则编辑'],
-    patches: ['H-01'],
+    goal: '将视频转为 Course Profile V2（Identity/Intensity/Movement/Goals/Eligibility/Evidence），带字段证据、规则命中与不可变版本；UNKNOWN 进入 REVIEW。',
+    entry: '内容中心 > B06 Taxonomy/规则 / B07 字段证据复核',
+    exit: ['B03', 'B04', 'B06', 'B07', 'B11', 'B12', 'B13'],
+    role: '内容运营；Eligibility 安全字段由健康运营终审。',
+    data: [
+      'Motion 观察事实 — motion_job',
+      'Go 规则草稿 — course_tagging_rules_v2 / course_eligibility_rules_v2',
+      'Course Profile V2 — course_profile_v2',
+      'V1 只读对照 — 迁移期保留',
+      'MET 实验性估算 — 不参与 Hard Filter',
+    ],
+    actions: { primary: 'V2 打标、字段复核、发布不可变快照', secondary: ['V1/V2 对照', '卡路里估算', '按 FORBIDDEN/REVIEW 筛选'] },
+    statesDesc: ['DRAFT', 'AI_GENERATED', 'NEEDS_REVIEW', 'APPROVED', 'REJECTED', 'SUPERSEDED'],
+    triggers: [
+      '只有 APPROVED 的 V2 Profile 才允许 B12 读取。',
+      'UNKNOWN / 规则冲突必须 REVIEW，不得显示为 ALLOWED 或 Low。',
+      'POSTPARTUM_RECOVERY 类型命中 ≠ 自动 ALLOWED，需双审。',
+    ],
+    deps: ['B03', 'B04', 'B06', 'B07', 'B12'],
+    patches: ['V2-COURSE-TAGGING'],
   },
 };
 
@@ -101,11 +111,14 @@ const USER_PROFILE_SCREEN: ScreenDef = {
 };
 
 const UPDATED_SCREEN_DATES: Record<string, string> = {
-  B06: '260902',
-  B12: '260902',
-  B13: '260902',
+  B03: '260907',
+  B04: '260907',
+  B06: '260907',
+  B07: '260907',
+  B12: '260907',
+  B13: '260907',
   B19: '260902',
-  [COURSE_TAGGING_VIEW_ID]: '260902',
+  [COURSE_TAGGING_VIEW_ID]: '260907',
 };
 
 interface Props {
@@ -259,7 +272,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
                 className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${isTagging ? 'bg-gray-700 font-semibold text-white' : 'text-slate-700 hover:bg-gray-200'}`}
               >
                 <span className="font-mono text-[11px]">TAG</span>
-                <span className="min-w-0 flex-1 truncate">课程标签 & 能量估算</span>
+                <span className="min-w-0 flex-1 truncate">课程标签 V2 & 能量估算</span>
                 <span className={`shrink-0 rounded px-1 font-mono text-[8px] ${isTagging ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>{UPDATED_SCREEN_DATES[COURSE_TAGGING_VIEW_ID]}</span>
                 <span className={`rounded px-1 text-[10px] font-semibold ${isTagging ? 'bg-white text-gray-700' : 'bg-amber-100 text-amber-700'}`}>新增</span>
               </button>
@@ -326,7 +339,7 @@ export function ScreensView({ screenId, onNavigate, onShowDecisions, onOpenMobil
           </div>
         )}
         <p className="mt-3 text-[11px] text-gray-400">
-          {isTagging ? '课程标签工作台已嵌入后台系统内容区 · 左侧可切换排课与内容相关页面 · 右侧查看页面目标、依赖与发布规则'
+          {isTagging ? 'Course Profile V2 工作台 · Identity/Intensity/Movement/Goals/Eligibility/Evidence · V1/V2 对照 · B07 三栏复核'
             : isOnboardingConfig ? 'Onboarding 问卷配置已嵌入内容区 · 7 个 Tab 可切换 · 点击题目行展开详情 · 右侧查看业务标注与依赖'
             : isUserProfile ? '用户训练档案与标签 · 选择样本用户查看问卷推导标签 · B19 用户档案 / B10 推导验证'
             : '页内 Tab 可点击切换对应状态 · 带跳转的按钮/表格行可点 · 左侧菜单可切换页面 · 灰色圆点数字对应右栏标注 · amber 虚线 = 产品补全 · 右栏 S 编号可切到移动端'}

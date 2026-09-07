@@ -23,6 +23,15 @@ export const V1_VERSION_MATRIX = {
   courseProfileSchema: 'course_profile_v1.0',
 };
 
+/** V2 Course Profile 版本矩阵（与打标细则 V2 对齐；迁移期保留 V1 对照） */
+export const V2_VERSION_MATRIX = {
+  taxonomy: 'taxonomy_2026_08_28',
+  courseProfileSchema: 'course_profile_v2',
+  taggingRules: 'course_tagging_rules_v2.1',
+  eligibilityRules: 'course_eligibility_rules_v2.0',
+  ruleSet: 'rules_v2.0',
+};
+
 const mobileData = (items: string[]) => items;
 const adminData = (items: string[]) => items;
 
@@ -148,14 +157,14 @@ const mobileV1Screens: MobileScreenDef[] = [
   s09TodayScreen,
   mobileScreen('S10', '课程详情与推荐原因', 'A11', 'A', [{ id: 'default', label: '详情', blocks: [
     mStatus(), { kind: 'image', label: '课程封面占位', height: 140 }, { kind: 'header', label: '低冲击全身活动', sub: '20min · PRIMARY BODY AREA: FULL_BODY · TYPE: MOBILITY' },
-    { kind: 'chip-row', label: 'Overall 2/5 · Impact 1/5 · Jump 1 · Equipment：仅课程元数据', marker: 1 },
+    { kind: 'chip-row', label: 'Overall 2/5 · Run NONE · Jump NONE · Ankle LOW · Equipment：仅课程元数据', marker: 1 },
     { kind: 'card', label: '为什么今天推荐给你', sub: '匹配今日训练意图 + 符合 L2 能力与膝盖限制；周期仅作为上下文', marker: 2, patch: true },
-    { kind: 'card', label: '安全说明', sub: '课程字段来自 Course Profile v7，状态 APPROVED；不是医疗诊断' },
+    { kind: 'card', label: '安全说明', sub: '字段来自 course_profile_v2，状态 APPROVED；Menstrual/Postpartum Eligibility 非医学诊断' },
     { kind: 'button-primary', label: '开始跟练', to: 'S11' }, { kind: 'button-secondary', label: '投屏' }, { kind: 'button-secondary', label: '查看备选课程' },
   ]}], {
     goal: '区分课程客观属性与个性化推荐理由，避免课程级周期适用结论。', entry: 'S09 / S25 / S29', exit: ['S11', 'S29'], role: baseMobileNotes.role,
-    data: mobileData(['Course Profile 版本 — approved course_profile_versions', 'decision_id 与 reason_codes — recommendation_decisions', '播放/反馈 — course_sessions/feedback']),
-    actions: { primary: '开始跟练', secondary: ['投屏', '查看备选', '反馈太难/不适'] }, statesDesc: ['默认', '加载', '无审核版本', '课程已下架'], triggers: ['只有 APPROVED Course Profile 可被推荐'], deps: [...baseMobileNotes.deps, '播放/投屏服务'], patches: ['V1-COURSE-DETAIL'],
+    data: mobileData(['Course Profile V2 — approved course_profile_versions', 'decision_id 与 reason_codes — recommendation_decisions', '播放/反馈 — course_sessions/feedback']),
+    actions: { primary: '开始跟练', secondary: ['投屏', '查看备选', '反馈太难/不适'] }, statesDesc: ['默认', '加载', '无审核版本', '课程已下架'], triggers: ['只有 APPROVED Course Profile V2 可被推荐'], deps: [...baseMobileNotes.deps, '播放/投屏服务'], patches: ['V2-COURSE-DETAIL'],
   }),
   mobileScreen('S19', '每日 / 首次 Check-in 与状态确认', 'A10', 'C', [
     { id: 'daily-checkin', label: '一问 Check-in', blocks: [mStatus(), { kind: 'card', label: '每日 Check-in · 今天一次', sub: '首 7 次显示简短解释；之后可跳过', marker: 1, patch: true }, { kind: 'header', label: '今天感觉怎么样？' }, { kind: 'button-secondary', label: 'Yes, I feel great · FEEL_GREAT', toState: 'recommendation' }, { kind: 'button-secondary', label: 'Energy is low · ENERGY_LOW', toState: 'recommendation' }, { kind: 'button-secondary', label: 'I got my period · PERIOD_STARTED', toState: 'period-confirm', marker: 2 }, { kind: 'button-secondary', label: '跳过今天', to: 'S09', toState: 'unchecked' }]},
@@ -167,9 +176,9 @@ const mobileV1Screens: MobileScreenDef[] = [
     data: mobileData(['checkin_answer — daily_checkins', 'suggested_state/confirmed_state — recommendation preview/confirm', '首 7 次说明展示计数 — 用户体验配置']),
     actions: { primary: '确认建议或自主选择状态', secondary: ['跳过', '查看状态解释', '确认周期事实'] }, statesDesc: ['一问', '系统建议', '自主选择', '周期事实确认', '预览过期'], triggers: ['确认时使用 preview_revision；过期返回 PREVIEW_STALE', 'Check-in 不能放宽长期限制'], deps: [...baseMobileNotes.deps], patches: ['V1-CHECKIN', 'D01', 'D10'],
   }),
-  mobileScreen('S20', '当天调整与撤销', 'A09', 'C', [{ id: 'preview', label: '调整预览', blocks: [mStatus(), { kind: 'header', label: '先保护今天的训练意图', sub: 'Soft：先降低负荷/冲击/跳跃，再尝试同意图备选', marker: 1, patch: true }, { kind: 'card', label: '原安排：核心力量 25min', sub: '第一步：SOFTEN → 同目标/类型/部位，降低 Overall / Impact' }, { kind: 'card', label: '如果仍不合适：Backup A / B / C → 或今天休息', sub: '不会直接跨到无关课程；所有排除原因可查看' }, { kind: 'button-primary', label: '先降低负荷', toState: 'soften' }, { kind: 'button-secondary', label: '保持原课', to: 'S09', toState: 'checked-not-started' }]}, { id: 'soften', label: 'Soften结果', blocks: [mStatus(), { kind: 'card', label: '今日课程已温和化', sub: 'Daily Adapt · SOFTEN · 只影响今天', marker: 1, patch: true }, { kind: 'list-item', label: '核心力量 20min · Overall 2 · Impact 1 · Jump 0%' }, { kind: 'list-item', label: '保留目标：塑形 · 类型：力量 · 部位：核心/下肢' }, { kind: 'button-primary', label: '开始调整后课程', to: 'S10' }, { kind: 'button-secondary', label: '仍不适，查看备选', toState: 'swap' }]}, { id: 'swap', label: 'Swap/Rest备选', blocks: [mStatus(), { kind: 'header', label: '选择更温和的备选' }, { kind: 'list-item', label: 'Backup A：低冲击核心 · 15min · 同目标/部位' }, { kind: 'list-item', label: 'Backup B：下肢活动度 · 12min · Overall 1' }, { kind: 'button-primary', label: '使用 Backup A', to: 'S09', toState: 'downgraded' }, { kind: 'button-secondary', label: '今天 Rest', to: 'S09', toState: 'checked-not-started' }]}, { id: 'undo', label: '已调整可撤销', blocks: [mStatus(), { kind: 'card', label: '今天已调整：SOFTEN', sub: 'decision_id dec_204 · 仅今天生效 · 原课程可恢复', marker: 1 }, { kind: 'button-secondary', label: '撤销调整，恢复原课程', to: 'S09', toState: 'checked-not-started' }] }], {
+  mobileScreen('S20', '当天调整与撤销', 'A09', 'C', [{ id: 'preview', label: '调整预览', blocks: [mStatus(), { kind: 'header', label: '先保护今天的训练意图', sub: 'Soft：先降低 Overall / Running / Jump / 局部负荷，再尝试同意图备选', marker: 1, patch: true }, { kind: 'card', label: '原安排：核心力量 25min', sub: '第一步：SOFTEN → 同目标/类型/部位，降低 Overall / Running / Jump' }, { kind: 'card', label: '如果仍不合适：Backup A / B / C → 或今天休息', sub: '不会直接跨到无关课程；所有排除原因可查看' }, { kind: 'button-primary', label: '先降低负荷', toState: 'soften' }, { kind: 'button-secondary', label: '保持原课', to: 'S09', toState: 'checked-not-started' }]}, { id: 'soften', label: 'Soften结果', blocks: [mStatus(), { kind: 'card', label: '今日课程已温和化', sub: 'Daily Adapt · SOFTEN · 只影响今天 · course_profile_v2', marker: 1, patch: true }, { kind: 'list-item', label: '核心力量 20min · Overall 2 · Run NONE · Jump NONE · Ankle LOW' }, { kind: 'list-item', label: '保留目标：塑形 · 类型：力量 · 部位：核心/下肢' }, { kind: 'button-primary', label: '开始调整后课程', to: 'S10' }, { kind: 'button-secondary', label: '仍不适，查看备选', toState: 'swap' }]}, { id: 'swap', label: 'Swap/Rest备选', blocks: [mStatus(), { kind: 'header', label: '选择更温和的备选' }, { kind: 'list-item', label: 'Backup A：低冲击核心 · 15min · 同目标/部位' }, { kind: 'list-item', label: 'Backup B：下肢活动度 · 12min · Overall 1' }, { kind: 'button-primary', label: '使用 Backup A', to: 'S09', toState: 'downgraded' }, { kind: 'button-secondary', label: '今天 Rest', to: 'S09', toState: 'checked-not-started' }]}, { id: 'undo', label: '已调整可撤销', blocks: [mStatus(), { kind: 'card', label: '今天已调整：SOFTEN', sub: 'decision_id dec_204 · 仅今天生效 · 原课程可恢复', marker: 1 }, { kind: 'button-secondary', label: '撤销调整，恢复原课程', to: 'S09', toState: 'checked-not-started' }] }], {
     goal: '把 Daily Adapt 的 Keep/Soften/Swap/Rest 顺序变成可理解、可撤销的交互。', entry: 'S09 Check-in 建议', exit: ['S09'], role: baseMobileNotes.role,
-    data: mobileData(['原课程与候选快照 — candidate_snapshots', '变更类型 — daily_adapt_runs', '撤销窗口 — 服务端状态']), actions: { primary: '确认当天调整', secondary: ['保持原课', '先 Soften', '查看 Backup A/B/C', '撤销调整'] }, statesDesc: ['预览', 'Soften 后', 'Swap/Rest', '可撤销', '无安全候选→Rest'], triggers: ['PUSH 默认 Keep；SOFT 先 Soften 再 Swap；WARM 温和化/替换/休息'], deps: [...baseMobileNotes.deps], patches: ['V1-ADAPT'],
+    data: mobileData(['原课程与候选快照 — candidate_snapshots', '变更类型 — daily_adapt_runs', '撤销窗口 — 服务端状态']), actions: { primary: '确认当天调整', secondary: ['保持原课', '先 Soften', '查看 Backup A/B/C', '撤销调整'] }, statesDesc: ['预览', 'Soften 后', 'Swap/Rest', '可撤销', '无安全候选→Rest'], triggers: ['PUSH 默认 Keep；SOFT 先降 Overall/Running/Jump/局部负荷再 Swap；WARM 温和化/替换/休息'], deps: [...baseMobileNotes.deps], patches: ['V2-ADAPT'],
   }),
   mobileScreen('S21', '周期事实与未来 Re-plan', 'A09', 'C', [{ id: 'preview', label: '未来变化预览', blocks: [mStatus(), { kind: 'header', label: '实际周期已更新', sub: '今天：Check-in；未来：Re-plan', marker: 1, patch: true }, { kind: 'card', label: '将影响未来 6 个尚未发生的日期', sub: '已完成和过去日期不变；Keep / Adjust / Replace 逐日可查看' }, { kind: 'button-primary', label: '确认并更新未来计划', to: 'S08' }, { kind: 'button-secondary', label: '暂不更新', to: 'S09' }]}, { id: 'done', label: 'Re-plan 完成', blocks: [mStatus(), { kind: 'card', label: '未来计划已更新 · Plan v4', sub: '保持 21 天 · 调整 4 天 · 替换 2 天', marker: 1 }, { kind: 'button-primary', label: '查看日历差异', to: 'S08' }] }], {
     goal: '将用户确认的周期事实与当天状态分离，并只重排未来受影响日期。', entry: 'S19 PERIOD_STARTED / S28 档案修改', exit: ['S08', 'S09'], role: baseMobileNotes.role,
@@ -204,10 +213,10 @@ const b13State = (id: string, label: string, activeStep: number, stage: string, 
   blocks: [
     ...aShell(`推荐系统 / 模拟 / ${stage}`, '角色：规则配置 / QA'),
     { kind: 'tabs', items: B13_TAB_ITEMS, activeStep, tabStates: B13_TAB_STATES, marker: 1 },
-    { kind: 'split', label: `${stage} · 典型用户夹具`, sub: '共享 fixtures · 不写真实用户计划', items: ['L2 + 膝盖 MODERATE', '目标 FAT_LOSS', '周期事实：实际开始', '课程池：Approved 280'], right: [detail, 'Profile v4 × Course Profile v7', '规则版本：rules_v1.0'], marker: 2 },
+    { kind: 'split', label: `${stage} · 典型用户夹具`, sub: '共享 fixtures · 展示 profile_schema_version + 规则版本', items: ['L2 + knee MODERATE', '目标 FAT_LOSS', '周期事实：实际开始', '课程池：V2 APPROVED 268'], right: [detail, 'Profile v4 × course_profile_v2', 'rules_v2.0 · tagging_rules_v2.1 · eligibility_rules_v2.0'], marker: 2 },
     { kind: 'calendar-grid', label: stage === 'Daily Adapt' ? '今天：Training Intent / Keep / Soften / Backup' : '30 天：训练意图 / Primary / Backup / Re-plan diff', sub: stage === 'Daily Adapt' ? '仅今天可变；未来计划保持不变' : '过去/完成日期不变；点击日期查看阶段', height: 200 },
-    { kind: 'split', label: `${stage} · 决策 trace`, sub: '候选排除与原因', items: [`stage: ${stage.toUpperCase()}`, decision, 'Primary + Backup A/B/C 快照'], right, marker: 3 },
-    { kind: 'alert', tone: 'ok', label: stage === 'Daily Adapt' ? '不变量通过：Daily Adapt 只改今天' : '不变量通过：历史日期不变，结果可追溯', patch: true },
+    { kind: 'split', label: `${stage} · 决策 trace`, sub: 'Hard Filter 读 Eligibility + 局部负荷；不用 Overall 反推旧 Cardio/Impact', items: [`stage: ${stage.toUpperCase()}`, decision, 'Primary + Backup A/B/C 快照', 'profile_schema_version: course_profile_v2'], right, marker: 3 },
+    { kind: 'alert', tone: 'ok', label: stage === 'Daily Adapt' ? '不变量：Daily Adapt 只改今天；SOFT/WARM 优先降 Overall/Running/Jump/局部负荷' : '不变量：历史日期不变；无安全候选 → Rest/No Match', patch: true },
     { kind: 'button-primary', label: '提交回归结果并申请发布', to: 'B11' },
   ],
 });
@@ -226,20 +235,153 @@ const b19State = (id: string, label: string, activeStep: number, content: WireBl
 
 const adminV1Screens: ScreenDef[] = [
   adminScreen('B03', '课程列表与 Profile 覆盖', '§4 B03', 'A', [{ id: 'default', label: '课程列表', blocks: [
-    ...aShell('课程中心 / 课程列表', '角色：课程运营'), { kind: 'page-header', label: '课程列表 · Course Profile 覆盖', sub: '只允许 APPROVED Profile 进入推荐候选；未审核/unknown 安全字段单独统计', patch: true }, { kind: 'stat-row', items: ['312 节课程', '已批准 280', '待审核 24', '高风险待复核 8', '安全字段缺失 6'] }, { kind: 'filter-bar', label: '搜索 ID/标题 ｜ Profile：全部 ｜ Review：全部 ｜ 安全完整度：全部 ｜ 主类型 ｜ 主部位' }, { kind: 'table', cols: ['课程', '主类型', '主部位', '负荷摘要', 'Profile', '审核', '操作'], items: ['VID-0187 ｜ PILATES ｜ CORE ｜ Overall 2 / Impact 1 ｜ v7 ｜ APPROVED ｜ 查看', 'VID-0203 ｜ STRETCH_RECOVERY ｜ FULL_BODY ｜ Overall 1 / Impact 1 ｜ v3 ｜ NEEDS_REVIEW ｜ 去审核', 'VID-0211 ｜ STRENGTH ｜ LOWER_BODY ｜ Wrist unknown ｜ v1 ｜ BLOCKED ｜ 补充字段'], to: 'B04' }, { kind: 'button-primary', label: '+ 新建课程', to: 'B04' }, { kind: 'button-secondary', label: '查看 AI 打标任务', to: 'B07' }] }], {
-    goal: '管理 300+ 课程的 Profile 状态、覆盖度和审核入口。', entry: '后台侧边栏-课程中心', exit: ['B04', 'B07'], role: '课程运营 / 审核员', data: adminData(['课程基础与媒体 — courses', 'Course Profile A–E — course_profile_versions', '覆盖率与审核统计 — quality aggregates']), actions: { primary: '进入课程 Profile', secondary: ['筛选', '批量创建打标任务', '查看缺口'] }, statesDesc: ['默认', '空', '筛选无结果', '加载失败', '无权限'], triggers: ['Profile 未批准不允许上架为推荐候选'], deps: ['B04 Course Profile', 'B06 taxonomy', 'B07 审核队列'], patches: ['V1-ADMIN-COURSE'],
+    ...aShell('课程中心 / 课程列表', '角色：课程运营'),
+    { kind: 'page-header', label: '课程列表 · Course Profile V2', sub: '只允许 APPROVED V2 Profile 进入推荐；FORBIDDEN / REVIEW / 安全字段缺失单独统计；保留 V1 对照列', patch: true },
+    { kind: 'stat-row', items: ['312 节', 'V2 APPROVED 268', 'NEEDS_REVIEW 28', 'FORBIDDEN 8', '仅 V1 / 不一致 12'] },
+    { kind: 'filter-bar', label: '搜索 ｜ Elig: FORBIDDEN/REVIEW/缺失 ｜ POSTPARTUM_RECOVERY ｜ 低置信/冲突 ｜ 仅V1 / 已生成V2 / V1≠V2' },
+    { kind: 'table', cols: ['课程', 'Content', 'Workout', 'Body', 'Overall', 'M/P Elig', '动作摘要', 'V1/V2', '审核'], items: [
+      'WALK_001 健走 ｜ WORKOUT ｜ WALKING ｜ FULL_BODY ｜ 3 ｜ A/A ｜ Run SOME / Jump NONE / Ankle LOW ｜ v1+v2 ｜ APPROVED',
+      'HIIT_014 跳跃 ｜ WORKOUT ｜ HIIT ｜ FULL_BODY ｜ 5 ｜ F/F ｜ Run SOME / Jump FREQ / Ankle HIGH ｜ v1+v2 ｜ NEEDS_REVIEW',
+      'PIL_CORE_008 ｜ WORKOUT ｜ PILATES ｜ CORE ｜ 2 ｜ R/R ｜ Jump NONE / Wrist SOME ｜ v1+v2 ｜ NEEDS_REVIEW',
+      'PP_REC_003 产后 ｜ WORKOUT ｜ POSTPARTUM_RECOVERY ｜ CORE ｜ 2 ｜ A/R ｜ 白名单覆盖·双审 ｜ v1≠v2 ｜ NEEDS_REVIEW',
+      'UNK_099 ｜ WORKOUT ｜ CARDIO ｜ FULL_BODY ｜ — ｜ R/R ｜ Run/Jump/Ankle UNKNOWN ｜ 仅V2 ｜ NEEDS_REVIEW',
+    ], to: 'B04' },
+    { kind: 'alert', tone: 'warn', label: '列表不再用单个 Impact 数字概括动作风险', sub: '改为 Running / Jump / Ankle 摘要；UNKNOWN 不显示为 Low', patch: true },
+    { kind: 'button-primary', label: '+ 新建课程', to: 'B04' },
+    { kind: 'button-secondary', label: '打开 B07 字段证据复核', to: 'B07' },
+  ] }], {
+    goal: '管理课程 V2 Profile 覆盖度、Eligibility 与审核入口；迁移期展示 V1/V2 版本。', entry: '后台侧边栏-课程中心', exit: ['B04', 'B07'], role: '课程运营 / 审核员',
+    data: adminData(['courses', 'course_profile_v2 versions', 'eligibility + action_exposure 摘要', 'V1/V2 对照状态']),
+    actions: { primary: '进入 Course Profile V2', secondary: ['按 FORBIDDEN/REVIEW/缺失筛选', 'POSTPARTUM_RECOVERY', 'V1/V2 不一致'] },
+    statesDesc: ['默认', 'FORBIDDEN 筛选', '仅 V1', 'V1≠V2', '空'],
+    triggers: ['未 APPROVED 或 Eligibility=REVIEW/FORBIDDEN 的安全字段不可作推荐候选'],
+    deps: ['B04 Course Profile V2', 'B06 taxonomy/rules', 'B07 审核'], patches: ['V2-ADMIN-COURSE'],
   }),
-  adminScreen('B04', 'Course Profile 详情与版本', '§4 B04', 'A', [{ id: 'profile', label: 'Profile 详情', blocks: [
-    ...aShell('课程中心 / Course Profile / VID-0187', '角色：课程运营 · 安全审核'), { kind: 'tabs', items: ['Identity', 'Loads', 'Movement', 'Goals & Risks', 'Evidence', 'Versions'], activeStep: 0, tabStates: ['identity', 'loads', 'movement', 'risk', 'evidence', 'versions'], marker: 1 }, { kind: 'form-row', label: 'Identity', sub: 'duration 1200s · primary_workout_type PILATES · secondary STRENGTH · primary_body_area CORE · equipment 仅元数据' }, { kind: 'form-row', label: 'Governance', sub: 'Profile v7 · taxonomy_2026_08_28 · APPROVED · 最后审核：安全审核员' }, { kind: 'panel', label: 'Course Profile 是课程客观属性；周期适用性不作为课程级标签', sub: '用户端的“为什么推荐”由 decision_id + User Profile + 当天状态动态生成', patch: true }, { kind: 'button-primary', label: '保存新 Profile 版本', to: 'B03' }, { kind: 'button-secondary', label: '打开 B07 证据审核', to: 'B07' }] }, { id: 'loads', label: 'Loads', blocks: [...aShell('Course Profile / Loads', '字段级编辑需审核'), { kind: 'form-row', label: 'Overall / Cardio / Muscular / Impact', sub: '2 / 1 / 3 / 1（均为 1–5，unknown 不得默认为低风险）' }, { kind: 'form-row', label: 'Local Loads', sub: 'knee 1 · wrist 2 · lower_back 2 · shoulder 1 · pelvic_floor 2 · core_pressure 3' }, { kind: 'alert', tone: 'warn', label: '高风险字段修改会回到 NEEDS_REVIEW', sub: '变更原因、证据、审核人和版本必须写入审计', patch: true }, { kind: 'button-primary', label: '提交字段审核', to: 'B07' }] }, { id: 'evidence', label: 'Evidence', blocks: [...aShell('Course Profile / Evidence', '可定位到视频片段'), { kind: 'split', label: '字段：wrist_bearing = 2', sub: '置信度 0.91 · basis VISION + TRANSCRIPT', items: ['02:10–03:40', '持续四点跪姿', '观察事实：手腕承重出现'], right: ['查看字典锚点', '接受 / 修改 / 设 unknown', '填写修改理由'] }, { kind: 'button-primary', label: '保存审核意见', to: 'B03' }] }], {
-    goal: '用 Course Profile A–E、证据、置信度、审核和不可变版本替换旧二值标签。', entry: 'B03 课程列表', exit: ['B03', 'B06', 'B07'], role: '课程运营 / 安全审核员', data: adminData(['Course Profile vN — course_profile_versions', '字段级证据 — course_tag_evidence', '审核与纠正 — course_profile_reviews']), actions: { primary: '查看/编辑 Profile Tab', secondary: ['预览用户端 S10', '查看版本差异', '提交审核'] }, statesDesc: ['Identity', 'Loads', 'Movement', 'Goals/Risks', 'Evidence', 'Versions', '未批准/已回滚'], triggers: ['媒体内容变化或 taxonomy 不兼容时创建新 Profile 版本'], deps: ['B06 taxonomy', 'B07 审核', 'S10 课程详情'], patches: ['V1-COURSE-PROFILE', 'D04', 'D06'],
+  adminScreen('B04', 'Course Profile 详情与版本', '§4 B04', 'A', [
+    { id: 'identity', label: 'Identity', blocks: [
+      ...aShell('课程中心 / Course Profile V2 / WALK_001', '角色：课程运营 · 安全审核'),
+      { kind: 'tabs', items: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'], activeStep: 0, tabStates: ['identity', 'intensity', 'movement', 'goals', 'eligibility', 'evidence'], marker: 1 },
+      { kind: 'form-row', label: 'Identity', sub: 'content_type WORKOUT · primary_workout_type WALKING · primary_body_area FULL_BODY · duration_sec 1200' },
+      { kind: 'form-row', label: 'Governance', sub: 'schema course_profile_v2 · tagging_rules_v2.1 · eligibility_rules_v2.0 · APPROVED' },
+      { kind: 'panel', label: '字段链路', sub: '字段值 → 原始指标 → 命中规则 → 证据片段 → 来源/版本 → 审核状态', patch: true },
+      { kind: 'button-primary', label: '保存为不可变 Profile 版本', to: 'B03' },
+      { kind: 'button-secondary', label: '打开 B07 证据审核', to: 'B07' },
+    ]},
+    { id: 'intensity', label: 'Intensity', blocks: [
+      ...aShell('Course Profile V2 / Intensity', '字段级编辑需审核'),
+      { kind: 'tabs', items: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'], activeStep: 1, tabStates: ['identity', 'intensity', 'movement', 'goals', 'eligibility', 'evidence'] },
+      { kind: 'form-row', label: 'overall / met / met_source / calorie_type / status', sub: '3 · 3.5 · CURATED_LOOKUP · GROSS · CONFIRMED（overall null → REVIEW，不得默认为低）' },
+      { kind: 'alert', tone: 'info', label: '不要用 Overall 反推旧 Cardio / Muscular / Impact', patch: true },
+      { kind: 'button-primary', label: '提交字段审核', to: 'B07' },
+    ]},
+    { id: 'movement', label: 'Movement & Loads', blocks: [
+      ...aShell('Course Profile V2 / Movement & Loads', 'ObservationLevel + LocalLoadLevel'),
+      { kind: 'tabs', items: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'], activeStep: 2, tabStates: ['identity', 'intensity', 'movement', 'goals', 'eligibility', 'evidence'] },
+      { kind: 'form-row', label: 'action_exposure', sub: 'running SOME · jump NONE · wrist_bearing NONE（值域 NONE/SOME/FREQUENT/UNKNOWN）' },
+      { kind: 'form-row', label: 'local_load', sub: 'knee LOW · ankle LOW · lower_back LOW · shoulder LOW（LOW/MEDIUM/HIGH/UNKNOWN）' },
+      { kind: 'split', label: '原始指标', sub: 'Motion 观察事实', items: ['jump_ratio 0%', 'running_ratio 18%', 'standing 100%'], right: ['规则 TAG_JUMP_OBS_V2', '证据 02:10–05:30', 'UNKNOWN → NEEDS_REVIEW'] },
+      { kind: 'button-primary', label: '提交字段审核', to: 'B07' },
+    ]},
+    { id: 'goals', label: 'Goals', blocks: [
+      ...aShell('Course Profile V2 / Goals', '查表规则来源'),
+      { kind: 'tabs', items: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'], activeStep: 3, tabStates: ['identity', 'intensity', 'movement', 'goals', 'eligibility', 'evidence'] },
+      { kind: 'form-row', label: 'goal_contributions (1–5)', sub: 'fat_loss 4 · body_shaping 2 · healthy_living 5 · postpartum_recovery 3 · 规则 TAG_GOAL_LOOKUP_V2' },
+      { kind: 'button-secondary', label: '查看查表来源' },
+    ]},
+    { id: 'eligibility', label: 'Eligibility', blocks: [
+      ...aShell('Course Profile V2 / Eligibility', 'ALLOWED / FORBIDDEN / REVIEW'),
+      { kind: 'tabs', items: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'], activeStep: 4, tabStates: ['identity', 'intensity', 'movement', 'goals', 'eligibility', 'evidence'] },
+      { kind: 'form-row', label: 'menstrual / postpartum / inversion', sub: 'ALLOWED · ALLOWED · NONE · triggered_rule_ids: ELIG_MENST_LOW_IMPACT, ELIG_PP_STANDING_OK' },
+      { kind: 'alert', tone: 'warn', label: 'POSTPARTUM_RECOVERY 类型命中 ≠ 自动 ALLOWED', sub: '须展示覆盖了哪些普通禁用规则，并经健康运营终审', patch: true },
+      { kind: 'button-primary', label: '打开 B07 终审', to: 'B07' },
+    ]},
+    { id: 'evidence', label: 'Evidence & Versions', blocks: [
+      ...aShell('Course Profile V2 / Evidence & Versions', '不可变版本 diff'),
+      { kind: 'tabs', items: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'], activeStep: 5, tabStates: ['identity', 'intensity', 'movement', 'goals', 'eligibility', 'evidence'] },
+      { kind: 'split', label: '字段：action_exposure.jump = NONE', sub: '置信度 0.95 · Motion mj_walk_42', items: ['02:10–05:30', '连续站立走步', '观察：无跳跃落地'], right: ['接受 / 修改 / 设 UNKNOWN / 驳回', 'reason_code 必填', '生成版本 diff'] },
+      { kind: 'panel', label: 'V1/V2 只读对照', sub: 'Impact 1 ≠ Running SOME / Jump NONE / Ankle LOW（非一对一）；无可靠映射显示「不可自动迁移」', patch: true },
+      { kind: 'button-primary', label: '保存审核意见', to: 'B03' },
+    ]},
+  ], {
+    goal: '用 Course Profile V2 分组结构、字段证据链路和不可变版本替代 V1 扁平字段。', entry: 'B03 课程列表', exit: ['B03', 'B06', 'B07'], role: '课程运营 / 安全审核员',
+    data: adminData(['course_profile_v2', 'course_tag_evidence', 'course_profile_reviews', 'V1 snapshot 只读对照']),
+    actions: { primary: '按 Identity→Evidence 六页签查看/编辑', secondary: ['版本 diff', 'V1/V2 对照', '提交审核'] },
+    statesDesc: ['Identity', 'Intensity', 'Movement & Loads', 'Goals', 'Eligibility', 'Evidence & Versions'],
+    triggers: ['媒体变化或规则版本不兼容时创建新 Profile 版本；不覆盖历史'],
+    deps: ['B06 taxonomy/rules', 'B07 审核', 'S10'], patches: ['V2-COURSE-PROFILE'],
   }),
-  adminScreen('B06', 'Taxonomy 标准字典', '§4 B06', 'A', [{ id: 'default', label: '字典版本', blocks: [
-    ...aShell('标准与问卷 / Taxonomy', '角色：配置管理员'), { kind: 'page-header', label: '标准字典 · taxonomy_2026_08_28', sub: '技术键、展示文案、值域、正反例、unknown、依赖和弃用替代项', patch: true }, { kind: 'table', cols: ['Domain', 'Technical key', '展示值', '值域', '引用方', '状态'], items: ['Workout Type ｜ STRENGTH ｜ 力量 ｜ enum ｜ Course/Profile/规则 ｜ active', 'Workout Type ｜ YOGA ｜ 瑜伽 ｜ enum ｜ 问卷/课程/浏览 ｜ active', 'Body Area ｜ FULL_BODY ｜ 全身 ｜ enum ｜ Course/Intent ｜ active', 'Fitness ｜ L1–L5 ｜ 训练能力 ｜ enum ｜ User Profile ｜ active', 'Day State ｜ PUSH/SOFT/WARM ｜ 当天状态 ｜ enum ｜ Check-in/Adapt ｜ active'], marker: 1 }, { kind: 'split', label: '字段引用关系', sub: '同一 technical key 在多端共享，展示文案可本地化', items: ['问卷 → User Training Profile', 'Course Profile → 候选池与安全筛选', '规则 DSL → Plan / Re-plan / Daily Adapt', 'APP → Check-in / 推荐解释'], right: ['unknown 不等于低风险', 'Pregnancy 只在用户侧作为 Block', 'equipment 仅课程元数据，不参与用户主匹配', '弃用条目必须提供替代 key'], marker: 2 }, { kind: 'alert', tone: 'warn', label: '已发布 technical key 不可原地改语义', sub: '引用它的问卷、Course Profile、规则和客户端必须通过兼容校验', patch: true }, { kind: 'button-primary', label: '创建新字典草稿' }, { kind: 'button-secondary', label: '校验引用关系' }] }], {
-    goal: '让问卷、课程、规则、APP 和后台共享唯一标准字典。', entry: '后台侧边栏-标准与问卷', exit: ['B04', 'B09', 'B12'], role: '配置管理员 / 产品 / 安全审核员', data: adminData(['taxonomy_versions/terms', 'schema 与引用关系', '发布/弃用审计']), actions: { primary: '查看/创建字典版本', secondary: ['校验引用', '查看差异', '弃用条目'] }, statesDesc: ['版本列表', '草稿编辑', '校验失败', '已发布只读'], triggers: ['发布需二次审批；旧版本历史可读'], deps: ['User/Course Profile Schema', 'B09 问卷', 'B12 规则'], patches: ['V1-TAXONOMY', 'D03', 'D05', 'D06'],
+  adminScreen('B06', 'Taxonomy 与规则版本', '§4 B06', 'A', [
+    { id: 'default', label: '字典与规则版本', blocks: [
+      ...aShell('标准与问卷 / Taxonomy & Rules V2', '角色：配置管理员'),
+      { kind: 'page-header', label: '标准字典与规则版本', sub: 'course_profile_v2 · course_tagging_rules_v2 · course_eligibility_rules_v2 · taxonomy_2026_08_28', patch: true },
+      { kind: 'tabs', items: ['course_profile_v2', 'tagging_rules_v2', 'eligibility_rules_v2', 'Taxonomy'], activeStep: 0, tabStates: ['profile', 'tagging', 'eligibility', 'taxonomy'], marker: 1 },
+      { kind: 'table', cols: ['版本对象', 'Technical key 示例', '值域', '状态'], items: [
+        'course_profile_v2 ｜ action_exposure.jump ｜ NONE/SOME/FREQUENT/UNKNOWN ｜ published',
+        'course_profile_v2 ｜ eligibility.menstrual ｜ ALLOWED/FORBIDDEN/REVIEW ｜ published',
+        'course_profile_v2 ｜ local_load.knee ｜ LOW/MEDIUM/HIGH/UNKNOWN ｜ published',
+        'course_tagging_rules_v2 ｜ TAG_JUMP_OBS_V2 ｜ 阈值→ObservationLevel ｜ published',
+        'course_eligibility_rules_v2 ｜ ELIG_MENST_JUMP_FREQ ｜ Jump FREQUENT → FORBIDDEN ｜ published',
+      ], marker: 2 },
+      { kind: 'split', label: '待决项（需求冻结前）', sub: '已发布 key 不可原地改语义', items: ['BACK_SHOULDER 命名', 'Recovery Content Type vs Workout Type 双重含义', 'Postpartum Recovery 白名单覆盖范围'], right: ['unknown ≠ 低风险', 'Pregnancy 仅用户侧 Block', 'equipment 不参与主匹配', '弃用须提供替代 key'], marker: 3 },
+      { kind: 'alert', tone: 'warn', label: '已发布 technical key 不允许原地改语义', sub: '问卷、Course Profile、规则、客户端须兼容校验后发新版本', patch: true },
+      { kind: 'button-primary', label: '创建规则/字典草稿' },
+      { kind: 'button-secondary', label: '校验引用关系' },
+    ]},
+    { id: 'tagging', label: 'tagging_rules_v2', blocks: [
+      ...aShell('Taxonomy / course_tagging_rules_v2', '强度 · 动作暴露 · 局部负荷'),
+      { kind: 'tabs', items: ['course_profile_v2', 'tagging_rules_v2', 'eligibility_rules_v2', 'Taxonomy'], activeStep: 1, tabStates: ['profile', 'tagging', 'eligibility', 'taxonomy'] },
+      { kind: 'table', cols: ['Rule ID', '输入', '输出', '版本'], items: [
+        'TAG_INTENSITY_OVERALL_V2 ｜ Motion 节奏/密度 ｜ overall 1–5 | null ｜ v2.1',
+        'TAG_JUMP_OBS_V2 ｜ jump_ratio ｜ NONE/SOME/FREQUENT/UNKNOWN ｜ v2.1',
+        'TAG_KNEE_LOAD_V2 ｜ 下肢动作事实 ｜ LOW/MEDIUM/HIGH/UNKNOWN ｜ v2.1',
+        'TAG_GOAL_LOOKUP_V2 ｜ type × overall ｜ goal_contributions ｜ v2.1',
+      ] },
+      { kind: 'button-secondary', label: '返回总览' },
+    ]},
+    { id: 'eligibility', label: 'eligibility_rules_v2', blocks: [
+      ...aShell('Taxonomy / course_eligibility_rules_v2', '经期 · 产后 · 白名单'),
+      { kind: 'tabs', items: ['course_profile_v2', 'tagging_rules_v2', 'eligibility_rules_v2', 'Taxonomy'], activeStep: 2, tabStates: ['profile', 'tagging', 'eligibility', 'taxonomy'] },
+      { kind: 'table', cols: ['Rule ID', '条件', '结果', '覆盖'], items: [
+        'ELIG_MENST_JUMP_FREQ ｜ Jump FREQUENT ｜ menstrual FORBIDDEN ｜ —',
+        'ELIG_PP_KNEE_HIGH ｜ Knee HIGH ｜ postpartum FORBIDDEN ｜ —',
+        'ELIG_UNKNOWN_BLOCK ｜ 任意 UNKNOWN ｜ REVIEW ｜ 禁止当 Allowed',
+        'ELIG_PP_WHITELIST_OVERRIDE ｜ POSTPARTUM_RECOVERY ｜ 覆盖普通禁用 ｜ 仍需终审 ≠ ALLOWED',
+      ] },
+      { kind: 'alert', tone: 'warn', label: '白名单只覆盖普通禁用规则，不自动 ALLOWED', patch: true },
+    ]},
+  ], {
+    goal: '可视化 course_profile_v2 / tagging_rules_v2 / eligibility_rules_v2 三套版本对象。', entry: '后台侧边栏-标准与问卷', exit: ['B04', 'B09', 'B12'], role: '配置管理员 / 产品 / 安全审核员',
+    data: adminData(['taxonomy_versions', 'course_tagging_rules_v2', 'course_eligibility_rules_v2', '发布审计']),
+    actions: { primary: '查看三版本对象', secondary: ['校验引用', '创建草稿', '标记待决项'] },
+    statesDesc: ['profile schema', 'tagging rules', 'eligibility rules', 'taxonomy'],
+    triggers: ['发布需二次审批；已发布 key 不可改语义'],
+    deps: ['B04', 'B09', 'B12'], patches: ['V2-TAXONOMY-RULES'],
   }),
-  adminScreen('B07', 'AI 打标与字段证据审核', '§4 B07', 'A', [{ id: 'queue', label: '审核队列', blocks: [
-    ...aShell('课程中心 / AI 打标审核', '角色：内容运营 + 安全审核'), { kind: 'page-header', label: 'AI 打标复核队列 · 高风险与低置信优先', sub: 'AI 只生成 Course Profile 草稿；未 APPROVED 不进入推荐候选', marker: 1, patch: true }, { kind: 'filter-bar', label: '批次 #42 ｜ confidence < 0.75 ｜ 安全字段 ｜ unknown ｜ 输入质量异常' }, { kind: 'split', label: '视频证据', sub: '字段级建议', items: ['VID-0203 · 12:10–13:40', '播放器/字幕/关键帧', '点击证据定位动作'], right: ['Impact Load 4 · 0.82 · 接受/修改/unknown', 'wrist_bearing unknown · 0.61 · 必须复核', 'risk postpartum MEDIUM · 原因：core pressure'], marker: 2 }, { kind: 'form-row', label: '审核意见', sub: '修改/驳回/unknown 必填 reason_code；高风险双人复核' }, { kind: 'button-primary', label: '提交审核结果并生成 Profile 草稿' }, { kind: 'button-secondary', label: '退回 AI 重跑' }] }], {
-    goal: '把 AI/Excel 建议变成带证据、置信度、审核和版本的 Approved Course Profile。', entry: 'B03 / AI 打标任务', exit: ['B03', 'B04'], role: '内容运营复核员 / 安全审核员', data: adminData(['model_runs/tagging_jobs', '字段级 evidence/confidence', 'review decisions 与审计']), actions: { primary: '逐字段接受/修改/驳回/unknown', secondary: ['按证据定位', '退回重跑', '批量接受低风险高置信字段'] }, statesDesc: ['队列', '单课复核', '高风险双审', 'Excel 兜底', '队列空'], triggers: ['高风险/unknown 不可批量接受；安全审核通过后才能发布'], deps: ['AI Worker', 'B04 Profile', 'B06 taxonomy'], patches: ['V1-AI-REVIEW'],
+  adminScreen('B07', 'AI 打标与字段证据审核', '§4 B07', 'A', [{ id: 'queue', label: '三栏复核', blocks: [
+    ...aShell('课程中心 / B07 字段证据复核', '角色：内容运营 + 健康运营终审'),
+    { kind: 'page-header', label: '字段证据复核 · 播放器 + 字段表单 + 规则解释', sub: 'Motion/Go 只生成草稿；UNKNOWN/冲突进 REVIEW；未 APPROVED 不进候选', marker: 1, patch: true },
+    { kind: 'filter-bar', label: '批次 #42 ｜ confidence < 0.75 ｜ Eligibility REVIEW/FORBIDDEN ｜ UNKNOWN ｜ POSTPARTUM_RECOVERY 双审' },
+    { kind: 'split', label: '左：视频 / 时间轴 / 证据', sub: '中：正式字段 · AI建议 · 裁决｜右：指标 · 阈值 · 规则', items: [
+      'HIIT_014 · 03:00–05:10 连续跳跃',
+      '播放器 / 字幕 / 关键帧',
+      '点击证据定位 Jump FREQUENT',
+    ], right: [
+      'jump FREQUENT · 接受/修改/设 UNKNOWN/驳回',
+      'knee HIGH · ankle HIGH · 必填 reason_code',
+      'menstrual FORBIDDEN · ELIG_MENST_JUMP_FREQ',
+      'postpartum FORBIDDEN · 健康运营终审',
+    ], marker: 2 },
+    { kind: 'form-row', label: '裁决与原因码', sub: '接受 / 修改 / 设 Unknown / 驳回 / 提交终审；修改或驳回必填 EVIDENCE_MISMATCH | RULE_CONFLICT | LOW_CONFIDENCE | CLINICAL_OVERRIDE' },
+    { kind: 'alert', tone: 'warn', label: 'POSTPARTUM_RECOVERY：展示覆盖了哪些普通禁用规则；类型命中 ≠ 自动 ALLOWED', sub: '必须健康运营终审', patch: true },
+    { kind: 'button-primary', label: '提交终审并生成不可变 Profile 版本' },
+    { kind: 'button-secondary', label: '退回 Motion/Go 重跑' },
+  ] }], {
+    goal: '三栏布局完成字段级证据复核；支持 Unknown 与终审，不把 UNKNOWN 当安全结论。', entry: 'B03 / 打标任务', exit: ['B03', 'B04'], role: '内容运营复核员 / 健康运营',
+    data: adminData(['motion_jobs', 'go rule drafts', 'field evidence/confidence', 'reason_codes', 'review audit']),
+    actions: { primary: '接受/修改/设 Unknown/驳回/提交终审', secondary: ['证据定位', '退回重跑', '仅低风险高置信可批量'] },
+    statesDesc: ['三栏复核', '高风险双审', 'POSTPARTUM 白名单终审', '队列空'],
+    triggers: ['UNKNOWN/FORBIDDEN 安全字段不可批量接受'],
+    deps: ['Motion', 'Go 规则', 'B04', 'B06'], patches: ['V2-AI-REVIEW'],
   }),
   adminScreen('B08', 'Onboarding 问卷版本', '§4 B08', 'B', [{ id: 'default', label: '版本列表', blocks: [
     ...aShell('标准与问卷 / Onboarding', '角色：问卷编辑 / 发布审批'), { kind: 'page-header', label: 'Onboarding 问卷版本', sub: '15 个主问题 + 条件分支；已发布版本不可原地编辑', patch: true }, { kind: 'stat-row', items: ['线上 onboarding_v1.0', '草稿 2', '待审核 1', '安全分支 8', '迁移补充待办 324'] }, { kind: 'table', cols: ['版本', '状态', '主问题', '分支', '提交', '操作'], items: ['v1.1 ｜ 草稿 ｜ 15 ｜ 12 ｜ — ｜ 编辑', 'v1.0 ｜ 已发布 ｜ 15 ｜ 10 ｜ 12,480 ｜ 查看快照/复制', 'v0.9 ｜ 已停用 ｜ 12 ｜ 4 ｜ 8,203 ｜ 只读'], to: 'B09' }, { kind: 'button-primary', label: '+ 新建/复制问卷', to: 'B09' }] }], {
@@ -258,20 +400,45 @@ const adminV1Screens: ScreenDef[] = [
     goal: '把 Priority、Plan、Re-plan、Daily Adapt 拆成可独立回归、发布和回滚的规则集。', entry: '后台侧边栏-推荐系统', exit: ['B12', 'B13'], role: '规则配置 / 发布审批', data: adminData(['recommendation_rule_sets/versions', '命中率与 No Match 监控', '发布/回滚审计']), actions: { primary: '查看/编辑规则集', secondary: ['模拟', '查看影响评估', '发布/回滚'], destructive: '停用安全规则需二次确认和影响评估' }, statesDesc: ['默认', '草稿', '待审核', '已发布', '回滚'], triggers: ['规则发布记录最低客户端/Schema/taxonomy 兼容版本'], deps: ['B06', 'B07', 'B12', 'B13'], patches: ['V1-RULE-STAGE'],
   }),
   adminScreen('B12', '四阶段规则编辑器', '§4 B12', 'C', [
-    { id: 'priority', label: 'Priority / Hard Filter', blocks: [...aShell('推荐规则 / Priority', 'Safety 规则需安全审批'), b12Tabs(0), { kind: 'form-row', label: '优先级（固定）', sub: 'Safety > Daily Check-in > Goal/Training Intent > Fitness Capacity > Cycle Context > Preference > History' }, { kind: 'form-row', label: 'Hard Filter', sub: 'Unknown 安全字段不默认放行；PREGNANT → Block；无安全课程 → NO_SAFE_COURSE_MATCH' }, { kind: 'button-primary', label: '保存并运行回归', to: 'B13' }]},
-    { id: 'plan', label: 'Plan', blocks: [...aShell('推荐规则 / Plan', '不读取 Daily Check-in'), b12Tabs(1), { kind: 'form-row', label: '训练结构', sub: 'Training Structure → Daily Training Intent → Primary + Backup A/B/C' }, { kind: 'form-row', label: '排序输入', sub: 'Safety（只做安全边界） → Goal → Capacity → Cycle → Frequency/Duration → Preference → History' }, { kind: 'form-row', label: '匹配矩阵', sub: '用户 User Training Profile × 课程 Course Profile；Primary 先于 Backup，缺少安全字段不默认放行' }, { kind: 'form-row', label: '候选约束', sub: '只读取 APPROVED Course Profile；equipment 不参与用户主匹配' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
-    { id: 'replan', label: 'Re-plan', blocks: [...aShell('推荐规则 / Re-plan', '只影响未来受影响日期'), b12Tabs(2), { kind: 'form-row', label: '触发源', sub: '周期事实 / User Profile 新版本 / 规则或课程 Profile 失效' }, { kind: 'form-row', label: '变更类型', sub: 'Keep > Adjust > Replace；过去/已完成日期不变' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
-    { id: 'adapt', label: 'Daily Adapt', blocks: [...aShell('推荐规则 / Daily Adapt', '只影响今天'), b12Tabs(3), { kind: 'form-row', label: 'Push', sub: '默认 Keep，不自动升级' }, { kind: 'form-row', label: 'Soft', sub: '先降低冲击/负荷/跳跃，保留训练意图，再使用 Backup' }, { kind: 'form-row', label: 'Warm', sub: '温和化 → 替换 → Rest' }, { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
+    { id: 'priority', label: 'Priority / Hard Filter', blocks: [...aShell('推荐规则 / Priority', 'Safety 规则需安全审批'), b12Tabs(0),
+      { kind: 'form-row', label: '优先级（固定）', sub: 'Safety > Daily Check-in > Goal/Training Intent > Fitness Capacity > Cycle Context > Preference > History' },
+      { kind: 'form-row', label: 'Hard Filter（V2）', sub: '读 Eligibility(menstrual/postpartum) + 用户限制 + local_load；UNKNOWN/REVIEW 不默认放行；PREGNANT → Block；无安全课 → NO_SAFE_COURSE_MATCH' },
+      { kind: 'form-row', label: '输入版本', sub: 'profile_schema_version=course_profile_v2 · eligibility_rules_v2.0 · 保留 Primary Workout Type / Body Area / 目标意图' },
+      { kind: 'button-primary', label: '保存并运行回归', to: 'B13' }]},
+    { id: 'plan', label: 'Plan', blocks: [...aShell('推荐规则 / Plan', '不读取 Daily Check-in'), b12Tabs(1),
+      { kind: 'form-row', label: '训练结构', sub: 'Training Structure → Daily Training Intent → Primary + Backup A/B/C' },
+      { kind: 'form-row', label: 'Fitness Capacity', sub: '读取 Overall，并结合 primary_workout_type；不用 Overall 反推旧 Cardio/Muscular/Impact' },
+      { kind: 'form-row', label: '匹配矩阵', sub: 'User Training Profile × Course Profile V2；只读 APPROVED；保留 Workout Type / Body Area / 目标意图' },
+      { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
+    { id: 'replan', label: 'Re-plan', blocks: [...aShell('推荐规则 / Re-plan', '只影响未来受影响日期'), b12Tabs(2),
+      { kind: 'form-row', label: '触发源', sub: '周期事实 / User Profile 新版本 / 规则或 Course Profile V2 失效' },
+      { kind: 'form-row', label: '变更类型', sub: 'Keep > Adjust > Replace；过去/已完成日期不变' },
+      { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
+    { id: 'adapt', label: 'Daily Adapt', blocks: [...aShell('推荐规则 / Daily Adapt', '只影响今天'), b12Tabs(3),
+      { kind: 'form-row', label: 'Push', sub: '默认 Keep，不自动升级' },
+      { kind: 'form-row', label: 'Soft / Warm（V2）', sub: '优先降低 Overall、Running、Jump 及相关 local_load，保留训练意图；再 Backup；无安全候选 → Rest' },
+      { kind: 'form-row', label: '版本展示', sub: '迁移期展示 profile_schema_version 与规则版本差异（V1 vs V2 输入）' },
+      { kind: 'button-primary', label: '保存并模拟', to: 'B13' }]},
   ], {
-    goal: '用受限 DSL/决策表编辑四阶段规则，明确输入、作用域、动作、原因码和版本。', entry: 'B11 规则集', exit: ['B11', 'B13'], role: '规则配置 / 安全审核', data: adminData(['rule definition JSON/DSL', 'reason_codes 与解释文案', '输入字段依赖与版本']), actions: { primary: '保存并运行回归', secondary: ['查看候选/排除原因', '复制草稿', '提交审核'], destructive: '已发布规则只能停用/回滚，不能删除' }, statesDesc: ['Priority', 'Plan', 'Re-plan', 'Daily Adapt', '冲突检测失败'], triggers: ['禁止任意脚本；发布前静态校验 + 典型夹具回归'], deps: ['B06 taxonomy', 'B07 approved Profile', 'B13 模拟'], patches: ['V1-RULE-ENGINE', 'D09', 'D10'],
+    goal: '用 V2 Eligibility / Overall / Running / Jump / local_load 编辑四阶段规则。', entry: 'B11 规则集', exit: ['B11', 'B13'], role: '规则配置 / 安全审核',
+    data: adminData(['rule definition JSON/DSL', 'reason_codes', 'course_profile_v2 字段依赖', '规则版本矩阵']),
+    actions: { primary: '保存并运行回归', secondary: ['查看候选/排除', '复制草稿', '提交审核'], destructive: '已发布规则只能停用/回滚' },
+    statesDesc: ['Priority', 'Plan', 'Re-plan', 'Daily Adapt', '冲突检测失败'],
+    triggers: ['禁止任意脚本；发布前静态校验 + 夹具回归'],
+    deps: ['B06 V2 rules', 'B07 APPROVED Profile', 'B13'], patches: ['V2-RULE-ENGINE'],
   }),
   adminScreen('B13', '规则模拟与回归测试', '§4 B13', 'C', [
-    b13State('plan', 'Plan', 0, 'Plan', 'Hard Filter：Pregnancy → Block', 'Goal / Capacity / Cycle → Primary + Backup A/B/C', ['VID-0192：Impact 超限 → 排除', 'VID-0201：7 日重复 → 排除', '无安全候选 → Rest / No Match']),
-    b13State('replan', 'Re-plan', 1, 'Re-plan', '实际周期首日或 Profile 发生变化', '未来受影响日期：Keep / Adjust / Replace', ['已完成日期：锁定不变', '只更新未来未完成日期', '保留前后计划版本 diff']),
-    b13State('adapt', 'Daily Adapt', 2, 'Daily Adapt', 'ENERGY_LOW / Soft Day', 'Keep → Soften → Backup → Rest', ['只改今天', '保留目标 / 类型 / 部位', '用户确认后可撤销']),
-    b13State('combined', 'Combined', 3, 'Combined', '先 Re-plan 未来，再 Adapt 今天', '周期事实 + 当日状态的组合决策', ['历史不覆盖', '未来显示 Re-plan diff', '今日显示 Daily Adapt trace']),
+    b13State('plan', 'Plan', 0, 'Plan', 'Hard Filter：Eligibility FORBIDDEN/REVIEW → 排除；Pregnancy → Block', 'Goal / Capacity(Overall+Type) / Cycle → Primary + Backup', ['HIIT_014：Jump FREQUENT + menstrual FORBIDDEN → 排除', 'UNK_099：UNKNOWN 安全字段 → 排除', '无安全候选 → Rest / No Match']),
+    b13State('replan', 'Re-plan', 1, 'Re-plan', '实际周期首日或 Profile 发生变化', '未来受影响日期：Keep / Adjust / Replace', ['已完成日期：锁定不变', '只更新未来未完成日期', '保留前后计划版本 + schema 版本 diff']),
+    b13State('adapt', 'Daily Adapt', 2, 'Daily Adapt', 'ENERGY_LOW / Soft Day', 'Keep → Soften(Overall/Running/Jump/local_load) → Backup → Rest', ['只改今天', '保留目标 / Workout Type / Body Area', '展示 V1/V2 输入版本差异']),
+    b13State('combined', 'Combined', 3, 'Combined', '先 Re-plan 未来，再 Adapt 今天', '周期事实 + 当日状态；匹配输入为 course_profile_v2', ['历史不覆盖', '未来显示 Re-plan diff', '今日 Soften 不读旧 Impact']),
   ], {
-    goal: '用 Plan/Re-plan/Daily Adapt/Combined 四种模式验证结果、作用域、候选和解释。', entry: 'B12 规则草稿 / B11 行模拟', exit: ['B11', 'B12'], role: '规则配置 / QA / 安全审核', data: adminData(['fixtures 与版本矩阵', 'candidate_snapshots/decision_exclusions', '回归不变量与 diff']), actions: { primary: '运行模拟/回归', secondary: ['导出 trace', '与线上版本对比', '提交发布审批'] }, statesDesc: ['样本输入', '结果解释', '回归通过', '回归失败', '无安全匹配'], triggers: ['Combined 固定先 Re-plan 未来，再 Adapt 今天'], deps: ['B12', 'S08/S09/S20/S21'], patches: ['V1-SIMULATION'],
+    goal: '验证 V2 输入版本下的 Plan/Re-plan/Adapt 结果、作用域与解释。', entry: 'B12 规则草稿 / B11', exit: ['B11', 'B12'], role: '规则配置 / QA / 安全审核',
+    data: adminData(['fixtures 与 V2 版本矩阵', 'candidate_snapshots', 'eligibility/local_load 排除原因']),
+    actions: { primary: '运行模拟/回归', secondary: ['导出 trace', '对比 V1/V2 输入结果', '提交发布'] },
+    statesDesc: ['样本输入', '结果解释', '回归通过', '回归失败', '无安全匹配'],
+    triggers: ['Combined 固定先 Re-plan 未来，再 Adapt 今天'],
+    deps: ['B12', 'S08/S09/S20/S21'], patches: ['V2-SIMULATION'],
   }),
   adminScreen('B17', '营销标签与训练档案隔离', '§4 B17', 'F', [{ id: 'default', label: '标签分区', blocks: [
     ...aShell('用户与 CRM / 标签分区', '角色：CRM 运营'), { kind: 'page-header', label: '标签与分群', sub: '营销标签可运营；健康/训练条件只读来自 User Training Profile，不允许自由创建', patch: true }, { kind: 'tabs', items: ['营销标签', '训练档案（只读）', '分群规则'], activeStep: 0, tabStates: ['marketing', 'profile', 'segments'] }, { kind: 'table', cols: ['分区', '示例', '可编辑', '可导出'], items: ['营销 ｜ 来源：内容活动 ｜ 运营活动人群 ｜ 是 ｜ 脱敏后', '训练档案 ｜ fitness_capacity L2、knee MODERATE ｜ 只能由问卷/Profile 产生 ｜ 否（服务端字段）', '敏感生命周期 ｜ POSTPARTUM/PCOS ｜ 受限查看 ｜ 默认否'], marker: 1 }, { kind: 'alert', tone: 'warn', label: '禁止创建「大基数友好/PCOS 友好/产后风险」等自由健康标签', sub: '这些条件必须通过结构化 Profile 和权限审计管理', patch: true }] }], {
@@ -300,7 +467,7 @@ const adminV1Screens: ScreenDef[] = [
     ]),
     b19State('trace', 'Decision Trace', 4, [
       { kind: 'steps', items: ['输入快照', 'Hard Filter', '候选池', '最终决策'], activeStep: 3 },
-      { kind: 'split', label: '今日推荐 · dec_204', sub: '最终：SOFTEN / Soft', items: ['Profile v4', 'Course Profile v7', 'rules_v1.0', 'Check-in ENERGY_LOW'], right: ['Keep：保留目标/训练类型/部位', 'Soften：降低负荷/冲击/跳跃', 'Backup A：仍不适时才启用', '排除：Impact/重复/unknown · reason_codes 可回到 APP'], marker: 2 },
+      { kind: 'split', label: '今日推荐 · dec_204', sub: '最终：SOFTEN / Soft · course_profile_v2', items: ['Profile v4', 'course_profile_v2', 'rules_v2.0', 'Check-in ENERGY_LOW'], right: ['Keep：保留目标/Workout Type/部位', 'Soften：降低 Overall/Running/Jump/local_load', 'Backup A：仍不适时才启用', '排除：Eligibility FORBIDDEN / Jump FREQ / UNKNOWN · reason_codes 可回到 APP'], marker: 2 },
       { kind: 'panel', label: '作用域边界', sub: '今日 SOFTEN 属于 Daily Adapt；周期实际首日变化属于 Re-plan，只影响未来未完成日期。', patch: true },
       { kind: 'button-secondary', label: '查看候选与排除明细' },
     ]),
@@ -312,8 +479,8 @@ const adminV1Screens: ScreenDef[] = [
     goal: '查看用户长期 Profile、30 天计划、Check-in/Re-plan 和推荐决策全链路。', entry: 'B18 用户列表', exit: ['B18', 'B17'], role: 'CRM / 健康运营 / 审计员', data: adminData(['user_training_profiles/field_sources', 'plans/intents/candidate snapshots', 'checkins/cycle facts/replans/decisions', '敏感访问审计']), actions: { primary: '查看 Profile 与 Decision Trace', secondary: ['查看计划 diff', '查看推荐原因', '申请敏感字段访问'] }, statesDesc: ['Profile', '计划', '事件', 'trace', '敏感审计', '无权限'], triggers: ['所有推荐可通过 trace id 回溯版本与排除原因'], deps: ['User/Profile/Recommendation API', 'B17 权限隔离'], patches: ['V1-USER-TRACE'],
   }),
   adminScreen('B31', '课程池与推荐质量抽查', '后端§4 课程组合抽查', 'C', [{ id: 'list', label: '质量抽查池', blocks: [
-    ...aShell('推荐系统 / 质量抽查', '角色：课程运营 / 安全审核'), { kind: 'page-header', label: '推荐决策抽查池', sub: '抽查的是 Plan/Re-plan/Adapt 决策快照，不把 AI 当最终推荐模型', patch: true }, { kind: 'stat-row', items: ['今日决策 1,280', '抽查 64', 'No Match 1.2%', '高风险待看 8', '证据完整 97%'] }, { kind: 'filter-bar', label: '阶段：全部 ｜ 高风险 ｜ No Match ｜ 用户撤销 ｜ 规则版本 ｜ Course Profile 缺口' }, { kind: 'table', cols: ['trace', '输入版本', '结果', '排除原因', '抽查', '操作'], items: ['dec_204 ｜ Profile v4 × Course v7 × rules v1 ｜ Soft/Soften ｜ Impact 超限 3 ｜ 待抽查 ｜ 诊断', 'dec_205 ｜ Profile v2 × Course v3 ｜ Rest ｜ 安全字段 unknown ｜ 高风险 ｜ 诊断', 'dec_206 ｜ Profile v4 × Course v7 ｜ Keep ｜ 无 ｜ 已通过 ｜ 查看'], to: 'B31', marker: 1 }, { kind: 'button-primary', label: '运行高风险深度抽查' }, { kind: 'button-secondary', label: '打开 B13 回归', to: 'B13' }]}, { id: 'review', label: '抽查诊断', blocks: [...aShell('推荐系统 / 抽查诊断 / dec_204', '只读决策快照'), { kind: 'steps', items: ['Profile', 'Priority', '候选', 'Adapt 结果'], activeStep: 3 }, { kind: 'split', label: '推荐结果', sub: '规则与 Course Profile 版本', items: ['Today：Energy low', 'Soft → Soften', '目标/类型/部位保持', 'Backup A 作为第二路径'], right: ['排除 VID-0192：impact 4', '排除 VID-0201：重复限制', 'unknown：不放行', '完整 trace 可导出（脱敏）'] }, { kind: 'button-primary', label: '提交抽查结论' }, { kind: 'button-secondary', label: '标记为 Bad Case → B12', to: 'B12' }] }], {
-    goal: '按风险、No Match、用户撤销和规则版本抽查真实决策，反哺规则与课程缺口。', entry: '推荐系统侧边栏', exit: ['B12', 'B13'], role: '课程运营 / 安全审核 / QA', data: adminData(['recommendation_decisions', 'candidate_snapshots/exclusions', '抽查与 Bad Case']), actions: { primary: '诊断并提交抽查结论', secondary: ['提高高风险采样', '跳转规则回归', '导出脱敏 trace'] }, statesDesc: ['抽查池', '诊断', 'Bad Case', '空队列'], triggers: ['Bad Case 只能创建规则/标签修复任务，不直接改用户历史决策'], deps: ['B12/B13', 'Course Profile 审核', '决策日志'], patches: ['V1-QUALITY'],
+    ...aShell('推荐系统 / 质量抽查', '角色：课程运营 / 安全审核'), { kind: 'page-header', label: '推荐决策抽查池', sub: '抽查的是 Plan/Re-plan/Adapt 决策快照，不把 AI 当最终推荐模型', patch: true }, { kind: 'stat-row', items: ['今日决策 1,280', '抽查 64', 'No Match 1.2%', '高风险待看 8', '证据完整 97%'] }, { kind: 'filter-bar', label: '阶段：全部 ｜ 高风险 ｜ No Match ｜ 用户撤销 ｜ 规则版本 ｜ Course Profile 缺口' }, { kind: 'table', cols: ['trace', '输入版本', '结果', '排除原因', '抽查', '操作'], items: ['dec_204 ｜ Profile v4 × course_profile_v2 × rules_v2 ｜ Soft/Soften ｜ Jump FREQ + Elig FORBIDDEN ｜ 待抽查 ｜ 诊断', 'dec_205 ｜ Profile v2 × course_profile_v2 ｜ Rest ｜ 安全字段 UNKNOWN ｜ 高风险 ｜ 诊断', 'dec_206 ｜ Profile v4 × course_profile_v2 ｜ Keep ｜ 无 ｜ 已通过 ｜ 查看'], to: 'B31', marker: 1 }, { kind: 'button-primary', label: '运行高风险深度抽查' }, { kind: 'button-secondary', label: '打开 B13 回归', to: 'B13' }]}, { id: 'review', label: '抽查诊断', blocks: [...aShell('推荐系统 / 抽查诊断 / dec_204', '只读决策快照'), { kind: 'steps', items: ['Profile', 'Priority', '候选', 'Adapt 结果'], activeStep: 3 }, { kind: 'split', label: '推荐结果', sub: '规则与 course_profile_v2 版本', items: ['Today：Energy low', 'Soft → Soften(Overall/Running/Jump)', '目标/类型/部位保持', 'Backup A 作为第二路径'], right: ['排除 HIIT_014：Jump FREQUENT + menstrual FORBIDDEN', '排除 UNK_099：UNKNOWN', 'unknown：不放行', '完整 trace 可导出（脱敏）'] }, { kind: 'button-primary', label: '提交抽查结论' }, { kind: 'button-secondary', label: '标记为 Bad Case → B12', to: 'B12' }] }], {
+    goal: '按风险、No Match、用户撤销和规则版本抽查真实决策，反哺规则与课程缺口。', entry: '推荐系统侧边栏', exit: ['B12', 'B13'], role: '课程运营 / 安全审核 / QA', data: adminData(['recommendation_decisions', 'candidate_snapshots/exclusions', '抽查与 Bad Case']), actions: { primary: '诊断并提交抽查结论', secondary: ['提高高风险采样', '跳转规则回归', '导出脱敏 trace'] }, statesDesc: ['抽查池', '诊断', 'Bad Case', '空队列'], triggers: ['Bad Case 只能创建规则/标签修复任务，不直接改用户历史决策'], deps: ['B12/B13', 'Course Profile 审核', '决策日志'], patches: ['V2-QUALITY'],
   }),
 ];
 
